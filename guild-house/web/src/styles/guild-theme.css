@@ -1,0 +1,287 @@
+/* Guild House — light command center design tokens */
+
+:root {
+  --font-display: "Cinzel", Georgia, serif;
+  --font-body: "DM Sans", system-ui, sans-serif;
+
+  --color-bg: #f4f5f7;
+  --color-bg-elevated: #ffffff;
+  --color-bg-glass: rgba(255, 255, 255, 0.88);
+  --color-border: rgba(15, 23, 42, 0.1);
+  --color-border-strong: rgba(180, 120, 40, 0.45);
+
+  --color-text: #1a1d26;
+  --color-text-muted: #5c6370;
+  --color-accent: #b8832e;
+  --color-accent-dim: #966a22;
+  --color-accent-glow: rgba(184, 131, 46, 0.18);
+
+  --color-surface-muted: rgba(15, 23, 42, 0.06);
+  --color-surface-hover: rgba(15, 23, 42, 0.05);
+
+  --phase-evaluating: #7c5ce0;
+  --phase-running: #059669;
+  --phase-blocked: #e11d48;
+  --phase-paused: #64748b;
+  --phase-done: #d97706;
+
+  --shadow-glow: 0 2px 12px rgba(184, 131, 46, 0.22);
+
+  /* Board column accents */
+  --board-ideas-accent: #6366f1;
+  --board-ideas-bg: #eef2ff;
+  --board-ideas-border: rgba(99, 102, 241, 0.28);
+
+  --board-discovering-accent: #8b5cf6;
+  --board-discovering-bg: #f5f3ff;
+  --board-discovering-border: rgba(139, 92, 246, 0.28);
+
+  --board-parking-accent: #64748b;
+  --board-parking-bg: #eef1f5;
+  --board-parking-border: rgba(100, 116, 139, 0.28);
+
+  --board-queued-accent: #7c5ce0;
+  --board-queued-bg: #f3f0fc;
+  --board-queued-border: rgba(124, 92, 224, 0.28);
+
+  --board-working-accent: #059669;
+  --board-working-bg: #ecfdf5;
+  --board-working-border: rgba(5, 150, 105, 0.28);
+
+  --board-done-accent: #d97706;
+  --board-done-bg: #fffbeb;
+  --board-done-border: rgba(217, 119, 6, 0.28);
+
+  --discovery-exploring: #6366f1;
+  --discovery-drafting: #8b5cf6;
+  --discovery-presenting: #d97706;
+  --discovery-awaiting_approval: #e11d48;
+  --discovery-closed: #64748b;
+}
+
+.guild-display {
+  font-family: var(--font-display);
+}
+
+.guild-grid-bg {
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(184, 131, 46, 0.07), transparent),
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: auto, 32px 32px, 32px 32px;
+}
+
+.guild-glass {
+  background: var(--color-bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.guild-btn-primary {
+  background: linear-gradient(135deg, #d4a04a 0%, var(--color-accent) 100%);
+  color: #1a1208;
+  font-weight: 600;
+  border: none;
+  box-shadow: var(--shadow-glow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.guild-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(184, 131, 46, 0.28);
+}
+
+.guild-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.phase-evaluating { color: var(--phase-evaluating); }
+.phase-running { color: var(--phase-running); }
+.phase-blocked { color: var(--phase-blocked); }
+.phase-paused { color: var(--phase-paused); }
+.phase-done { color: var(--phase-done); }
+
+.phase-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid currentColor;
+  background: var(--color-surface-muted);
+}
+
+.phase-pill--evaluating { color: var(--phase-evaluating); }
+.phase-pill--running { color: var(--phase-running); }
+.phase-pill--blocked { color: var(--phase-blocked); }
+.phase-pill--paused { color: var(--phase-paused); }
+.phase-pill--done { color: var(--phase-done); }
+
+.phase-pill--discovery-exploring { color: var(--discovery-exploring); }
+.phase-pill--discovery-drafting { color: var(--discovery-drafting); }
+.phase-pill--discovery-presenting { color: var(--discovery-presenting); }
+.phase-pill--discovery-awaiting_approval { color: var(--discovery-awaiting_approval); }
+.phase-pill--discovery-closed { color: var(--discovery-closed); }
+
+.session-live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--phase-running);
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.45);
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+.session-dead {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-text-muted);
+  background: transparent;
+}
+
+.session-restore {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--phase-blocked);
+  animation: pulse-restore 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pulse-restore {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+.board-column {
+  --board-accent: var(--color-text-muted);
+  --board-bg: var(--color-bg-elevated);
+  --board-border: var(--color-border);
+}
+
+.board-column--ideas {
+  --board-accent: var(--board-ideas-accent);
+  --board-bg: var(--board-ideas-bg);
+  --board-border: var(--board-ideas-border);
+}
+
+.board-column--discovering {
+  --board-accent: var(--board-discovering-accent);
+  --board-bg: var(--board-discovering-bg);
+  --board-border: var(--board-discovering-border);
+}
+
+.board-column--parking {
+  --board-accent: var(--board-parking-accent);
+  --board-bg: var(--board-parking-bg);
+  --board-border: var(--board-parking-border);
+}
+
+.board-column--queued {
+  --board-accent: var(--board-queued-accent);
+  --board-bg: var(--board-queued-bg);
+  --board-border: var(--board-queued-border);
+}
+
+.board-column--working {
+  --board-accent: var(--board-working-accent);
+  --board-bg: var(--board-working-bg);
+  --board-border: var(--board-working-border);
+}
+
+.board-column--done {
+  --board-accent: var(--board-done-accent);
+  --board-bg: var(--board-done-bg);
+  --board-border: var(--board-done-border);
+}
+
+/* Markdown content (brief, scratch, etc.) */
+.guild-markdown {
+  --tw-prose-body: var(--color-text-muted);
+  --tw-prose-headings: var(--color-text);
+  --tw-prose-bold: var(--color-text);
+  --tw-prose-links: var(--color-accent);
+  --tw-prose-code: var(--color-accent-dim);
+  --tw-prose-bullets: var(--color-text-muted);
+  --tw-prose-counters: var(--color-text-muted);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quote-borders: var(--color-accent);
+}
+
+.guild-markdown :where(h2) {
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.guild-markdown :where(h2:first-child) {
+  margin-top: 0;
+}
+
+.guild-markdown :where(p) {
+  line-height: 1.65;
+}
+
+.guild-markdown :where(ul, ol) {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.guild-markdown :where(li) {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.guild-markdown :where(li > ul, li > ol) {
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.guild-markdown :where(code):not(:where(pre code)) {
+  background: var(--color-surface-muted);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.guild-markdown :where(pre) {
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 0.375rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+}
+
+.guild-markdown :where(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+.guild-markdown :where(input[type="checkbox"]) {
+  margin-right: 0.45rem;
+  accent-color: var(--color-accent);
+}
+
+.guild-markdown :where(li:has(> input[type="checkbox"])) {
+  list-style: none;
+  margin-left: -1.25rem;
+}

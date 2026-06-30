@@ -1,0 +1,8 @@
+node_modules/
+web/dist/
+web/.env.local
+web/tsconfig.tsbuildinfo 
+.env
+data/
+spike-test-cwd/
+*.log

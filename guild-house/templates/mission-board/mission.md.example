@@ -1,0 +1,39 @@
+---
+title: Hello-world artifact
+intent: Prove Guild House handoff — squad, artifact, QA, mission_complete
+autonomy: high
+priority: normal
+constraints:
+  - Single file under artifacts/demo/
+  - No external dependencies
+  - Must run on Windows cmd and Git Bash
+---
+
+# Hello-world artifact (demo-003)
+
+## Background
+
+Phase 5 acceptance mission: PO runs full handoff (evaluator → squad → memory), delivers a minimal artifact, QA verifies, then signals complete.
+
+## Deliverables
+
+- `artifacts/demo/hello.cmd` — prints `Guild House OK` when run from cmd
+- `artifacts/demo/hello.sh` — same output for Git Bash (optional if one script suffices with shebang)
+
+## Acceptance criteria
+
+- [ ] `squad.md` exists with frontmatter `members` listing at least `evaluator` was consulted and implementer role chosen
+- [ ] `memories/common/memory.md` lists scope and acceptance criteria
+- [ ] Artifact runs: executing the script prints exactly `Guild House OK` (one line)
+- [ ] QA chatroom status reports PASS for each criterion
+- [ ] PO signals `mission_complete` only after QA pass
+
+## Out of scope
+
+- Guild House server code changes
+- Network calls, databases, packaging
+
+## Notes
+
+- Trivial mission: evaluator should recommend **developer + qa**, skip senior-developer
+- Guild master is absent by default; do not escalate unless acceptance is impossible

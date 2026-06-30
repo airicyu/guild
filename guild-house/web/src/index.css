@@ -1,0 +1,62 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "./styles/guild-theme.css";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Terminal pane: opaque surface — no backdrop-filter (breaks WebGL/canvas compositing). */
+.mission-terminal-host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mission-terminal-host .mission-terminal-surface {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mission-terminal-host .mission-terminal-surface .xterm {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+/* xterm 6: legacy viewport is an empty black layer — it covers the scrollbar track otherwise */
+.mission-terminal-host .xterm-viewport {
+  display: none;
+}
+
+.mission-terminal-host .xterm-scrollable-element > .scrollbar > .slider {
+  border-radius: 4px;
+}
+
+/* Classic/bash: keep scrollbar visible — xterm 6 fades to .invisible when idle */
+.mission-terminal-host:not(.mission-terminal--alt-screen) .xterm-scrollable-element > .scrollbar {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.mission-terminal-host .xterm-scrollable-element > .scrollbar.visible {
+  z-index: 12;
+}
+
+/* claude attach alt screen: hide xterm scrollbar (no scrollback in alt buffer) */
+.mission-terminal-host.mission-terminal--alt-screen .xterm-scrollable-element > .scrollbar {
+  display: none !important;
+}

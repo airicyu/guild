@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE (local)
+.vscode/
+.idea/
+.cursor/
+
+# Secrets at repo root
+.env
+.env.local
+.env.*.local
+
+# Local Claude Code overrides (templates use committed settings.json)
+**/.claude/settings.local.json

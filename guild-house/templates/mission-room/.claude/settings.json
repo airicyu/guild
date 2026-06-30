@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read(.guild/**)",
+      "Read(members/**)",
+      "Read(memories/**)",
+      "Read(tools/**)",
+      "Read(squad.md)",
+      "Read(inbox.md)",
+      "Read(outbox.jsonl)",
+      "Edit(squad.md)",
+      "Edit(memories/**)",
+      "Edit(artifacts/**)",
+      "Glob",
+      "Grep",
+      "Task",
+      "Bash(python *)",
+      "Bash(py *)",
+      "Bash(node *)",
+      "Bash(bun *)",
+      "Bash(./tools/*)",
+      "Bash(tools/*)",
+      "Bash(cmd /c tools\\\\*)"
+    ],
+    "deny": [
+      "Edit(checkpoint.yaml)",
+      "Edit(.guild/handoff-prompt.md)",
+      "Edit(.guild/mission-schema.md)",
+      "Edit(memories/common/mission-brief.md)"
+    ]
+  }
+}
