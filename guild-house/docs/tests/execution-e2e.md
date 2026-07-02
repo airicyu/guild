@@ -70,6 +70,16 @@ scripts\e2e-smoke.cmd
 
 Does not replace PO attach or handoff steps.
 
+### Phase 1 close-out (API 0.17.0+)
+
+```bash
+# Terminal 1: bun run dev
+export GUILD_API_KEY=...  # match .env
+bun scripts/e2e-phase1-closeout.ts
+```
+
+Covers: `artifacts_ready_for_review` → approve → release/retro signals → `mission_complete` → archive; reject → blocked; abort → aborted → archive; `mission_complete` gate from `running`. No live PO — channel notify runs in degraded mode (`delivered: false`).
+
 ## Checklist
 
 - [ ] `queued/{slug}/mission.md` → bell → minted id on **working**

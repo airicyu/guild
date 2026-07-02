@@ -14,7 +14,18 @@ export const MISSION_TABS: { id: MissionTabId; label: string }[] = [
 ];
 
 export function isMissionPhase(p: string): p is MissionPhase {
-  return ["evaluating", "running", "blocked", "paused", "done"].includes(p);
+  return [
+    "evaluating",
+    "running",
+    "blocked",
+    "paused",
+    "awaiting_artifact_review",
+    "artifacts_approved",
+    "releasing",
+    "retrospective",
+    "done",
+    "aborted",
+  ].includes(p);
 }
 
 export function eventTypeClass(type: string) {

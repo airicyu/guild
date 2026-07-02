@@ -20,7 +20,15 @@ import { readJobState } from "../core/job-state";
 import { spawnPoSession, sessionCommands } from "../core/spawn";
 import { findBackgroundAgent, isSessionRunning, tryRespawnSession } from "../core/session";
 
-const PO_PHASES = new Set<MissionPhase>(["evaluating", "running", "blocked"]);
+const PO_PHASES = new Set<MissionPhase>([
+  "evaluating",
+  "running",
+  "blocked",
+  "awaiting_artifact_review",
+  "artifacts_approved",
+  "releasing",
+  "retrospective",
+]);
 
 export interface SessionProbe {
   processLive: boolean;

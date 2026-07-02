@@ -56,21 +56,25 @@ async function listStageFolders(config: Config, stage: BoardStage): Promise<stri
 
 /** List all board stage folders; merges legacy ready/active into queued/working. */
 export async function listBoard(config: Config): Promise<BoardListing> {
-  const [ideas, discovering, parking, queued, working, done, archive] = await Promise.all(
+  const [ideas, discovering, parking, queued, working, done, aborted, archive] = await Promise.all(
     BOARD_STAGES.map((stage) => listStageFolders(config, stage)),
   );
 
-  return { ideas, discovering, parking, queued, working, done, archive };
+  return { ideas, discovering, parking, queued, working, done, aborted, archive };
 }
 
-/** Working missions that consume a concurrent PO slot (`phase !== done`). */
+/** Working missions that consume a concurrent PO slot (`phase` not terminal on working board). */
 export async function countWorkingMissions(config: Config): Promise<number> {
   const working = await listStageFolders(config, "working");
   let used = 0;
 
   for (const missionId of working) {
     const checkpoint = await readCheckpoint(config, missionId);
-    if (checkpoint?.phase === "done") continue;
+    if (!checkpoint) {
+      used += 1;
+      continue;
+    }
+    if (checkpoint.phase === "done" || checkpoint.phase === "aborted") continue;
     used += 1;
   }
 
@@ -155,6 +159,11 @@ export function isOnDoneBoard(board: BoardListing, missionId: string): boolean {
   return board.done.includes(missionId);
 }
 
+/** True when missionId appears on the aborted board listing. */
+export function isOnAbortedBoard(board: BoardListing, missionId: string): boolean {
+  return board.aborted.includes(missionId);
+}
+
 /** Resolve parking/{folderName} path; null if missing. */
 export async function resolveParkingEntryPath(
   config: Config,
@@ -187,6 +196,20 @@ export async function resolveDoneEntryPath(
     } catch {
       // try next
     }
+  }
+  return null;
+}
+
+/** Resolve aborted/{missionId} path; null if missing. */
+export async function resolveAbortedEntryPath(
+  config: Config,
+  missionId: string,
+): Promise<string | null> {
+  const path = join(missionBoardPath(config, "aborted"), missionId);
+  try {
+    if ((await stat(path)).isDirectory()) return path;
+  } catch {
+    // missing
   }
   return null;
 }

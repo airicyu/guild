@@ -1,4 +1,14 @@
-export type MissionPhase = "evaluating" | "running" | "blocked" | "paused" | "done";
+export type MissionPhase =
+  | "evaluating"
+  | "running"
+  | "blocked"
+  | "paused"
+  | "awaiting_artifact_review"
+  | "artifacts_approved"
+  | "releasing"
+  | "retrospective"
+  | "done"
+  | "aborted";
 
 export type BoardStage =
   | "ideas"
@@ -7,6 +17,7 @@ export type BoardStage =
   | "queued"
   | "working"
   | "done"
+  | "aborted"
   | "archive";
 
 export interface SlotMeterData {
@@ -27,7 +38,7 @@ export interface MissionCardData {
 
 export interface MissionListItem {
   id: string;
-  board: "working" | "done";
+  board: "working" | "done" | "aborted";
   phase: MissionPhase | "unknown";
   sessionId: string | null;
   sessionLive: boolean;
@@ -79,6 +90,7 @@ export interface BoardResponse {
   queued: string[];
   working: string[];
   done: string[];
+  aborted: string[];
   archive: string[];
 }
 

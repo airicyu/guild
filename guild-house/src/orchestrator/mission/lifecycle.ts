@@ -1,17 +1,19 @@
 /**
  * Mission lifecycle — signals, pause/resume, archive, boot recovery.
  *
- * mission_complete → phase done + move working/ → done/ (frees execution slot).
- * archiveMission requires mission on done board, then done/ → archive/.
+ * 0.3.0 close-out: mission_complete only from retrospective → done board.
+ * Guild-master approve/reject/abort are separate API paths (no auto-stop on approve).
  */
 import { rename } from "node:fs/promises";
 import type { Config } from "../../config";
 import { missionBoardEntryPath } from "../../paths";
-import type { Checkpoint, SignalRequest, SignalType } from "../../types/mission";
+import type { Checkpoint, MissionPhase, SignalRequest, SignalType } from "../../types/mission";
 import {
   assertMissionId,
+  isOnAbortedBoard,
   isOnDoneBoard,
   listBoard,
+  resolveAbortedEntryPath,
   resolveDoneEntryPath,
   resolveWorkingEntryPath,
 } from "../core/board";
@@ -27,7 +29,12 @@ const SIGNAL_TYPES = new Set<SignalType>([
   "mission_complete",
   "blocked",
   "request_session_restart",
+  "artifacts_ready_for_review",
+  "artifact_release_complete",
+  "retrospective_complete",
 ]);
+
+const ARTIFACTS_READY_PHASES = new Set<MissionPhase>(["running", "evaluating", "blocked"]);
 
 function recordSignal(checkpoint: Checkpoint, request: SignalRequest): Checkpoint {
   return {
@@ -57,7 +64,14 @@ async function moveDoneToArchive(config: Config, missionId: string): Promise<voi
   await rename(src, missionBoardEntryPath(config, "archive", missionId));
 }
 
-/** Move legacy phase:done entries still on working/ after Plan 3 Phase 6 upgrade. */
+async function moveAbortedToArchive(config: Config, missionId: string): Promise<void> {
+  const src = await resolveAbortedEntryPath(config, missionId);
+  if (!src) {
+    throw new Error(`Aborted board entry missing: ${missionId}`);
+  }
+  await rename(src, missionBoardEntryPath(config, "archive", missionId));
+}
+
 /** Move done-board missions stuck with phase=done on working/ to done/ (boot migration). */
 export async function reconcileLegacyDoneMissions(config: Config): Promise<string[]> {
   const board = await listBoard(config);
@@ -77,24 +91,56 @@ export async function reconcileLegacyDoneMissions(config: Config): Promise<strin
   return moved;
 }
 
-/** Move done/{id} → archive/{id}; requires phase=done on done board. */
+/** Move aborted-board missions stuck on working/ after partial upgrade (boot migration). */
+export async function reconcileAbortedOnWorking(config: Config): Promise<string[]> {
+  const board = await listBoard(config);
+  const moved: string[] = [];
+
+  for (const missionId of board.working) {
+    const checkpoint = await readCheckpoint(config, missionId);
+    if (checkpoint?.phase !== "aborted") continue;
+    try {
+      const src = await resolveWorkingEntryPath(config, missionId);
+      if (!src) continue;
+      await rename(src, missionBoardEntryPath(config, "aborted", missionId));
+      moved.push(missionId);
+    } catch {
+      // Best-effort
+    }
+  }
+
+  return moved;
+}
+
+/** Move done/{id} or aborted/{id} → archive/{id}; requires matching terminal phase. */
 export async function archiveMission(config: Config, missionId: string): Promise<Checkpoint> {
   assertMissionId(missionId);
 
   const board = await listBoard(config);
-  if (!isOnDoneBoard(board, missionId)) {
-    throw new Error(`Mission ${missionId} is not on the done board`);
+  const onDone = isOnDoneBoard(board, missionId);
+  const onAborted = isOnAbortedBoard(board, missionId);
+
+  if (!onDone && !onAborted) {
+    throw new Error(`Mission ${missionId} is not on the done or aborted board`);
   }
 
   const checkpoint = await readCheckpoint(config, missionId);
   if (!checkpoint) {
     throw new Error(`Missing checkpoint for ${missionId}`);
   }
-  if (checkpoint.phase !== "done") {
-    throw new Error(`Mission ${missionId} must be phase done before archive (current: ${checkpoint.phase})`);
+
+  if (onDone) {
+    if (checkpoint.phase !== "done") {
+      throw new Error(`Mission ${missionId} must be phase done before archive (current: ${checkpoint.phase})`);
+    }
+    await moveDoneToArchive(config, missionId);
+    return checkpoint;
   }
 
-  await moveDoneToArchive(config, missionId);
+  if (checkpoint.phase !== "aborted") {
+    throw new Error(`Mission ${missionId} must be phase aborted before archive (current: ${checkpoint.phase})`);
+  }
+  await moveAbortedToArchive(config, missionId);
   return checkpoint;
 }
 
@@ -112,7 +158,7 @@ async function restartSession(config: Config, checkpoint: Checkpoint): Promise<C
   return restored.checkpoint;
 }
 
-/** Apply PO lifecycle signal; mission_complete moves working/ → done/. */
+/** Apply PO lifecycle signal; mission_complete moves working/ → done/ from retrospective only. */
 export async function handleSignal(
   config: Config,
   missionId: string,
@@ -147,12 +193,52 @@ export async function handleSignal(
       };
       break;
 
+    case "artifacts_ready_for_review":
+      if (!ARTIFACTS_READY_PHASES.has(checkpoint.phase)) {
+        throw new Error(
+          `artifacts_ready_for_review not allowed from phase ${checkpoint.phase}`,
+        );
+      }
+      checkpoint = {
+        ...checkpoint,
+        phase: "awaiting_artifact_review",
+        awaiting_guild_master: true,
+      };
+      break;
+
+    case "artifact_release_complete":
+      if (checkpoint.phase !== "releasing") {
+        throw new Error(
+          `artifact_release_complete requires phase releasing (current: ${checkpoint.phase})`,
+        );
+      }
+      checkpoint = {
+        ...checkpoint,
+        phase: "retrospective",
+        awaiting_guild_master: false,
+      };
+      break;
+
+    case "retrospective_complete":
+      if (checkpoint.phase !== "retrospective") {
+        throw new Error(
+          `retrospective_complete requires phase retrospective (current: ${checkpoint.phase})`,
+        );
+      }
+      // Phase stays retrospective until mission_complete.
+      break;
+
     case "request_session_restart":
       checkpoint = await restartSession(config, checkpoint);
       checkpoint = { ...checkpoint, phase: checkpoint.phase === "paused" ? "running" : checkpoint.phase };
       break;
 
     case "mission_complete":
+      if (checkpoint.phase !== "retrospective") {
+        throw new Error(
+          `mission_complete requires phase retrospective (current: ${checkpoint.phase})`,
+        );
+      }
       await stopSessionSafe(config, checkpoint.claude_session.id);
       checkpoint = {
         ...checkpoint,
@@ -178,8 +264,8 @@ export async function pauseMission(config: Config, missionId: string): Promise<C
   assertMissionId(missionId);
   let checkpoint = await requireActiveCheckpoint(config, missionId);
 
-  if (checkpoint.phase === "done") {
-    throw new Error(`Mission ${missionId} is already done`);
+  if (checkpoint.phase === "done" || checkpoint.phase === "aborted") {
+    throw new Error(`Mission ${missionId} is already terminal`);
   }
 
   await stopSessionSafe(config, checkpoint.claude_session.id);
@@ -202,11 +288,16 @@ export async function resumeMission(config: Config, missionId: string) {
   return restoreMissionSession(config, missionId);
 }
 
-/** Boot recovery: reconcile legacy done, sync all working-board sessions. */
+/** Boot recovery: reconcile legacy done/aborted, sync all working-board sessions. */
 export async function recoverActiveMissions(config: Config) {
-  const reconciled = await reconcileLegacyDoneMissions(config);
-  if (reconciled.length > 0) {
-    console.log("Reconciled legacy done missions → done board:", reconciled);
+  const reconciledDone = await reconcileLegacyDoneMissions(config);
+  if (reconciledDone.length > 0) {
+    console.log("Reconciled legacy done missions → done board:", reconciledDone);
+  }
+
+  const reconciledAborted = await reconcileAbortedOnWorking(config);
+  if (reconciledAborted.length > 0) {
+    console.log("Reconciled aborted missions → aborted board:", reconciledAborted);
   }
 
   const board = await listBoard(config);
@@ -225,8 +316,8 @@ export async function recoverActiveMissions(config: Config) {
         continue;
       }
 
-      if (checkpoint.phase === "done") {
-        recovered.push({ missionId, action: "skipped", error: "done — reconcile failed?" });
+      if (checkpoint.phase === "done" || checkpoint.phase === "aborted") {
+        recovered.push({ missionId, action: "skipped", error: `${checkpoint.phase} — reconcile failed?` });
         continue;
       }
 

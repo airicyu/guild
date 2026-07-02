@@ -22,7 +22,7 @@ bun run dev
 ```
 
 - API: `http://127.0.0.1:3847` · **Web UI:** `bun run dev:ui` → `http://127.0.0.1:3848`
-- Health: `GET /health` → API **0.16.0** · product **0.2.0**
+- Health: `GET /health` → API **0.17.0** · product **0.2.0**
 
 ## Layout
 

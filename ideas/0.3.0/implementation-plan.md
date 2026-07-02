@@ -95,23 +95,23 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 | ID | Task | Notes |
 |----|------|-------|
-| 1.1 | [ ] Extend mission checkpoint schema: new phases + signals | `specs/` + `types/mission.ts` |
-| 1.2 | [ ] Add signal `artifacts_ready_for_review` | Sets `awaiting_artifact_review`, `awaiting_guild_master: true`, outbox optional |
-| 1.3 | [ ] Add `POST /missions/:id/approve-artifacts` | Guild master only; does **not** stop session or move board |
-| 1.4 | [ ] Add `tools/approve-artifacts.sh` / `.cmd` | Same endpoint as Web |
-| 1.5 | [ ] On approve: update checkpoint, write `inbox.md`, POST channel notify | Use Phase 0 helper |
-| 1.6 | [ ] Split `mission_complete`: only on final dismiss → stop session, working → done | **Breaking** vs 0.2.0 |
-| 1.7 | [ ] Add optional signals `artifact_release_complete`, `retrospective_complete` | Or fold into phase transitions only |
-| 1.8 | [ ] Update `lifecycle.ts` / `handleSignal` for new state machine | No auto-stop on approve |
-| 1.9 | [ ] Boot migration / reconcile for in-flight missions on upgrade | Document manual steps if any |
-| 1.10 | [ ] Bump `GET /health` version; update `docs/api.md` | API semver bump |
-| 1.11 | [ ] Update `specs/product.md` locked semantics for 0.3.0 pipeline | Board pipeline diagram |
-| 1.12 | [ ] **Align:** revision / reject flow when guild master wants changes | Design §4.3–4.4 |
-| 1.13 | [ ] Add `POST /missions/:id/reject-artifacts` + `tools/reject-artifacts.*` | → blocked on working |
-| 1.14 | [ ] Add `POST /missions/:id/abort` + `tools/abort.*` | working → aborted; stop session; free slot |
-| 1.15 | [ ] Add `aborted/` board folder + `listBoard` / slot counting | aborted excluded like done |
-| 1.16 | [ ] Extend `POST /missions/:id/archive` for **aborted** board | |
-| 1.17 | [ ] On abort: PO writes `retrospective/abort-note.md` before API completes or as abort playbook step | Skip release; reason optional |
+| 1.1 | [x] Extend mission checkpoint schema: new phases + signals | `specs/` + `types/mission.ts` |
+| 1.2 | [x] Add signal `artifacts_ready_for_review` | Sets `awaiting_artifact_review`, `awaiting_guild_master: true`, outbox optional |
+| 1.3 | [x] Add `POST /missions/:id/approve-artifacts` | Guild master only; does **not** stop session or move board |
+| 1.4 | [x] Add `tools/approve-artifacts.sh` / `.cmd` | Same endpoint as Web |
+| 1.5 | [x] On approve: update checkpoint, write `inbox.md`, POST channel notify | Use Phase 0 helper |
+| 1.6 | [x] Split `mission_complete`: only on final dismiss → stop session, working → done | **Breaking** vs 0.2.0 |
+| 1.7 | [x] Add optional signals `artifact_release_complete`, `retrospective_complete` | Or fold into phase transitions only |
+| 1.8 | [x] Update `lifecycle.ts` / `handleSignal` for new state machine | No auto-stop on approve |
+| 1.9 | [x] Boot migration / reconcile for in-flight missions on upgrade | Document manual steps if any |
+| 1.10 | [x] Bump `GET /health` version; update `docs/api.md` | API semver bump |
+| 1.11 | [x] Update `specs/product.md` locked semantics for 0.3.0 pipeline | Board pipeline diagram |
+| 1.12 | [x] **Align:** revision / reject flow when guild master wants changes | Design §4.3–4.4 |
+| 1.13 | [x] Add `POST /missions/:id/reject-artifacts` + `tools/reject-artifacts.*` | → blocked on working |
+| 1.14 | [x] Add `POST /missions/:id/abort` + `tools/abort.*` | working → aborted; stop session; free slot |
+| 1.15 | [x] Add `aborted/` board folder + `listBoard` / slot counting | aborted excluded like done |
+| 1.16 | [x] Extend `POST /missions/:id/archive` for **aborted** board | |
+| 1.17 | [x] On abort: PO writes `retrospective/abort-note.md` before API completes or as abort playbook step | Skip release; reason optional |
 
 **Exit criteria:** E2E path: QA ready signal → Web approve → channel/inbox → PO still on working board → final complete moves to done.
 

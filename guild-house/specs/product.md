@@ -1,6 +1,6 @@
 # Guild House — product specification (as-built)
 
-Living product truth for **release 0.2.0**. When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
+Living product truth for **release 0.2.0** (Phase 1 close-out API landed at **0.17.0** — product version bumps at 0.3.0 ship). When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
 
 Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archive/idea-v2.md) (archive only — do not extend).
 
@@ -9,13 +9,27 @@ Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archiv
 | Kind | Location | Current |
 |------|----------|---------|
 | Product | `version.md` + `changelog.md` | **0.2.0** |
-| API runtime | `GET /health` → `version` | **0.16.0** |
+| API runtime | `GET /health` → `version` | **0.17.0** (Phase 1 close-out) |
 
 ## Board pipeline
 
+**0.2.0 execution close-out:**
+
 ```
-POST /ideas → ideas → [tick] → discovering → [approve] → parking
-→ [promote] → queued → [tick] → working → mission_complete → done → [archive]
+… → working → mission_complete → done → [archive]
+```
+
+**0.3.0 close-out (Phase 1+ API):**
+
+```
+… → working
+  → [artifacts_ready_for_review]
+  → [guild master approve-artifacts] → releasing
+  → [artifact_release_complete] → retrospective
+  → [mission_complete] → done → [archive]
+
+Reject: awaiting_artifact_review → [reject-artifacts] → blocked (stays on working)
+Abort: working → [abort] → aborted → [archive]
 ```
 
 | Stage | Who moves | Mechanism |
@@ -24,8 +38,9 @@ POST /ideas → ideas → [tick] → discovering → [approve] → parking
 | discovering → parking | Guild master | `POST /discoveries/:id/approve` |
 | parking → queued | Guild master | `POST /board/parking/:folder/promote` |
 | queued → working | Orchestrator | tick / bell |
-| working → done | PO | `mission_complete` signal |
-| done → archive | Guild master | `POST /missions/:id/archive` |
+| working → done | PO | `mission_complete` from **`retrospective`** only |
+| working → aborted | Guild master | `POST /missions/:id/abort` |
+| done / aborted → archive | Guild master | `POST /missions/:id/archive` |
 
 Legacy intake: drop `mission.md` on **queued** (formerly `ready/`) — execution half of tick only.
 
@@ -35,14 +50,17 @@ Legacy intake: drop `mission.md` on **queued** (formerly `ready/`) — execution
 2. **`ensureMissionSessionLive` / `ensureDiscoverySessionLive`** — restore before attach when `?ensureLive=true` or WS connect.
 3. **WS close = detach only** — kills attach PTY; does not stop bg job.
 4. **Terminal tab lazy mount** — xterm mounts when tab opens.
-5. **`mission_complete`** → `phase: done`, move **working/** → **done/**; no auto-archive.
-6. **Archive** — from **done** board only; room folder stays on disk.
-7. **Slots** — `MAX_ACTIVE_MISSIONS` counts **working** only; **done** does not. `MAX_DISCOVERY_SESSIONS` counts live **discovering** leads.
-8. **GET never spawns** — restore only on boot / `POST /restore` / `POST /resume` / `?ensureLive=true`.
-9. **`checkpoint.yaml`** — orchestrator-only writer; agents use signals API.
-10. **Filesystem-first** — UI does not edit board folders or checkpoint directly.
-11. **Frozen brief** — `memories/common/mission-brief.md` is read-only for PO; clarify via `memory.md` or escalate.
-12. **Discovery approve** — HTTP 200 from `POST /discoveries/:id/approve` (or `tools/approve.sh`); lead must not narrate approval without API success.
+5. **`mission_complete`** → `phase: done`, move **working/** → **done/**; requires **`retrospective`** phase; no auto-archive.
+6. **Approve artifacts** — `POST /missions/:id/approve-artifacts`; does **not** stop session or move board; notifies PO via inbox + guild-channel.
+7. **Reject / abort** — `reject-artifacts` → `blocked` on working; `abort` → **aborted/** board, frees slot.
+8. **Archive** — from **done** (`phase: done`) or **aborted** (`phase: aborted`); room folder stays on disk.
+9. **Slots** — `MAX_ACTIVE_MISSIONS` counts **working** only; **done** and **aborted** do not. `MAX_DISCOVERY_SESSIONS` counts live **discovering** leads.
+10. **GET never spawns** — restore only on boot / `POST /restore` / `POST /resume` / `?ensureLive=true`.
+11. **`checkpoint.yaml`** — orchestrator-only writer; agents use signals API.
+12. **Filesystem-first** — UI does not edit board folders or checkpoint directly.
+13. **Frozen brief** — `memories/common/mission-brief.md` is read-only for PO; clarify via `memory.md` or escalate.
+14. **Discovery approve** — HTTP 200 from `POST /discoveries/:id/approve` (or `tools/approve.sh`); lead must not narrate approval without API success.
+15. **Guild channel** — orchestrator POST to per-room `guild-channel` on approve/reject/abort; degraded = inbox + checkpoint only. See [docs/guild-channel.md](../docs/guild-channel.md).
 
 ## Guild master (role)
 

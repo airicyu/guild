@@ -17,6 +17,7 @@ export const BOARD_STAGES = [
   "queued",
   "working",
   "done",
+  "aborted",
   "archive",
 ] as const;
 export type BoardStage = (typeof BOARD_STAGES)[number];

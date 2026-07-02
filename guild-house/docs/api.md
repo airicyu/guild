@@ -1,7 +1,7 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.16.0` (see `GET /health` → `version`)
+**Version:** `0.17.0` (see `GET /health` → `version`)
 
 > **Plan 3 (v0.11.0+):** Six board stages, `orchestratorTick()` on `POST /bell` and optional periodic tick. Legacy `ready/` / `active/` folder names are still read by the API if present on disk.
 
@@ -35,7 +35,7 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 | POST | `/board/parking/:folder/promote` | yes | Move parking folder → queued |
 | POST | `/bell` | yes | Orchestrator tick (discovery + execution pickup) |
 | GET | `/queue` | yes | Ready missions vs active slot availability |
-| GET | `/missions` | yes | Working + done missions + session liveness summary |
+| GET | `/missions` | yes | Working + done + aborted missions + session liveness summary |
 | GET | `/missions/:id` | yes | Single mission detail |
 | GET | `/missions/:id/brief` | yes | Mission brief markdown (room copy or board fallback) |
 | GET | `/missions/:id/summary` | yes | Mission + checkpoint + brief title + squad + outbox unread |
@@ -48,7 +48,10 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 | POST | `/missions/:id/resume` | yes | Unpause + restore (same ladder as restore) |
 | POST | `/missions/:id/pause` | yes | Stop PO; `phase: paused` |
 | POST | `/missions/:id/signals` | yes | Lifecycle signals (orchestrator writes checkpoint) |
-| POST | `/missions/:id/archive` | yes | Move done → archive (requires `phase: done` on done board) |
+| POST | `/missions/:id/approve-artifacts` | yes | Guild master approve deliverables (`awaiting_artifact_review` → `releasing`) |
+| POST | `/missions/:id/reject-artifacts` | yes | Guild master reject deliverables → `blocked` on working |
+| POST | `/missions/:id/abort` | yes | Guild master abort → **aborted** board; frees slot |
+| POST | `/missions/:id/archive` | yes | Move done or aborted → archive |
 | GET | `/outbox` | yes | Unread escalations (active + archive) |
 | GET | `/missions/:id/outbox` | yes | Mission outbox entries |
 | POST | `/missions/:id/outbox/read` | yes | Mark outbox entries read |
@@ -474,8 +477,11 @@ PO updates lifecycle via orchestrator (**only** orchestrator writes `checkpoint.
 |------|----------------------|
 | `round_complete` | `round++`; `evaluating`/`blocked` → `running`; clear `awaiting_guild_master` |
 | `blocked` | `phase: blocked`, `awaiting_guild_master: true` |
+| `artifacts_ready_for_review` | `phase: awaiting_artifact_review`, `awaiting_guild_master: true` (from `running`/`evaluating`/`blocked`) |
+| `artifact_release_complete` | `releasing` → `retrospective` |
+| `retrospective_complete` | records signal; phase stays `retrospective` until dismiss |
 | `request_session_restart` | stop + restore ladder |
-| `mission_complete` | stop PO; `phase: done`; move **working/** → **done/** (frees slot; no auto-archive) |
+| `mission_complete` | **requires `retrospective`**; stop PO; `phase: done`; move **working/** → **done/** (frees slot; no auto-archive) |
 
 **Response 200**
 
@@ -499,11 +505,70 @@ tools\signal.cmd mission_complete "QA pass — all criteria met"
 
 ---
 
+## `POST /missions/:id/approve-artifacts`
+
+Guild master approves mission deliverables after internal QA. **Does not** stop PO or move board.
+
+Requires mission on **working** with `phase: awaiting_artifact_review`.
+
+**Side effects:** `phase: releasing`; writes `inbox.md`; POST guild-channel `artifacts_approved` when endpoint live.
+
+**Response 200**
+
+```json
+{
+  "ok": true,
+  "missionId": "hello-world-20260627-a3f9c2",
+  "checkpoint": { "...": "..." },
+  "notify": { "channel": { "delivered": true } }
+}
+```
+
+**404** — not on working board. **409** — wrong phase.
+
+Mission room tool: `tools/approve-artifacts.sh` (PO runs when guild master clearly approves in attach).
+
+---
+
+## `POST /missions/:id/reject-artifacts`
+
+Guild master rejects deliverables. Mission stays on **working**; `phase: blocked`, `awaiting_guild_master: true`.
+
+**Body** (optional)
+
+```json
+{ "reason": "Acceptance criteria 2 and 3 not met" }
+```
+
+**Response 200** — same shape as approve-artifacts (`notify.channel` may be `delivered: false` in degraded mode).
+
+Mission room tool: `tools/reject-artifacts.sh "<reason>"`
+
+---
+
+## `POST /missions/:id/abort`
+
+Guild master early terminal close. Stops PO; moves **working/** → **aborted/**; frees execution slot.
+
+**Body** (optional)
+
+```json
+{ "reason": "Wrong scope — duplicate of existing work" }
+```
+
+Writes `retrospective/abort-note.md` (orchestrator stub on Web path). Skips approve → release → retro success path.
+
+**Response 200** — same notify shape as approve-artifacts.
+
+Mission room tool: `tools/abort.sh [reason]` (PO may write abort-note first on chat path).
+
+---
+
 ## `POST /missions/:id/archive`
 
-Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`.
+Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`, **or** **aborted** board with `phase: aborted`.
 
-Moves board entry `done/{id}` → `archive/{id}`. Mission room stays at `mission-rooms/{id}/`.
+Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room stays at `mission-rooms/{id}/`.
 
 **Response 200**
 
@@ -744,7 +809,7 @@ Orchestrator-only. PO must not edit `checkpoint.yaml`.
 
 ```yaml
 mission_id: "hello-world-20260627-a3f9c2"
-phase: running          # evaluating | running | blocked | paused | done
+phase: running          # evaluating | running | blocked | paused | awaiting_artifact_review | releasing | retrospective | done | aborted
 round: 1
 awaiting_guild_master: false
 inbox_pending: false

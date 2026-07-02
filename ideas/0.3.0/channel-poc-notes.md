@@ -176,4 +176,4 @@ cd data/mission-rooms/ROOM_ID && claude mcp list
 
 - [x] Channel PoC validated on WSL with `--bg` PO
 - [x] `guild-channel.md` + PoC script + spawn fix landed
-- [ ] Phase 1: lifecycle + `approve-artifacts` API (uses channel notify)
+- [x] Phase 1: lifecycle + `approve-artifacts` API (uses channel notify)

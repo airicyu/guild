@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased — API 0.17.0 (0.3.0 Phase 1)
+
+Mission close-out lifecycle — approve / reject / abort; `mission_complete` only from `retrospective`.
+
+- `POST /missions/:id/approve-artifacts` — guild master sign-off; `releasing` phase; inbox + guild-channel notify
+- `POST /missions/:id/reject-artifacts` — `blocked` on working; inbox + channel
+- `POST /missions/:id/abort` — **aborted/** board; frees slot; `retrospective/abort-note.md`
+- New signals: `artifacts_ready_for_review`, `artifact_release_complete`, `retrospective_complete`
+- **`mission_complete` breaking:** requires `phase: retrospective` (was: any active phase)
+- `POST /missions/:id/archive` extended for **aborted** board
+- Mission room tools: `approve-artifacts`, `reject-artifacts`, `abort`
+- Boot `reconcileAbortedOnWorking()` migration
+- Docs: [docs/phase1-migration.md](./docs/phase1-migration.md)
+
 ## 0.2.0 — 2026-06-29
 
 Mission Discovery (Plan 3) — six-column board, idea intake, discovery pipeline, done column, periodic tick.

@@ -9,7 +9,18 @@ import type {
 
 /** Board column order matches Plan 3 lifecycle (ideas → … → done). See specs/product.md. */
 function isMissionPhase(p: string): p is MissionPhase {
-  return ["evaluating", "running", "blocked", "paused", "done"].includes(p);
+  return [
+    "evaluating",
+    "running",
+    "blocked",
+    "paused",
+    "awaiting_artifact_review",
+    "artifacts_approved",
+    "releasing",
+    "retrospective",
+    "done",
+    "aborted",
+  ].includes(p);
 }
 
 export function buildMissionMap(missions: MissionListItem[]): Map<string, MissionListItem> {
@@ -37,14 +48,16 @@ export function toCardData(
   stage: BoardStage,
   missionMap: Map<string, MissionListItem>,
 ): MissionCardData {
-  if (stage !== "working" && stage !== "done") {
+  if (stage !== "working" && stage !== "done" && stage !== "aborted") {
     return { id, stage };
   }
 
   // Board list may lag missions poll — sensible defaults so working cards still render.
   const live = missionMap.get(id);
   if (!live) {
-    return { id, stage, phase: stage === "working" ? "running" : "done", sessionLive: false };
+    const defaultPhase =
+      stage === "working" ? "running" : stage === "aborted" ? "aborted" : "done";
+    return { id, stage, phase: defaultPhase, sessionLive: false };
   }
 
   return {
@@ -70,6 +83,7 @@ export function boardColumns(board: BoardResponse): BoardColumnDef[] {
     { title: "Queued", stage: "queued", ids: board.queued, kind: "mission" },
     { title: "Working", stage: "working", ids: board.working, kind: "mission" },
     { title: "Done", stage: "done", ids: board.done, kind: "mission" },
+    { title: "Aborted", stage: "aborted", ids: board.aborted ?? [], kind: "mission" },
   ];
 }
 
