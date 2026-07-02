@@ -9,7 +9,7 @@ Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archiv
 | Kind | Location | Current |
 |------|----------|---------|
 | Product | `version.md` + `changelog.md` | **0.2.0** |
-| API runtime | `GET /health` → `version` | **0.17.0** (Phase 1 close-out) |
+| API runtime | `GET /health` → `version` | **0.18.0** (Phase 2 artifact release) |
 
 ## Board pipeline
 
@@ -61,6 +61,7 @@ Legacy intake: drop `mission.md` on **queued** (formerly `ready/`) — execution
 13. **Frozen brief** — `memories/common/mission-brief.md` is read-only for PO; clarify via `memory.md` or escalate.
 14. **Discovery approve** — HTTP 200 from `POST /discoveries/:id/approve` (or `tools/approve.sh`); lead must not narrate approval without API success.
 15. **Guild channel** — orchestrator POST to per-room `guild-channel` on approve/reject/abort; degraded = inbox + checkpoint only. See [docs/guild-channel.md](../docs/guild-channel.md).
+16. **Artifact release** — PO maintains `artifact-release.md`; `artifact_release_complete` requires `status: released`; manual PO execution (no orchestrator deploy recipes in 0.3.0).
 
 ## Guild master (role)
 

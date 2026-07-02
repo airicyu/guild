@@ -87,6 +87,10 @@ async function setupMission(missionId: string, phase: "running" | "awaiting_arti
     filter: (src) => !src.endsWith("README.md"),
   });
   await cp(join(boardDir, "mission.md"), join(roomPath, "memories", "common", "mission-brief.md"));
+  await cp(
+    join(missionRoomTemplatePath(config), "artifact-release.md"),
+    join(roomPath, "artifact-release.md"),
+  );
 
   const checkpoint = buildCheckpoint({
     missionId,
@@ -123,8 +127,8 @@ async function assertHealth(): Promise<void> {
   const res = await fetch(`${BASE}/health`);
   if (!res.ok) fail("GET /health", `status ${res.status}`);
   const json = (await res.json()) as { version?: string };
-  if (json.version !== "0.17.0") {
-    fail("API version", `expected 0.17.0, got ${json.version ?? "?"}`);
+  if (json.version !== "0.18.0") {
+    fail("API version", `expected 0.18.0, got ${json.version ?? "?"}`);
   }
   pass("GET /health", `version ${json.version}`);
 }
@@ -184,6 +188,26 @@ async function testSuccessPath(): Promise<void> {
     pass("mission stays on working after approve");
   }
 
+  // Release gate: artifact_release_complete requires status: released
+  {
+    const { status } = await api("POST", `/missions/${id}/signals`, {
+      type: "artifact_release_complete",
+      by: "project-owner",
+    });
+    if (status !== 400) {
+      fail("release gate", `expected 400 without status released, got ${status}`);
+    }
+    pass("artifact_release_complete rejected without status released");
+  }
+
+  {
+    const releasePath = join(missionRoomPath(config, id), "artifact-release.md");
+    let raw = await readFile(releasePath, "utf8");
+    raw = raw.replace(/^status:\s*\w+/m, "status: released");
+    await writeFile(releasePath, raw, "utf8");
+    pass("artifact-release.md status set to released");
+  }
+
   // Release + retro signals
   for (const [type, expectPhase] of [
     ["artifact_release_complete", "retrospective"],
@@ -198,6 +222,15 @@ async function testSuccessPath(): Promise<void> {
       fail(type, `${status} ${JSON.stringify(json)}`);
     }
     pass(type, `phase ${expectPhase}`);
+  }
+
+  {
+    const eventsPath = join(missionRoomPath(config, id), "memories", "common", "events.jsonl");
+    const events = await readFile(eventsPath, "utf8");
+    if (!events.includes("Artifact release complete") && !events.includes("artifact release")) {
+      fail("release milestone", "events.jsonl missing release milestone");
+    }
+    pass("milestone logged on artifact_release_complete");
   }
 
   // Final dismiss

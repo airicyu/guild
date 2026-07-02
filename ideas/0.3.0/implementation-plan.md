@@ -121,13 +121,13 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 | ID | Task | Notes |
 |----|------|-------|
-| 2.1 | [ ] Scaffold `artifact-release.md` template in mission-room | Mode, target, sources, notes, status |
-| 2.2 | [ ] Update handoff Round 1–2: PO drafts release plan at scope eval | design §6.3 |
-| 2.3 | [ ] Update PO playbook: chat refine at review; Web approve → PO executes | Default hierarchy stay/deploy |
-| 2.4 | [ ] PO playbook: release phase after `artifacts_approved` | Manual execution only |
-| 2.5 | [ ] Extend `room-read.ts` allowlist for `artifact-release.md` | Web UI Files tab later |
-| 2.6 | [ ] Log milestone on release complete | events.jsonl |
-| 2.7 | [ ] **Defer:** `POST /release-artifacts` orchestrator recipes | Future mature targets |
+| 2.1 | [x] Scaffold `artifact-release.md` template in mission-room | Mode, target, sources, notes, status |
+| 2.2 | [x] Update handoff Round 1–2: PO drafts release plan at scope eval | design §6.3 |
+| 2.3 | [x] Update PO playbook: chat refine at review; Web approve → PO executes | Default hierarchy stay/deploy |
+| 2.4 | [x] PO playbook: release phase after `artifacts_approved` | Manual execution only |
+| 2.5 | [x] Extend `room-read.ts` allowlist for `artifact-release.md` | Web UI Files tab later |
+| 2.6 | [x] Log milestone on release complete | events.jsonl |
+| 2.7 | [x] **Defer:** `POST /release-artifacts` orchestrator recipes | Future mature targets |
 
 **Exit criteria:** Mission room contains completed `artifact-release.md` with `status: released` before retro.
 

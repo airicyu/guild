@@ -26,6 +26,7 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Create `squad.md` — YAML frontmatter: `title`, `autonomy`, `members`, `artifact_roots`
 - [ ] Fill body: Why this squad · Architecture intent · Communication rules · Risks
 - [ ] Create `memories/common/memory.md` — scope, acceptance criteria, constraints, decisions
+- [ ] Draft `artifact-release.md` — set `mode`, `target`, `source_paths`; keep `status: draft` (refine before review)
 - [ ] Log **milestone**: squad chartered, roles, artifact paths (`tools/log.cmd project-owner milestone "…"`)
 
 ## Round 3 — Execute
@@ -35,10 +36,25 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Distill decisions into `common/memory.md` when scope changes
 - [ ] Signal `round_complete` when first delivery phase ends (e.g. first artifact ready for QA)
 
-## Round 4 — Ship
+## Round 4 — QA & guild master review
 
 - [ ] Spawn or consult **QA** to verify acceptance criteria
-- [ ] When QA logs `qa_pass` for all criteria → `tools/signal.cmd mission_complete` (or `.sh`)
+- [ ] Finalize `artifact-release.md` — set `status: confirmed` if guild master refined in chat; else keep draft plan
+- [ ] When QA passes all criteria → `tools/signal.sh artifacts_ready_for_review "QA pass — ready for guild master"`
+- [ ] Idle — guild master approves/rejects via Web UI or attach (read `inbox.md` on channel events)
+
+## Round 5 — Artifact release (after approve)
+
+- [ ] On `artifacts_approved` (inbox/channel): read `artifact-release.md` and execute plan manually (copy/deploy per mode)
+- [ ] Set `status: released` in `artifact-release.md` when done
+- [ ] Log **milestone**: release complete (`tools/log.sh project-owner milestone "Artifact release complete"`)
+- [ ] Signal `artifact_release_complete` — moves to retrospective phase
+
+## Round 6 — Retrospective & dismiss
+
+- [ ] Aggregate member feedback → `retrospective/` (see PO playbook; Phase 3 templates)
+- [ ] Signal `retrospective_complete` when aggregation done
+- [ ] Signal `mission_complete` — team dismiss; orchestrator moves mission to **done**
 
 ---
 

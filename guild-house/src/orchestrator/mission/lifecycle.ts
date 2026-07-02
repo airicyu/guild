@@ -18,6 +18,8 @@ import {
   resolveWorkingEntryPath,
 } from "../core/board";
 import { readCheckpoint, writeCheckpoint } from "./checkpoint";
+import { requireArtifactReleaseReleased } from "./artifact-release";
+import { appendEventEntry } from "./events";
 import {
   requireActiveCheckpoint,
   restoreMissionSession,
@@ -212,6 +214,12 @@ export async function handleSignal(
           `artifact_release_complete requires phase releasing (current: ${checkpoint.phase})`,
         );
       }
+      await requireArtifactReleaseReleased(config, missionId);
+      await appendEventEntry(config, missionId, {
+        from: "project-owner",
+        type: "milestone",
+        body: request.summary?.trim() || "Artifact release complete",
+      });
       checkpoint = {
         ...checkpoint,
         phase: "retrospective",

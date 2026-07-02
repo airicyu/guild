@@ -78,7 +78,7 @@ export GUILD_API_KEY=...  # match .env
 bun scripts/e2e-phase1-closeout.ts
 ```
 
-Covers: `artifacts_ready_for_review` → approve → release/retro signals → `mission_complete` → archive; reject → blocked; abort → aborted → archive; `mission_complete` gate from `running`. No live PO — channel notify runs in degraded mode (`delivered: false`).
+Covers: `artifacts_ready_for_review` → approve → release/retro signals → `mission_complete` → archive; reject → blocked; abort → aborted → archive; `mission_complete` gate from `running`; `artifact-release.md` `status: released` gate. No live PO — channel notify runs in degraded mode (`delivered: false`).
 
 ## Checklist
 

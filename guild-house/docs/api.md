@@ -1,7 +1,7 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.17.0` (see `GET /health` → `version`)
+**Version:** `0.18.0` (see `GET /health` → `version`)
 
 > **Plan 3 (v0.11.0+):** Six board stages, `orchestratorTick()` on `POST /bell` and optional periodic tick. Legacy `ready/` / `active/` folder names are still read by the API if present on disk.
 
@@ -316,7 +316,7 @@ Active missions also include `sessionLive`, `jobState`, `restoreRequired`.
 
 Read-only file under the mission room. Path is URL-encoded; slashes separate segments (e.g. `memories/common/mission-brief.md`).
 
-**Allowlist:** `squad.md`, `inbox.md`, `outbox.jsonl`, `memories/**`, `mission-reports/**`. Path traversal (`..`) rejected.
+**Allowlist:** `squad.md`, `inbox.md`, `outbox.jsonl`, `artifact-release.md`, `memories/**`, `mission-reports/**`. Path traversal (`..`) rejected.
 
 **Response 200**
 
@@ -478,7 +478,7 @@ PO updates lifecycle via orchestrator (**only** orchestrator writes `checkpoint.
 | `round_complete` | `round++`; `evaluating`/`blocked` → `running`; clear `awaiting_guild_master` |
 | `blocked` | `phase: blocked`, `awaiting_guild_master: true` |
 | `artifacts_ready_for_review` | `phase: awaiting_artifact_review`, `awaiting_guild_master: true` (from `running`/`evaluating`/`blocked`) |
-| `artifact_release_complete` | `releasing` → `retrospective` |
+| `artifact_release_complete` | `releasing` → `retrospective`; requires `artifact-release.md` `status: released`; logs milestone |
 | `retrospective_complete` | records signal; phase stays `retrospective` until dismiss |
 | `request_session_restart` | stop + restore ladder |
 | `mission_complete` | **requires `retrospective`**; stop PO; `phase: done`; move **working/** → **done/** (frees slot; no auto-archive) |

@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — API 0.18.0 (0.3.0 Phase 2)
+
+Artifact release plan file, PO playbook close-out, release gate on signal.
+
+- `artifact-release.md` scaffold in mission-room template (`mode`, `target`, `source_paths`, `status`)
+- Handoff Round 2: draft release plan; Rounds 4–6: QA → release → retro → dismiss
+- PO playbook: 0.3.0 close-out signals, release execution, approve tool usage
+- `GET /missions/:id/room/artifact-release.md` allowlisted
+- `artifact_release_complete` requires `status: released`; orchestrator logs milestone to `events.jsonl`
+- E2E extended: release gate + milestone check
+
 ## Unreleased — API 0.17.0 (0.3.0 Phase 1)
 
 Mission close-out lifecycle — approve / reject / abort; `mission_complete` only from `retrospective`.
