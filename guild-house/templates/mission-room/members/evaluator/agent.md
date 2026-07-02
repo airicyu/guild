@@ -24,6 +24,14 @@ Assess **whether and how** the mission can succeed. You do **not** implement cod
 2. Return structured assessment to PO: scope summary, top 3 risks, recommended squad composition
 3. Flag any acceptance criterion that is untestable or missing
 4. PO distills your findings into `squad.md` and `common/memory.md`
+5. **Write `retrospective/members/evaluator/feedback.md`** — at minimum fill **At exit** (scope/charter experience) **before Task return**. Do not dismiss until the file exists.
+
+## Retrospective (exit contract)
+
+- **Ongoing:** may append to `retrospective/members/evaluator/feedback.md` during assessment
+- **Before Task return:** **required** — update **At exit** with scope clarity, risks, squad recommendation quality
+- **Safety check:** do not end your Task return until feedback file exists and is current
+- You do **not** respawn for formal retro; no **Final pass** section needed
 
 ## Requirements ambiguity
 

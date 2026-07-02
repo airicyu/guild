@@ -23,6 +23,13 @@ You verify deliverables against **acceptance criteria** from the mission brief a
 4. If all pass → tell PO via Task: "All acceptance criteria pass — ready for mission_complete"
 5. If blocked on missing spec → ask PO; PO updates memory or escalates
 
+## Retrospective (exit contract)
+
+1. **Ongoing:** append to `retrospective/members/qa/feedback.md` anytime
+2. **Before leave:** must write or update **At exit** — test plan quality, defects, verification loop
+3. **Safety check:** do not dismiss until feedback file exists and is current
+4. **Final pass:** survivors only — optional if still alive after release
+
 ## Event log format
 
 ```bash

@@ -20,6 +20,7 @@ import {
 import { readCheckpoint, writeCheckpoint } from "./checkpoint";
 import { requireArtifactReleaseReleased } from "./artifact-release";
 import { appendEventEntry } from "./events";
+import { requireWorkflowReport, requireRetrospectiveCompleteSignal } from "./retrospective";
 import {
   requireActiveCheckpoint,
   restoreMissionSession,
@@ -172,7 +173,28 @@ export async function handleSignal(
     throw new Error(`Invalid signal type: ${request.type}`);
   }
 
-  let checkpoint = recordSignal(await requireActiveCheckpoint(config, missionId), request);
+  const priorCheckpoint = await requireActiveCheckpoint(config, missionId);
+
+  if (request.type === "retrospective_complete") {
+    if (priorCheckpoint.phase !== "retrospective") {
+      throw new Error(
+        `retrospective_complete requires phase retrospective (current: ${priorCheckpoint.phase})`,
+      );
+    }
+    await requireWorkflowReport(config, missionId);
+  }
+
+  if (request.type === "mission_complete") {
+    if (priorCheckpoint.phase !== "retrospective") {
+      throw new Error(
+        `mission_complete requires phase retrospective (current: ${priorCheckpoint.phase})`,
+      );
+    }
+    requireRetrospectiveCompleteSignal(priorCheckpoint.last_signal?.type);
+    await requireWorkflowReport(config, missionId);
+  }
+
+  let checkpoint = recordSignal(priorCheckpoint, request);
 
   switch (request.type) {
     case "round_complete":
@@ -228,12 +250,11 @@ export async function handleSignal(
       break;
 
     case "retrospective_complete":
-      if (checkpoint.phase !== "retrospective") {
-        throw new Error(
-          `retrospective_complete requires phase retrospective (current: ${checkpoint.phase})`,
-        );
-      }
-      // Phase stays retrospective until mission_complete.
+      await appendEventEntry(config, missionId, {
+        from: "project-owner",
+        type: "milestone",
+        body: request.summary?.trim() || "Retrospective aggregation complete",
+      });
       break;
 
     case "request_session_restart":
@@ -242,11 +263,6 @@ export async function handleSignal(
       break;
 
     case "mission_complete":
-      if (checkpoint.phase !== "retrospective") {
-        throw new Error(
-          `mission_complete requires phase retrospective (current: ${checkpoint.phase})`,
-        );
-      }
       await stopSessionSafe(config, checkpoint.claude_session.id);
       checkpoint = {
         ...checkpoint,

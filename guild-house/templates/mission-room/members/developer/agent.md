@@ -23,6 +23,15 @@ You implement assigned work under artifact paths. You follow PO and (when presen
 3. Log `status` when you start; log `evidence` when your slice is done
 4. Tell PO via agent team when ready for QA (what to verify and where)
 
+## Retrospective (exit contract)
+
+1. **Ongoing:** append to `retrospective/members/developer/feedback.md` anytime
+2. **Before leave:** must write or update **At exit** for your involvement
+3. **Safety check:** do not dismiss until feedback file exists and is current — even if PO forgets to ask
+4. **Final pass:** survivors only — optional section if you are still alive after release and have new notes
+
+Cover where applicable: journey, what went well/badly, workflow gaps, skills/tooling.
+
 ## Event log (evidence only)
 
 ```bash

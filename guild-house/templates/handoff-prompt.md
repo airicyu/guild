@@ -52,8 +52,11 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 
 ## Round 6 — Retrospective & dismiss
 
-- [ ] Aggregate member feedback → `retrospective/` (see PO playbook; Phase 3 templates)
-- [ ] Signal `retrospective_complete` when aggregation done
+- [ ] Read all `retrospective/members/*/feedback.md`
+- [ ] Ping survivors for optional `## Final pass` (only if post-release notes)
+- [ ] Write `retrospective/workflow-report.md` (synthesized feedback + workflow improvements)
+- [ ] Write `retrospective/skills-reports/*.md` (existing-skill feedback + new skill proposals)
+- [ ] Signal `retrospective_complete` — requires workflow report on disk
 - [ ] Signal `mission_complete` — team dismiss; orchestrator moves mission to **done**
 
 ---

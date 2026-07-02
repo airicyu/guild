@@ -137,14 +137,14 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 | ID | Task | Notes |
 |----|------|-------|
-| 3.1 | [ ] Scaffold `retrospective/` tree in mission-room template | `members/`, `skills-reports/` |
-| 3.2 | [ ] Add feedback template or section headings in member playbooks | During mission, at exit, optional Final pass |
-| 3.3 | [ ] Evaluator playbook: write `retrospective/members/evaluator/feedback.md` before Task return | Scope-phase retro |
-| 3.4 | [ ] Developer / QA / senior-dev playbooks: exit contract + safety check | design §7.4 |
-| 3.5 | [ ] PO playbook: aggregation phase — read feedback, ping survivors, `workflow-report.md` | No live meeting |
-| 3.6 | [ ] PO playbook: distill `skills-reports/*.md` from skill-related notes | Two kinds per brainstorm |
-| 3.7 | [ ] Extend `room-read.ts` allowlist for `retrospective/**` | |
-| 3.8 | [ ] Signal/gate: retro complete before final `mission_complete` | Playbook + optional signal |
+| 3.1 | [x] Scaffold `retrospective/` tree in mission-room template | `members/`, `skills-reports/` |
+| 3.2 | [x] Add feedback template or section headings in member playbooks | During mission, at exit, optional Final pass |
+| 3.3 | [x] Evaluator playbook: write `retrospective/members/evaluator/feedback.md` before Task return | Scope-phase retro |
+| 3.4 | [x] Developer / QA / senior-dev playbooks: exit contract + safety check | design §7.4 |
+| 3.5 | [x] PO playbook: aggregation phase — read feedback, ping survivors, `workflow-report.md` | No live meeting |
+| 3.6 | [x] PO playbook: distill `skills-reports/*.md` from skill-related notes | Two kinds per brainstorm |
+| 3.7 | [x] Extend `room-read.ts` allowlist for `retrospective/**` | |
+| 3.8 | [x] Signal/gate: retro complete before final `mission_complete` | Playbook + optional signal |
 
 **Exit criteria:** Done mission has per-member feedback files + `workflow-report.md` on disk.
 

@@ -58,8 +58,25 @@ Clarify requirements via `memories/common/memory.md` or `tools/escalate.sh` — 
 
 **Round 6 — retrospective & dismiss**
 
-19. Aggregate `retrospective/` feedback (see Phase 3 playbooks when present)
-20. Signal `retrospective_complete`, then `mission_complete` — final dismiss only
+19. Read all `retrospective/members/*/feedback.md` (evaluator wrote at Round 1 exit; implementers at their exit)
+20. **Ping survivors** (usually PO; maybe dev/qa still alive) — optional bounded Task: add `## Final pass` only if post-release notes exist
+21. Write `retrospective/workflow-report.md` — synthesize feedback; self-contained background + themes; pointer to `skills-reports/`
+22. Distill `retrospective/skills-reports/{short-name}.md` — two kinds: (1) feedback on **existing** skills used; (2) **proposals** for new reusable skills
+23. Update `retrospective/members/project-owner/feedback.md` **Final pass** if release/approve notes apply
+24. Signal `retrospective_complete` — requires non-empty `workflow-report.md`
+25. Signal `mission_complete` — final dismiss only after step 24
+
+**Not** a live squad retro meeting. Gone members' files are complete from their exit write.
+
+## Retrospective aggregation
+
+| Step | Action |
+|------|--------|
+| Collect | Members wrote `retrospective/members/{role}/feedback.md` at exit (evaluator at Round 1) |
+| Synthesize | PO reads all feedback → `workflow-report.md` |
+| Skills | PO writes `skills-reports/*.md` for skill feedback + proposals (guild master promotes to bank manually) |
+| Final pass | Survivors only — optional `## Final pass` in their feedback files |
+| Close | `retrospective_complete` → `mission_complete` |
 
 ## Artifact release (`artifact-release.md`)
 
@@ -130,8 +147,8 @@ For non-escalation lifecycle events, use signal tools (escalate already sends `b
 | `round_complete` | Handoff phase done, work round finishes, or guild master unblocked you |
 | `artifacts_ready_for_review` | Internal QA pass — guild master review gate |
 | `artifact_release_complete` | `artifact-release.md` status is `released` |
-| `retrospective_complete` | Retrospective aggregation done |
-| `mission_complete` | Final dismiss — only from `retrospective` phase |
+| `retrospective_complete` | `workflow-report.md` written; retrospective aggregation done |
+| `mission_complete` | Final dismiss — requires `retrospective_complete` signal first |
 | `blocked` | Use **escalate** instead (outbox + blocked together) |
 | `request_session_restart` | Session unhealthy |
 

@@ -111,6 +111,7 @@ export function isAllowedRoomPath(relPath: string): boolean {
   ) {
     return true;
   }
+  if (relPath.startsWith("retrospective/")) return true;
   if (relPath.startsWith("memories/")) return true;
   if (relPath.startsWith("mission-reports/")) return true;
   return false;

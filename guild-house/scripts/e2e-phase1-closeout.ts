@@ -127,8 +127,8 @@ async function assertHealth(): Promise<void> {
   const res = await fetch(`${BASE}/health`);
   if (!res.ok) fail("GET /health", `status ${res.status}`);
   const json = (await res.json()) as { version?: string };
-  if (json.version !== "0.18.0") {
-    fail("API version", `expected 0.18.0, got ${json.version ?? "?"}`);
+  if (json.version !== "0.19.0") {
+    fail("API version", `expected 0.19.0, got ${json.version ?? "?"}`);
   }
   pass("GET /health", `version ${json.version}`);
 }
@@ -209,28 +209,72 @@ async function testSuccessPath(): Promise<void> {
   }
 
   // Release + retro signals
-  for (const [type, expectPhase] of [
-    ["artifact_release_complete", "retrospective"],
-    ["retrospective_complete", "retrospective"],
-  ] as const) {
+  {
     const { status, json } = await api("POST", `/missions/${id}/signals`, {
-      type,
+      type: "artifact_release_complete",
       by: "project-owner",
     });
     const cp = json.checkpoint as { phase?: string } | undefined;
-    if (status !== 200 || cp?.phase !== expectPhase) {
-      fail(type, `${status} ${JSON.stringify(json)}`);
+    if (status !== 200 || cp?.phase !== "retrospective") {
+      fail("artifact_release_complete", `${status} ${JSON.stringify(json)}`);
     }
-    pass(type, `phase ${expectPhase}`);
-  }
+    pass("artifact_release_complete", "phase retrospective");
 
-  {
     const eventsPath = join(missionRoomPath(config, id), "memories", "common", "events.jsonl");
     const events = await readFile(eventsPath, "utf8");
     if (!events.includes("Artifact release complete") && !events.includes("artifact release")) {
       fail("release milestone", "events.jsonl missing release milestone");
     }
     pass("milestone logged on artifact_release_complete");
+  }
+
+  {
+    const { status } = await api("POST", `/missions/${id}/signals`, {
+      type: "mission_complete",
+      by: "project-owner",
+    });
+    if (status !== 400) {
+      fail("mission_complete retro gate", `expected 400 without retrospective_complete, got ${status}`);
+    }
+    pass("mission_complete rejected without retrospective_complete");
+  }
+
+  {
+    const reportPath = join(missionRoomPath(config, id), "retrospective", "workflow-report.md");
+    await writeFile(reportPath, "", "utf8");
+    const { status } = await api("POST", `/missions/${id}/signals`, {
+      type: "retrospective_complete",
+      by: "project-owner",
+    });
+    if (status !== 400) {
+      fail("retro gate", `expected 400 without workflow report, got ${status}`);
+    }
+    await cp(
+      join(missionRoomTemplatePath(config), "retrospective", "workflow-report.md"),
+      reportPath,
+    );
+    pass("retrospective_complete rejected without workflow-report.md");
+  }
+
+  {
+    const { status, json } = await api("POST", `/missions/${id}/signals`, {
+      type: "retrospective_complete",
+      by: "project-owner",
+    });
+    const cp = json.checkpoint as { phase?: string } | undefined;
+    if (status !== 200 || cp?.phase !== "retrospective") {
+      fail("retrospective_complete", `${status} ${JSON.stringify(json)}`);
+    }
+    pass("retrospective_complete", "phase retrospective");
+  }
+
+  {
+    const eventsPath = join(missionRoomPath(config, id), "memories", "common", "events.jsonl");
+    const events = await readFile(eventsPath, "utf8");
+    if (!events.includes("Retrospective aggregation complete") && !events.includes("retrospective")) {
+      fail("retro milestone", "events.jsonl missing retrospective milestone");
+    }
+    pass("milestone logged on retrospective_complete");
   }
 
   // Final dismiss

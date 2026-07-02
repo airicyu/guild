@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased — API 0.19.0 (0.3.0 Phase 3)
+
+Mission retrospective — feedback tree, PO aggregation, signal gates.
+
+- `retrospective/` scaffold: `members/{role}/feedback.md`, `workflow-report.md`, `skills-reports/`
+- Member playbooks: exit contract + safety check; evaluator writes feedback before Task return
+- PO playbook: aggregation steps, `workflow-report.md`, `skills-reports/` distillation
+- `GET /missions/:id/room/retrospective/**` allowlisted
+- `retrospective_complete` requires `workflow-report.md`; `mission_complete` requires prior `retrospective_complete`
+- E2E extended: retro + dismiss gates
+
 ## Unreleased — API 0.18.0 (0.3.0 Phase 2)
 
 Artifact release plan file, PO playbook close-out, release gate on signal.
