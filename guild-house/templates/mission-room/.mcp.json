@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "guild-channel": {
+      "command": "bash",
+      "args": ["../../../guild-channel/launch.sh"]
+    }
+  }
+}

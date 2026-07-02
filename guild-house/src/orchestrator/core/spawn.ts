@@ -31,6 +31,11 @@ function spawnCommand(config: Config, sessionName: string, prompt: string): stri
     config.claudePermissionMode,
     prompt,
   ];
+  // Prompt must come before --dangerously-load-development-channels; otherwise
+  // Claude parses the prompt text as another channel server entry and exits 1.
+  if (config.claudeDevChannels) {
+    args.push("--dangerously-load-development-channels", "server:guild-channel");
+  }
   if (process.platform === "win32") {
     return ["cmd", "/c", ...args];
   }
