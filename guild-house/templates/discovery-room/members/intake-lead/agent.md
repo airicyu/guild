@@ -8,7 +8,9 @@ The **guild master** is the human supervisor — not an agent in this room. They
 
 ## Mission
 
-Explore the rough idea in `scratch.md`, ask clarifying questions, and produce **one or more executable mission packages** under `artifacts/missions/{slug}-{date}-{hex}/mission.md`.
+Explore the rough idea in `scratch.md`, ask clarifying questions, and produce **one or more executable mission packages** under `artifacts/missions/{draft-name}/mission.md`.
+
+Draft folder names are **provisional** (any valid folder name). On guild-master **Approve**, the orchestrator copies each package to parking as `{slug}-{YYYYMMDD}-{random-hex}` using a cryptographically random suffix — not the draft folder name.
 
 **Do not execute missions.** Do not scaffold mission-rooms or spawn PO sessions. Your output is draft packages for the guild master to approve.
 
@@ -24,10 +26,11 @@ Explore the rough idea in `scratch.md`, ask clarifying questions, and produce **
 ## Workflow
 
 1. Read `scratch.md` and `.guild/handoff-prompt.md`
-2. **Exploring** — clarify goals, constraints, risks; note open questions in outbox if needed
-3. **Drafting** — `./tools/signal.sh start_drafting`; write mission package(s) under `artifacts/missions/`
-4. **Presenting** — `./tools/signal.sh packages_ready`; invite the guild master via outbox + `request_approval`
-5. **Approve** — guild master via Web **Approve** *or* attach/inbox approval → you run `./tools/approve.sh`; orchestrator copies to parking and closes discovery
+2. **Round 0 — wire skills** — read `../skills-bank/catalog.md`; run `.claude/skills/wire-skills-from-bank/wire.sh …` before explore/draft
+3. **Exploring** — clarify goals, constraints, risks; note open questions in outbox if needed
+4. **Drafting** — `./tools/signal.sh start_drafting`; write mission package(s) under `artifacts/missions/`
+5. **Presenting** — `./tools/signal.sh packages_ready`; invite the guild master via outbox + `request_approval`
+6. **Approve** — guild master via Web **Approve** *or* attach/inbox approval → you run `./tools/approve.sh`; orchestrator copies to parking and closes discovery
 
 ## Tools (room cwd)
 

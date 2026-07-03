@@ -12,6 +12,7 @@ import { corsPreflight, withCors } from "./middleware/cors";
 import { recoverActiveMissions } from "./orchestrator/mission/lifecycle";
 import { startPeriodicTick } from "./orchestrator/tick-scheduler";
 import { ensureDataLayout } from "./paths";
+import { ensureSkillsBankLayout } from "./orchestrator/skills-bank/layout";
 import { routeRequest } from "./routes/api";
 import {
   extractAttachRoute,
@@ -24,6 +25,7 @@ import {
 } from "./websocket/attach-pty";
 
 await ensureDataLayout(config);
+await ensureSkillsBankLayout(config);
 
 const bootRecovery = await recoverActiveMissions(config);
 if (bootRecovery.length > 0) {
@@ -49,7 +51,7 @@ async function handleRequest(req: Request): Promise<Response> {
       json({
         ok: true,
         service: "guild-house",
-        version: "0.16.0",
+        version: "0.22.0",
         guildHome: config.guildHome,
         guildMasterName: config.guildMasterName,
         tickIntervalMinutes: config.tickIntervalMinutes,

@@ -21,6 +21,9 @@ import {
   recoverActiveMissions,
   resumeMission,
 } from "../orchestrator/mission/lifecycle";
+import { approveMissionArtifacts } from "../orchestrator/mission/approve-artifacts";
+import { rejectMissionArtifacts } from "../orchestrator/mission/reject-artifacts";
+import { abortMission } from "../orchestrator/mission/abort-mission";
 import {
   getMission,
   getMissionSession,
@@ -29,6 +32,7 @@ import {
 } from "../orchestrator/mission/pickup";
 import { orchestratorTick } from "../orchestrator/tick";
 import { promoteParkingToQueued } from "../orchestrator/mission/promote";
+import { promoteIdeasBacklogToIdeas } from "../orchestrator/discovery/promote-backlog";
 import { createIdea, getIdea, listIdeas } from "../orchestrator/discovery/ideas";
 import { approveDiscovery } from "../orchestrator/discovery/approve";
 import { getIdeaDrafts } from "../orchestrator/discovery/drafts";
@@ -55,6 +59,7 @@ import {
   restoreMissionSession,
   syncActiveMission,
 } from "../orchestrator/mission/session-lifecycle";
+import { getSkillDetail, getSkillsBankSummary } from "../orchestrator/skills-bank/read";
 import type { EscalateRequest, EventLogRequest, SignalRequest } from "../types/mission";
 import type { CreateIdeaRequest, DiscoveryEventLogRequest, DiscoverySignalRequest } from "../types/discovery";
 
@@ -75,8 +80,10 @@ function conflict(message: string): Response {
 }
 
 async function readJsonBody<T>(req: Request): Promise<T> {
+  const text = await req.text();
+  if (!text.trim()) return {} as T;
   try {
-    return (await req.json()) as T;
+    return JSON.parse(text) as T;
   } catch {
     throw new Error("Invalid JSON body");
   }
@@ -89,6 +96,38 @@ export async function routeRequest(config: Config, req: Request): Promise<Respon
 
   if (req.method === "GET" && pathname === "/board") {
     return json(await listBoard(config));
+  }
+
+  if (req.method === "GET" && pathname === "/skills-bank") {
+    return json(await getSkillsBankSummary(config));
+  }
+
+  const skillMatch = pathname.match(/^\/skills-bank\/([^/]+)$/);
+  if (req.method === "GET" && skillMatch) {
+    try {
+      const name = decodeURIComponent(skillMatch[1]);
+      const skill = await getSkillDetail(config, name);
+      if (!skill) return notFound("Skill not found");
+      return json(skill);
+    } catch (err) {
+      return badRequest(err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  const ideasBacklogPromoteMatch = pathname.match(/^\/board\/ideas-backlog\/([^/]+)\/promote$/);
+  if (req.method === "POST" && ideasBacklogPromoteMatch) {
+    try {
+      const ideaId = decodeURIComponent(ideasBacklogPromoteMatch[1]);
+      const result = await promoteIdeasBacklogToIdeas(config, ideaId);
+      return json({ ok: true, ...result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("not found") || message.includes("missing")) {
+        return notFound(message);
+      }
+      if (message.includes("already exists")) return conflict(message);
+      return badRequest(message);
+    }
   }
 
   const parkingPromoteMatch = pathname.match(/^\/board\/parking\/([^/]+)\/promote$/);
@@ -482,13 +521,66 @@ export async function routeRequest(config: Config, req: Request): Promise<Respon
       const message = err instanceof Error ? err.message : String(err);
       if (
         message.includes("not on the done board") ||
+        message.includes("not on the done or aborted board") ||
         message.includes("not on the active board") ||
         message.includes("working board") ||
         message.includes("Missing checkpoint")
       ) {
         return notFound(message);
       }
-      if (message.includes("must be phase done")) return conflict(message);
+      if (message.includes("must be phase done") || message.includes("must be phase aborted")) {
+        return conflict(message);
+      }
+      return badRequest(message);
+    }
+  }
+
+  const approveArtifactsMatch = pathname.match(/^\/missions\/([^/]+)\/approve-artifacts$/);
+  if (req.method === "POST" && approveArtifactsMatch) {
+    try {
+      const missionId = decodeURIComponent(approveArtifactsMatch[1]);
+      const result = await approveMissionArtifacts(config, missionId);
+      return json({ ok: true, ...result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("not on the working board") || message.includes("Missing checkpoint")) {
+        return notFound(message);
+      }
+      if (message.includes("must be awaiting_artifact_review")) return conflict(message);
+      return badRequest(message);
+    }
+  }
+
+  const rejectArtifactsMatch = pathname.match(/^\/missions\/([^/]+)\/reject-artifacts$/);
+  if (req.method === "POST" && rejectArtifactsMatch) {
+    try {
+      const missionId = decodeURIComponent(rejectArtifactsMatch[1]);
+      const body = await readJsonBody<{ reason?: string; notes?: string }>(req);
+      const result = await rejectMissionArtifacts(config, missionId, body);
+      return json({ ok: true, ...result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("not on the working board") || message.includes("Missing checkpoint")) {
+        return notFound(message);
+      }
+      if (message.includes("must be awaiting_artifact_review")) return conflict(message);
+      return badRequest(message);
+    }
+  }
+
+  const abortMatch = pathname.match(/^\/missions\/([^/]+)\/abort$/);
+  if (req.method === "POST" && abortMatch) {
+    try {
+      const missionId = decodeURIComponent(abortMatch[1]);
+      const body = await readJsonBody<{ reason?: string }>(req);
+      const result = await abortMission(config, missionId, body);
+      return json({ ok: true, ...result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("not on the working board") || message.includes("Missing checkpoint")) {
+        return notFound(message);
+      }
+      if (message.includes("already terminal")) return conflict(message);
       return badRequest(message);
     }
   }

@@ -24,6 +24,11 @@
   --phase-blocked: #e11d48;
   --phase-paused: #64748b;
   --phase-done: #d97706;
+  --phase-awaiting-review: #e11d48;
+  --phase-artifacts-approved: #0d9488;
+  --phase-releasing: #d97706;
+  --phase-retrospective: #7c5ce0;
+  --phase-aborted: #64748b;
 
   --shadow-glow: 0 2px 12px rgba(184, 131, 46, 0.22);
 
@@ -123,6 +128,11 @@
 .phase-pill--blocked { color: var(--phase-blocked); }
 .phase-pill--paused { color: var(--phase-paused); }
 .phase-pill--done { color: var(--phase-done); }
+.phase-pill--awaiting_artifact_review { color: var(--phase-awaiting-review); }
+.phase-pill--artifacts_approved { color: var(--phase-artifacts-approved); }
+.phase-pill--releasing { color: var(--phase-releasing); }
+.phase-pill--retrospective { color: var(--phase-retrospective); }
+.phase-pill--aborted { color: var(--phase-aborted); }
 
 .phase-pill--discovery-exploring { color: var(--discovery-exploring); }
 .phase-pill--discovery-drafting { color: var(--discovery-drafting); }

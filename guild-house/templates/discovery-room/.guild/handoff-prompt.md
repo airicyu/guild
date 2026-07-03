@@ -11,6 +11,7 @@ Execute this checklist **in order**. **Do not** spawn mission PO sessions or wri
 - [ ] Read raw idea: `scratch.md`
 - [ ] Read your playbook: `members/intake-lead/agent.md`
 - [ ] Read mission package schema: `.guild/mission-schema.md` (format for each `artifacts/missions/*/mission.md`)
+- [ ] Read `../skills-bank/catalog.md`; wire needed skills via `.claude/skills/wire-skills-from-bank/wire.sh …` **before explore**
 
 ## Round 1 — Explore
 
@@ -22,7 +23,7 @@ Execute this checklist **in order**. **Do not** spawn mission PO sessions or wri
 
 - [ ] Signal phase: `./tools/signal.sh start_drafting` (or `signal.cmd` on Windows)
 - [ ] Decide: one mission or several (split when scope, ownership, or delivery cadence differ)
-- [ ] For each package, create `artifacts/missions/{slug}-{date}-{hex}/mission.md` with full frontmatter + acceptance criteria
+- [ ] For each package, create `artifacts/missions/{draft-folder}/mission.md` with full frontmatter + acceptance criteria (orchestrator mints canonical `{slug}-{date}-{hex}` id on Approve)
 - [ ] Ensure each folder is self-contained (guild master promotes folders independently)
 
 ## Round 3 — Present

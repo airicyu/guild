@@ -1,7 +1,7 @@
 /**
  * Safe read-only access to mission room files for API (brief, summary, room file GET).
  *
- * Path allowlist blocks traversal; only squad, inbox, outbox, memories/**, mission-reports/**.
+ * Path allowlist blocks traversal; squad, inbox, outbox, artifact-release, memories/**, mission-reports/**.
  * Brief fallback: room copy then board mission.md across stages.
  */
 import { readFile } from "node:fs/promises";
@@ -101,9 +101,17 @@ export function normalizeRoomRelPath(pathParam: string): string | null {
   return segments.join("/");
 }
 
-/** Allowlist check for squad, inbox, outbox, memories/**, mission-reports/**. */
+/** Allowlist check for squad, inbox, outbox, artifact-release, memories/**, mission-reports/**. */
 export function isAllowedRoomPath(relPath: string): boolean {
-  if (relPath === "squad.md" || relPath === "inbox.md" || relPath === "outbox.jsonl") return true;
+  if (
+    relPath === "squad.md" ||
+    relPath === "inbox.md" ||
+    relPath === "outbox.jsonl" ||
+    relPath === "artifact-release.md"
+  ) {
+    return true;
+  }
+  if (relPath.startsWith("retrospective/")) return true;
   if (relPath.startsWith("memories/")) return true;
   if (relPath.startsWith("mission-reports/")) return true;
   return false;
@@ -184,7 +192,9 @@ export async function getMissionSummary(config: Config, missionId: string) {
     sessionLive: "sessionLive" in mission ? mission.sessionLive : undefined,
     jobState: "jobState" in mission ? mission.jobState : undefined,
     restoreRequired: "restoreRequired" in mission ? mission.restoreRequired : undefined,
-    archiveReady: mission.board === "done" && checkpoint?.phase === "done",
+    archiveReady:
+      (mission.board === "done" && checkpoint?.phase === "done") ||
+      (mission.board === "aborted" && checkpoint?.phase === "aborted"),
     awaitingGuildMaster: checkpoint?.awaiting_guild_master ?? false,
   };
 }

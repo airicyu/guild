@@ -14,6 +14,7 @@ export const queryKeys = {
   missionSession: (id: string) => ["mission-session", id] as const,
   missionEvents: (id: string) => ["mission-events", id] as const,
   missionOutbox: (id: string) => ["mission-outbox", id] as const,
+  missionRoomFile: (id: string, path: string) => ["mission-room-file", id, path] as const,
   idea: (id: string) => ["idea", id] as const,
   ideaDrafts: (id: string) => ["idea-drafts", id] as const,
   discoveryOutbox: (id: string) => ["discovery-outbox", id] as const,

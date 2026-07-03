@@ -63,6 +63,8 @@ export const config = {
   /** 0 = disabled; periodic orchestratorTick (same as POST /bell) */
   tickIntervalMinutes: envInt("GUILD_TICK_INTERVAL_MINUTES", 0),
   uiOrigins: parseUiOrigins(process.env.GUILD_UI_ORIGIN),
+  /** Dev only: pass --dangerously-load-development-channels on PO spawn (guild-channel PoC) */
+  claudeDevChannels: process.env.CLAUDE_DEV_CHANNELS === "1",
 } as const;
 
 export type Config = typeof config;

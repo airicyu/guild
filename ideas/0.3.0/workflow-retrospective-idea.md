@@ -1,3 +1,10 @@
+# Workflow retrospective — original brainstorm
+
+> **Superseded for implementation by** [design.md](./design.md) and [implementation-plan.md](./implementation-plan.md).  
+> Kept as guild-master source notes; alignment decisions are in the design doc.
+
+---
+
 # Feature 1: artifact release
 
 ## description
@@ -147,4 +154,4 @@ at the beginning of the discovery / mission session, form a team formation comit
 - which kind of team members should be there
 - what skills from skill bank should be wired on which team members
 - copy the required alls skills from skills bank to the mission's ".claude" folder.
-then dismiss the team formation comittee team, then main agent according to the team formation material to form the working team to work for the discovery/mission. 
+then dismiss the team formation comittee team, then main agent according to the team formation material to form the working team to work for the discovery/mission.

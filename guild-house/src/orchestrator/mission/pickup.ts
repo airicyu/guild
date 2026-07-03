@@ -212,7 +212,24 @@ export async function listMissions(config: Config) {
     }),
   );
 
-  const missions = [...working, ...done];
+  const aborted = await Promise.all(
+    board.aborted.map(async (id) => {
+      const checkpoint = await readCheckpoint(config, id);
+      return {
+        id,
+        board: "aborted" as const,
+        phase: checkpoint?.phase ?? "aborted",
+        sessionId: checkpoint?.claude_session.id ?? null,
+        sessionLive: false,
+        jobState: checkpoint?.claude_session.job_state ?? "done",
+        restoreRequired: false,
+        awaitingGuildMaster: false,
+        archiveReady: checkpoint?.phase === "aborted",
+      };
+    }),
+  );
+
+  const missions = [...working, ...done, ...aborted];
   return { missions, count: missions.length };
 }
 
@@ -223,6 +240,7 @@ const BOARD_LOOKUP_STAGES = [
   "queued",
   "working",
   "done",
+  "aborted",
   "archive",
 ] as const;
 
@@ -249,7 +267,7 @@ export async function getMission(config: Config, missionId: string) {
     };
   }
 
-  if (stage === "done") {
+  if (stage === "done" || stage === "aborted") {
     const checkpoint = await readCheckpoint(config, missionId);
     return {
       id: missionId,

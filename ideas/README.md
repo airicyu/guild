@@ -4,6 +4,7 @@ Early design notes and implementation plans from prototype development. **Not ma
 
 | Path | Contents |
 |------|----------|
+| [0.3.0/](./0.3.0/) | **Active** — mission close-out design + implementation plan (0.3.0) |
 | [archive/](./archive/) | Historical plans (`idea-v2.md`, mission-discovery-plan, implementation plans) |
 | [backlog.md](./backlog.md) | Deferred / near-term product backlog |
 

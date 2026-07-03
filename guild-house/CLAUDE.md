@@ -22,7 +22,7 @@ bun run dev
 ```
 
 - API: `http://127.0.0.1:3847` · **Web UI:** `bun run dev:ui` → `http://127.0.0.1:3848`
-- Health: `GET /health` → API **0.16.0** · product **0.2.0**
+- Health: `GET /health` → API **0.22.0** · product **0.3.0**
 
 ## Layout
 
@@ -54,4 +54,4 @@ See [specs/product.md](specs/product.md) for locked semantics. Summary:
 
 ## Current state
 
-- **Product 0.2.0** — Mission Discovery complete (API 0.16.0)
+- **Product 0.3.0** — close-out, channel, backlog, skills bank (API **0.22.0**)

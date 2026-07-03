@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, Clock, Lightbulb } from "lucide-react";
 import { useCallback, useState } from "react";
-import { DiscoveringCard, IdeaCard } from "../features/discovery/IdeaCard";
+import { DiscoveringCard, BacklogIdeaCard, IdeaCard } from "../features/discovery/IdeaCard";
 import { SubmitIdeaModal } from "../features/discovery/SubmitIdeaModal";
 import { BoardColumn, MissionCard } from "../features/missions/MissionCard";
 import { SlotMeter } from "../components/SlotMeter";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { nextToastId, ToastStack, type ToastMessage } from "../components/Toast";
 import {
   ApiError,
@@ -13,7 +14,7 @@ import {
   fetchIdeas,
   fetchMissions,
   fetchQueue,
-  promoteParking,
+  promoteIdeasBacklog,
   ringBell,
 } from "../lib/api";
 import { boardColumns, buildIdeaMap, buildMissionMap, toCardData } from "../lib/board";
@@ -75,6 +76,7 @@ export function BoardPage() {
   const healthQuery = useHealth();
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [promoteTarget, setPromoteTarget] = useState<string | null>(null);
 
   const addToast = useCallback((toast: Omit<ToastMessage, "id">) => {
     setToasts((prev) => [...prev, { ...toast, id: nextToastId() }]);
@@ -137,33 +139,22 @@ export function BoardPage() {
     },
   });
 
-  const promoteMutation = useMutation({
-    mutationFn: promoteParking,
-    onSuccess: (result) => {
-      invalidateBoard();
-      addToast({
-        tone: "success",
-        title: "Promoted to queued",
-        detail: result.folder,
-      });
-    },
-    onError: (err) => {
-      addToast({
-        tone: "error",
-        title: "Promote failed",
-        detail: err instanceof Error ? err.message : String(err),
-      });
-    },
-  });
-
   const submitMutation = useMutation({
-    mutationFn: ({ text, slug }: { text: string; slug?: string }) => createIdea(text, slug),
+    mutationFn: ({
+      text,
+      slug,
+      board,
+    }: {
+      text: string;
+      slug?: string;
+      board?: "backlog" | "ideas";
+    }) => createIdea(text, { slug, board }),
     onSuccess: (result) => {
       setSubmitOpen(false);
       invalidateBoard();
       addToast({
         tone: "success",
-        title: "Idea submitted",
+        title: result.board === "backlog" ? "Idea added to backlog" : "Idea submitted",
         detail: result.ideaId,
       });
     },
@@ -171,6 +162,26 @@ export function BoardPage() {
       addToast({
         tone: "error",
         title: "Submit failed",
+        detail: err instanceof Error ? err.message : String(err),
+      });
+    },
+  });
+
+  const promoteBacklogMutation = useMutation({
+    mutationFn: (ideaId: string) => promoteIdeasBacklog(ideaId),
+    onSuccess: (result) => {
+      setPromoteTarget(null);
+      invalidateBoard();
+      addToast({
+        tone: "success",
+        title: "Promoted to Ideas",
+        detail: `${result.ideaId} — ring the bell when ready for discovery`,
+      });
+    },
+    onError: (err) => {
+      addToast({
+        tone: "error",
+        title: "Promote failed",
         detail: err instanceof Error ? err.message : String(err),
       });
     },
@@ -192,7 +203,7 @@ export function BoardPage() {
         <div>
           <h2 className="guild-display text-2xl font-bold text-[var(--color-text)]">Mission board</h2>
           <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-            Ideas → discovery → parking → execution
+            Backlog → ideas → discovery → parking → execution
             {tickMinutes > 0 && (
               <span className="ml-2 inline-flex items-center gap-1 text-xs text-[var(--color-accent)]">
                 <Clock size={12} aria-hidden />
@@ -253,16 +264,43 @@ export function BoardPage() {
       {columns && (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {columns.map((col) => (
-            <BoardColumn key={col.title} title={col.title} count={col.ids.length} stage={col.stage}>
+            <BoardColumn
+              key={col.title}
+              title={col.title}
+              count={col.ids.length}
+              stage={col.stage}
+              subtitle={
+                col.stage === "ideas-backlog"
+                  ? "Promote to Ideas when ready for discovery"
+                  : col.stage === "parking"
+                    ? "Click a card to review the brief before promoting"
+                    : undefined
+              }
+            >
               {col.ids.length === 0 ? (
                 <p className="text-xs text-[var(--color-text-muted)]">Empty</p>
               ) : col.kind === "idea" ? (
                 col.ids.map((id) => {
                   const idea = ideaMap.get(id) ?? {
                     id,
-                    board: col.stage as "ideas" | "discovering",
+                    board:
+                      col.stage === "ideas-backlog"
+                        ? ("backlog" as const)
+                        : col.stage === "discovering"
+                          ? ("discovering" as const)
+                          : ("ideas" as const),
                     scratchPreview: "",
                   };
+                  if (col.stage === "ideas-backlog") {
+                    return (
+                      <BacklogIdeaCard
+                        key={id}
+                        idea={idea}
+                        promoting={promoteBacklogMutation.isPending && promoteTarget === id}
+                        onPromote={(ideaId) => setPromoteTarget(ideaId)}
+                      />
+                    );
+                  }
                   return col.stage === "discovering" ? (
                     <DiscoveringCard key={id} idea={idea} />
                   ) : (
@@ -271,12 +309,7 @@ export function BoardPage() {
                 })
               ) : (
                 col.ids.map((id) => (
-                  <MissionCard
-                    key={id}
-                    mission={toCardData(id, col.stage, missionMap)}
-                    onPromote={col.stage === "parking" ? (folder) => promoteMutation.mutate(folder) : undefined}
-                    promotePending={col.stage === "parking" ? promoteMutation.isPending : undefined}
-                  />
+                  <MissionCard key={id} mission={toCardData(id, col.stage, missionMap)} />
                 ))
               )}
             </BoardColumn>
@@ -288,7 +321,17 @@ export function BoardPage() {
         open={submitOpen}
         pending={submitMutation.isPending}
         onClose={() => setSubmitOpen(false)}
-        onSubmit={(text, slug) => submitMutation.mutate({ text, slug })}
+        onSubmit={(text, options) => submitMutation.mutate({ text, ...options })}
+      />
+
+      <ConfirmDialog
+        open={promoteTarget !== null}
+        title="Promote to Ideas"
+        message={`Move ${promoteTarget} from backlog to the Ideas column? Ring the bell to start discovery.`}
+        confirmLabel="Promote"
+        pending={promoteBacklogMutation.isPending}
+        onConfirm={() => promoteTarget && promoteBacklogMutation.mutate(promoteTarget)}
+        onCancel={() => setPromoteTarget(null)}
       />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />

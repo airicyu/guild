@@ -41,7 +41,10 @@ Checkpoint/API field `awaiting_guild_master` / `awaitingGuildMaster` = awaiting 
 Natural language in guild-desk CC:
 
 - "ring the bell"
-- "submit idea: build a kanban for mission discovery"
+- "submit idea: …" (default backlog) or "submit idea to ideas column: …"
+- "promote backlog idea {id} to ideas"
+- "approve artifacts for {mission-id}"
+- "reject artifacts for {mission-id}" / "abort mission {id}"
 - "approve discovery {idea-id}"
 - "promote parking folder {folder} to queued"
 - "show attach for {mission-id}"
@@ -71,7 +74,11 @@ scripts\guild-api.cmd /missions/hello-world-20260627-a3f9c2/archive -X POST
 
 | Intent | API |
 |--------|-----|
-| Submit rough idea | `POST /ideas` `{ "text": "…" }` |
+| Submit to backlog (default) | `POST /ideas` `{ "text": "…" }` |
+| Submit directly to ideas | `POST /ideas` `{ "text": "…", "board": "ideas" }` |
+| Promote backlog → ideas | `POST /board/ideas-backlog/{ideaId}/promote` |
+| Approve mission artifacts | `POST /missions/{id}/approve-artifacts` |
+| Reject / abort mission | `POST /missions/{id}/reject-artifacts` / `abort` |
 | Approve discovery packages | `POST /discoveries/{ideaId}/approve` |
 | Promote one parking folder | `POST /board/parking/{folder}/promote` |
 | Pick up ideas + queued missions | `POST /bell` (= `orchestratorTick`) |
@@ -86,9 +93,11 @@ scripts\guild-api.cmd /missions/hello-world-20260627-a3f9c2/archive -X POST
 ## Discovery pipeline (Plan 3)
 
 ```
-POST /ideas → ideas → [bell/tick] → discovering → [approve] → parking
-→ [promote] → queued → [bell/tick] → working → mission_complete → done → [archive]
+POST /ideas → ideas-backlog → [promote] → ideas → [bell/tick] → discovering → [approve] → parking
+→ [promote] → queued → [bell/tick] → working → [close-out] → done → [archive]
 ```
+
+Close-out (0.3.0): PO `artifacts_ready_for_review` → guild master approve → release → retro → `mission_complete`.
 
 Web UI covers the same paths on the board page.
 
@@ -96,6 +105,7 @@ Web UI covers the same paths on the board page.
 
 - Skill: [.claude/skills/guild-master/SKILL.md](.claude/skills/guild-master/SKILL.md)
 - API: [../guild-house/docs/api.md](../guild-house/docs/api.md)
+- Close-out QA: [../guild-house/docs/tests/close-out-e2e.md](../guild-house/docs/tests/close-out-e2e.md)
 - E2E walkthrough: [../guild-house/docs/e2e-discovery-path.md](../guild-house/docs/e2e-discovery-path.md)
 - Execution test: [../guild-house/docs/tests/execution-e2e.md](../guild-house/docs/tests/execution-e2e.md)
 - Session lifecycle: [../guild-house/specs/session-lifecycle.md](../guild-house/specs/session-lifecycle.md)

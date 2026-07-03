@@ -138,10 +138,10 @@ Full list: [guild-house/specs/product.md](./guild-house/specs/product.md). Summa
 9. **`checkpoint.yaml`** — orchestrator-only writer; PO uses signals API.
 10. **Filesystem-first** — agents read/write mission files; UI does not edit checkpoint or board folders directly.
 
-## Current state (2026-06-29)
+## Current state (2026-07-04)
 
-- **Product release:** **0.2.0** (`guild-house/version.md`, `guild-desk/version.md` + changelogs)
-- **API:** v**0.16.0** (`GET /health`) — Plan 3 complete (Phases 0–8)
+- **Product release:** **0.3.0** (`guild-house/version.md`, `guild-desk/version.md` + changelogs)
+- **API:** v**0.22.0** (`GET /health`) — Phases 0–6 complete
 - **Plan 1 (API MVP):** complete
 - **Plan 2 (Web UI):** complete (Phases 0–6 — board, hall, mission room, guild master actions, Bun PTY terminal attach, polish)
 - **Plan 3 (Mission Discovery):** complete (product **0.2.0**)

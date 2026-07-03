@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.0 — 2026-07-04
+
+Guild Desk aligned with product **0.3.0** and Guild House API **0.22.0**.
+
+### guild-master skill
+
+- **Close-out:** approve / reject / abort artifacts workflows; phase reference table
+- **Backlog:** submit with `board: "backlog"` (default), promote `ideas-backlog` → ideas
+- **Board:** eight-column reference (Backlog through Aborted)
+- **Skills bank:** read-only `GET /skills-bank` curl examples
+- Updated api-reference with all 0.3.0 mission and board endpoints
+
+### README
+
+- Close-out and backlog workflow hints
+- Links to [close-out-e2e.md](../guild-house/docs/tests/close-out-e2e.md), [skills-bank.md](../guild-house/docs/skills-bank.md)
+
+### Conventions
+
+- Desk still does not run mission or discovery PO work — attach commands for a separate terminal
+- Complements Web UI as an alternate client to the same API
+
+---
+
 ## 0.2.0 — 2026-06-29
 
 Guild Desk control plane aligned with Mission Discovery (Plan 3) and product **0.2.0**.

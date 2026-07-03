@@ -23,3 +23,10 @@ export function promoteParking(folder: string) {
     { method: "POST" },
   );
 }
+
+export function promoteIdeasBacklog(ideaId: string) {
+  return apiFetch<{ ok: true; ideaId: string; stage: "ideas" }>(
+    `/board/ideas-backlog/${encodeURIComponent(ideaId)}/promote`,
+    { method: "POST" },
+  );
+}

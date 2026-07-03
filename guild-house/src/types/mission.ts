@@ -6,13 +6,26 @@
  */
 export type SessionStatus = "running" | "stopped" | "stopping" | "respawning";
 export type JobState = "running" | "done" | "missing" | "unknown";
-export type MissionPhase = "evaluating" | "running" | "blocked" | "paused" | "done";
+export type MissionPhase =
+  | "evaluating"
+  | "running"
+  | "blocked"
+  | "paused"
+  | "awaiting_artifact_review"
+  | "artifacts_approved"
+  | "releasing"
+  | "retrospective"
+  | "done"
+  | "aborted";
 
 export type SignalType =
   | "round_complete"
   | "mission_complete"
   | "blocked"
-  | "request_session_restart";
+  | "request_session_restart"
+  | "artifacts_ready_for_review"
+  | "artifact_release_complete"
+  | "retrospective_complete";
 
 export interface ClaudeSession {
   id: string;
@@ -70,12 +83,14 @@ export interface MissionSessionInfo extends Omit<SessionCommands, "attachCmd"> {
 }
 
 export type BoardStage =
+  | "ideas-backlog"
   | "ideas"
   | "discovering"
   | "parking"
   | "queued"
   | "working"
   | "done"
+  | "aborted"
   | "archive";
 
 export interface SlotMeter {
@@ -98,12 +113,14 @@ export interface TickResult {
 export type BellResult = TickResult;
 
 export interface BoardListing {
+  "ideas-backlog": string[];
   ideas: string[];
   discovering: string[];
   parking: string[];
   queued: string[];
   working: string[];
   done: string[];
+  aborted: string[];
   archive: string[];
 }
 

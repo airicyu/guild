@@ -1,12 +1,24 @@
-export type MissionPhase = "evaluating" | "running" | "blocked" | "paused" | "done";
+export type MissionPhase =
+  | "evaluating"
+  | "running"
+  | "blocked"
+  | "paused"
+  | "awaiting_artifact_review"
+  | "artifacts_approved"
+  | "releasing"
+  | "retrospective"
+  | "done"
+  | "aborted";
 
 export type BoardStage =
+  | "ideas-backlog"
   | "ideas"
   | "discovering"
   | "parking"
   | "queued"
   | "working"
   | "done"
+  | "aborted"
   | "archive";
 
 export interface SlotMeterData {
@@ -27,7 +39,7 @@ export interface MissionCardData {
 
 export interface MissionListItem {
   id: string;
-  board: "working" | "done";
+  board: "working" | "done" | "aborted";
   phase: MissionPhase | "unknown";
   sessionId: string | null;
   sessionLive: boolean;
@@ -73,12 +85,14 @@ export interface TickResult {
 }
 
 export interface BoardResponse {
+  "ideas-backlog": string[];
   ideas: string[];
   discovering: string[];
   parking: string[];
   queued: string[];
   working: string[];
   done: string[];
+  aborted: string[];
   archive: string[];
 }
 
@@ -197,4 +211,16 @@ export interface MissionOutboxResponse {
   board: BoardStage;
   entries: MissionOutboxEntry[];
   unreadCount: number;
+}
+
+export interface MissionRoomFileResponse {
+  path: string;
+  content: string;
+}
+
+export interface MissionArtifactActionResponse {
+  ok: true;
+  missionId: string;
+  checkpoint: Checkpoint;
+  notify?: { channel?: { delivered: boolean } };
 }

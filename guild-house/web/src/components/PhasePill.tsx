@@ -23,7 +23,12 @@ const labels: Record<MissionPhase, string> = {
   running: "Running",
   blocked: "Blocked",
   paused: "Paused",
+  awaiting_artifact_review: "Awaiting review",
+  artifacts_approved: "Approved",
+  releasing: "Releasing",
+  retrospective: "Retrospective",
   done: "Done",
+  aborted: "Aborted",
 };
 
 export function PhasePill({ phase }: { phase: MissionPhase }) {

@@ -6,7 +6,7 @@ export {
   fetchHealth,
   type HealthResponse,
 } from "./client";
-export { fetchBoard, fetchMissions, fetchQueue, promoteParking, ringBell } from "./board";
+export { fetchBoard, fetchMissions, fetchQueue, promoteIdeasBacklog, promoteParking, ringBell } from "./board";
 export {
   approveDiscovery,
   createIdea,
@@ -19,14 +19,18 @@ export {
   restoreDiscovery,
 } from "./discovery";
 export {
+  abortMission,
+  approveArtifacts,
   archiveMission,
   fetchMissionBrief,
   fetchMissionEvents,
   fetchMissionOutbox,
+  fetchMissionRoomFile,
   fetchMissionSession,
   fetchMissionSummary,
   markMissionOutboxRead,
   pauseMission,
+  rejectArtifacts,
   restoreMission,
   resumeMission,
 } from "./missions";

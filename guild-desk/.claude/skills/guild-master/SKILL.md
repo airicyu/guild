@@ -1,6 +1,6 @@
 ---
 name: guild-master
-description: Operate Guild House orchestrator API for the guild master — bell/tick, board, ideas, discovery approve, parking promote, missions, session attach commands, outbox. Use when asked to ring the bell, submit an idea, approve discovery, promote parking, list missions, check who is awaiting a decision, get attach/resume commands, or control guild-house without editing mission runtime directly.
+description: Operate Guild House orchestrator API for the guild master — bell/tick, board, backlog ideas, discovery approve, parking promote, mission close-out (approve/reject/abort artifacts), missions, skills bank, session attach commands, outbox. Use when asked to ring the bell, submit an idea, promote backlog, approve discovery, approve artifacts, promote parking, abort a mission, list missions, check who is awaiting a decision, get attach/resume commands, or control guild-house without editing mission runtime directly.
 ---
 
 # Guild Master
@@ -20,7 +20,9 @@ Control-plane skill for **Guild House** (Bun API at `GUILD_HOUSE_URL`).
 If unset, assume `change-me-in-production` for local API key (match `guild-house/.env`). Read `guildMasterName` from `GET /health` when addressing the user by name.
 
 **API doc:** [../../../guild-house/docs/api.md](../../../guild-house/docs/api.md)  
-**Session lifecycle:** [../../../guild-house/specs/session-lifecycle.md](../../../guild-house/specs/session-lifecycle.md)
+**Session lifecycle:** [../../../guild-house/specs/session-lifecycle.md](../../../guild-house/specs/session-lifecycle.md)  
+**Close-out QA:** [../../../guild-house/docs/tests/close-out-e2e.md](../../../guild-house/docs/tests/close-out-e2e.md)  
+**Skills bank:** [../../../guild-house/docs/skills-bank.md](../../../guild-house/docs/skills-bank.md)
 
 **Helper (cmd):** `scripts\guild-api.cmd /board`
 
@@ -38,13 +40,14 @@ Authorization: Bearer $GUILD_API_KEY
 |----|-------|
 | curl API | Edit `checkpoint.yaml` |
 | Use `session?ensureLive=true` for attach | Paste attach from old messages |
-| Print attach only when `live: true` | Run `claudew attach` here |
 | Promote parking one folder at a time | Batch-promote all parking |
-| Approve via API when guild master decides | Let discovery lead narrate approval without HTTP 200 |
+| Approve discovery via API when guild master decides | Let discovery lead narrate approval without HTTP 200 |
+| Approve/reject/abort mission artifacts via API | Call `mission_complete` for the PO |
+| Promote backlog → ideas one id at a time | Expect bell to pick up **ideas-backlog** |
 
-**Primary intake:** `POST /ideas` or Web UI **Submit idea**. Legacy filesystem drop: `mission-board/ready/{slug}/mission.md` still works via bell execution half.
+**Primary intake:** `POST /ideas` (default `board: "backlog"`) or Web UI **Submit idea**. Legacy filesystem drop: `mission-board/queued/{slug}/mission.md` still works via bell execution half.
 
 ## Sub-files
 
-- [workflows.md](workflows.md) — Ring bell, close mission, show attach, who's waiting
+- [workflows.md](workflows.md) — Ring bell, close-out, backlog, show attach, who's waiting
 - [api-reference.md](api-reference.md) — Full curl catalog, session liveness, restore ladder

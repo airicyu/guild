@@ -1,7 +1,9 @@
 import type {
   EventsResponse,
+  MissionArtifactActionResponse,
   MissionBriefResponse,
   MissionOutboxResponse,
+  MissionRoomFileResponse,
   MissionSessionResponse,
   MissionSummaryResponse,
 } from "../../types/mission";
@@ -63,6 +65,42 @@ export function markMissionOutboxRead(id: string, ids?: string[]) {
     {
       method: "POST",
       body: ids && ids.length > 0 ? JSON.stringify({ ids }) : undefined,
+    },
+  );
+}
+
+/** Read-only mission room file (allowlisted paths — see docs/api.md). */
+export function fetchMissionRoomFile(id: string, roomPath: string) {
+  const segments = roomPath.split("/").map((s) => encodeURIComponent(s)).join("/");
+  return apiFetch<MissionRoomFileResponse>(
+    `/missions/${encodeURIComponent(id)}/room/${segments}`,
+  );
+}
+
+/** Guild master approve deliverables — awaiting_artifact_review → releasing (specs/product.md). */
+export function approveArtifacts(id: string) {
+  return apiFetch<MissionArtifactActionResponse>(
+    `/missions/${encodeURIComponent(id)}/approve-artifacts`,
+    { method: "POST" },
+  );
+}
+
+export function rejectArtifacts(id: string, reason?: string) {
+  return apiFetch<MissionArtifactActionResponse>(
+    `/missions/${encodeURIComponent(id)}/reject-artifacts`,
+    {
+      method: "POST",
+      body: JSON.stringify(reason?.trim() ? { reason: reason.trim() } : {}),
+    },
+  );
+}
+
+export function abortMission(id: string, reason?: string) {
+  return apiFetch<MissionArtifactActionResponse>(
+    `/missions/${encodeURIComponent(id)}/abort`,
+    {
+      method: "POST",
+      body: JSON.stringify(reason?.trim() ? { reason: reason.trim() } : {}),
     },
   );
 }

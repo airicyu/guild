@@ -1,7 +1,7 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.16.0` (see `GET /health` → `version`)
+**Version:** `0.19.0` (see `GET /health` → `version`)
 
 > **Plan 3 (v0.11.0+):** Six board stages, `orchestratorTick()` on `POST /bell` and optional periodic tick. Legacy `ready/` / `active/` folder names are still read by the API if present on disk.
 
@@ -32,10 +32,11 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 |--------|------|------|-------------|
 | GET | `/health` | no | Service status |
 | GET | `/board` | yes | Mission-board folder names by stage |
+| POST | `/board/ideas-backlog/:id/promote` | yes | Move backlog idea → ideas |
 | POST | `/board/parking/:folder/promote` | yes | Move parking folder → queued |
 | POST | `/bell` | yes | Orchestrator tick (discovery + execution pickup) |
 | GET | `/queue` | yes | Ready missions vs active slot availability |
-| GET | `/missions` | yes | Working + done missions + session liveness summary |
+| GET | `/missions` | yes | Working + done + aborted missions + session liveness summary |
 | GET | `/missions/:id` | yes | Single mission detail |
 | GET | `/missions/:id/brief` | yes | Mission brief markdown (room copy or board fallback) |
 | GET | `/missions/:id/summary` | yes | Mission + checkpoint + brief title + squad + outbox unread |
@@ -48,14 +49,19 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 | POST | `/missions/:id/resume` | yes | Unpause + restore (same ladder as restore) |
 | POST | `/missions/:id/pause` | yes | Stop PO; `phase: paused` |
 | POST | `/missions/:id/signals` | yes | Lifecycle signals (orchestrator writes checkpoint) |
-| POST | `/missions/:id/archive` | yes | Move done → archive (requires `phase: done` on done board) |
+| POST | `/missions/:id/approve-artifacts` | yes | Guild master approve deliverables (`awaiting_artifact_review` → `releasing`) |
+| POST | `/missions/:id/reject-artifacts` | yes | Guild master reject deliverables → `blocked` on working |
+| POST | `/missions/:id/abort` | yes | Guild master abort → **aborted** board; frees slot |
+| POST | `/missions/:id/archive` | yes | Move done or aborted → archive |
 | GET | `/outbox` | yes | Unread escalations (active + archive) |
 | GET | `/missions/:id/outbox` | yes | Mission outbox entries |
 | POST | `/missions/:id/outbox/read` | yes | Mark outbox entries read |
 | POST | `/missions/:id/escalate` | yes | Atomic outbox append + `blocked` signal |
 | POST | `/recover` | yes | Manual boot-style recovery |
-| POST | `/ideas` | yes | Submit rough idea → **ideas** column |
-| GET | `/ideas` | yes | List ideas + discovering entries |
+| GET | `/skills-bank` | yes | Skills catalog + folder listing (read-only) |
+| GET | `/skills-bank/:name` | yes | Single skill folder contents (read-only) |
+| POST | `/ideas` | yes | Submit rough idea → **ideas-backlog** (default) or **ideas** |
+| GET | `/ideas` | yes | List backlog + ideas + discovering entries |
 | GET | `/ideas/:id` | yes | Idea detail + discovery checkpoint |
 | GET | `/ideas/:id/drafts` | yes | Mission draft packages under discovery room |
 | POST | `/discoveries/:id/approve` | yes | Copy packages to **parking**; close discovery |
@@ -98,12 +104,13 @@ Public. No Bearer token.
 
 ## `GET /board`
 
-Lists folder names for each board stage (Plan 3 six-column model). Legacy `ready/` merges into `queued`; legacy `active/` merges into `working`.
+Lists folder names for each board stage (Plan 3 eight-column model). Legacy `ready/` merges into `queued`; legacy `active/` merges into `working`.
 
 **Response 200**
 
 ```json
 {
+  "ideas-backlog": ["idea-20260704-a1b2c3"],
   "ideas": ["idea-20260629-a1b2c3"],
   "discovering": [],
   "parking": ["split-guild-master-skill-20260629-8d133b"],
@@ -124,7 +131,7 @@ Calls **`orchestratorTick()`** — same as periodic auto-tick when `GUILD_TICK_I
 
 **Discovery half** (FIFO, slot-limited by `MAX_DISCOVERY_SESSIONS`):
 
-1. Pick ideas from `ideas/` → scaffold discovery room → spawn intake lead `--bg` → move to `discovering/`
+1. Pick ideas from `ideas/` only (not `ideas-backlog/`) → scaffold discovery room → spawn intake lead `--bg` → move to `discovering/`
 
 **Execution half** (FIFO, slot-limited by `MAX_ACTIVE_MISSIONS` on **working** only):
 
@@ -231,6 +238,27 @@ Lists **working** and **done** board missions with checkpoint summary. Working m
 
 ---
 
+## `POST /board/ideas-backlog/:id/promote`
+
+Move one backlog idea → **ideas** (guild master promotes when ready for discovery).
+
+**Path:** `id` — idea id on the ideas-backlog board (e.g. `idea-20260704-a1b2c3`).
+
+**Response 200**
+
+```json
+{
+  "ok": true,
+  "ideaId": "idea-20260704-a1b2c3",
+  "stage": "ideas"
+}
+```
+
+**404** — not on ideas-backlog board or folder missing on disk.  
+**409** — ideas entry already exists.
+
+---
+
 ## `POST /board/parking/:folder/promote`
 
 Move one parking folder → **queued** (guild master promotes approved missions before bell).
@@ -249,6 +277,49 @@ Move one parking folder → **queued** (guild master promotes approved missions 
 
 **404** — not on parking board or folder missing on disk.  
 **409** — queued entry already exists.
+
+**409** — queued entry already exists.
+
+---
+
+## `GET /skills-bank`
+
+Read-only skills bank summary. Runtime path: `data/skills-bank/` (seeded from `templates/skills-bank/` on boot when `catalog.md` is missing).
+
+**Response 200**
+
+```json
+{
+  "catalog": "# Guild skills bank catalog\n…",
+  "skills": [
+    { "name": "example-skill", "description": "Example bank skill — replace or delete…" }
+  ],
+  "count": 1
+}
+```
+
+---
+
+## `GET /skills-bank/:name`
+
+Read a single skill folder. `:name` must match `[a-zA-Z0-9][a-zA-Z0-9._-]*`.
+
+**Response 200**
+
+```json
+{
+  "name": "example-skill",
+  "description": "Example bank skill — replace or delete…",
+  "skillMd": "---\nname: example-skill\n…",
+  "files": [
+    { "path": "SKILL.md", "content": "…" }
+  ]
+}
+```
+
+**404** — skill folder missing or no `SKILL.md`.
+
+See [skills-bank.md](./skills-bank.md).
 
 ---
 
@@ -313,7 +384,7 @@ Active missions also include `sessionLive`, `jobState`, `restoreRequired`.
 
 Read-only file under the mission room. Path is URL-encoded; slashes separate segments (e.g. `memories/common/mission-brief.md`).
 
-**Allowlist:** `squad.md`, `inbox.md`, `outbox.jsonl`, `memories/**`, `mission-reports/**`. Path traversal (`..`) rejected.
+**Allowlist:** `squad.md`, `inbox.md`, `outbox.jsonl`, `artifact-release.md`, `retrospective/**`, `memories/**`, `mission-reports/**`. Path traversal (`..`) rejected.
 
 **Response 200**
 
@@ -474,8 +545,11 @@ PO updates lifecycle via orchestrator (**only** orchestrator writes `checkpoint.
 |------|----------------------|
 | `round_complete` | `round++`; `evaluating`/`blocked` → `running`; clear `awaiting_guild_master` |
 | `blocked` | `phase: blocked`, `awaiting_guild_master: true` |
+| `artifacts_ready_for_review` | `phase: awaiting_artifact_review`, `awaiting_guild_master: true` (from `running`/`evaluating`/`blocked`) |
+| `artifact_release_complete` | `releasing` → `retrospective`; requires `artifact-release.md` `status: released`; logs milestone |
+| `retrospective_complete` | requires `retrospective/workflow-report.md`; logs milestone; phase stays `retrospective` |
 | `request_session_restart` | stop + restore ladder |
-| `mission_complete` | stop PO; `phase: done`; move **working/** → **done/** (frees slot; no auto-archive) |
+| `mission_complete` | requires prior `retrospective_complete` signal + workflow report; stop PO; move **working/** → **done/** |
 
 **Response 200**
 
@@ -499,11 +573,70 @@ tools\signal.cmd mission_complete "QA pass — all criteria met"
 
 ---
 
+## `POST /missions/:id/approve-artifacts`
+
+Guild master approves mission deliverables after internal QA. **Does not** stop PO or move board.
+
+Requires mission on **working** with `phase: awaiting_artifact_review`.
+
+**Side effects:** `phase: releasing`; writes `inbox.md`; POST guild-channel `artifacts_approved` when endpoint live.
+
+**Response 200**
+
+```json
+{
+  "ok": true,
+  "missionId": "hello-world-20260627-a3f9c2",
+  "checkpoint": { "...": "..." },
+  "notify": { "channel": { "delivered": true } }
+}
+```
+
+**404** — not on working board. **409** — wrong phase.
+
+Mission room tool: `tools/approve-artifacts.sh` (PO runs when guild master clearly approves in attach).
+
+---
+
+## `POST /missions/:id/reject-artifacts`
+
+Guild master rejects deliverables. Mission stays on **working**; `phase: blocked`, `awaiting_guild_master: true`.
+
+**Body** (optional)
+
+```json
+{ "reason": "Acceptance criteria 2 and 3 not met" }
+```
+
+**Response 200** — same shape as approve-artifacts (`notify.channel` may be `delivered: false` in degraded mode).
+
+Mission room tool: `tools/reject-artifacts.sh "<reason>"`
+
+---
+
+## `POST /missions/:id/abort`
+
+Guild master early terminal close. Stops PO; moves **working/** → **aborted/**; frees execution slot.
+
+**Body** (optional)
+
+```json
+{ "reason": "Wrong scope — duplicate of existing work" }
+```
+
+Writes `retrospective/abort-note.md` (orchestrator stub on Web path). Skips approve → release → retro success path.
+
+**Response 200** — same notify shape as approve-artifacts.
+
+Mission room tool: `tools/abort.sh [reason]` (PO may write abort-note first on chat path).
+
+---
+
 ## `POST /missions/:id/archive`
 
-Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`.
+Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`, **or** **aborted** board with `phase: aborted`.
 
-Moves board entry `done/{id}` → `archive/{id}`. Mission room stays at `mission-rooms/{id}/`.
+Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room stays at `mission-rooms/{id}/`.
 
 **Response 200**
 
@@ -744,7 +877,7 @@ Orchestrator-only. PO must not edit `checkpoint.yaml`.
 
 ```yaml
 mission_id: "hello-world-20260627-a3f9c2"
-phase: running          # evaluating | running | blocked | paused | done
+phase: running          # evaluating | running | blocked | paused | awaiting_artifact_review | releasing | retrospective | done | aborted
 round: 1
 awaiting_guild_master: false
 inbox_pending: false
@@ -797,18 +930,19 @@ Board/list/tick/queue semantics are documented in the main sections above (`GET 
 
 ### `POST /ideas`
 
-Create a rough idea on the **Ideas** column.
+Create a rough idea on **ideas-backlog** (default) or **ideas**.
 
 **Body**
 
 ```json
 {
   "text": "Build a kanban for mission discovery with six columns.",
-  "slug": "mission-kanban"
+  "slug": "mission-kanban",
+  "board": "backlog"
 }
 ```
 
-`text` required. Optional `slug` prefixes minted id as `{slug}-{YYYYMMDD}-{6hex}`; default prefix is `idea`.
+`text` required. Optional `slug` prefixes minted id as `{slug}-{YYYYMMDD}-{6hex}`; default prefix is `idea`. Optional `board`: `"backlog"` (default) or `"ideas"`.
 
 **Response 201**
 
@@ -816,16 +950,16 @@ Create a rough idea on the **Ideas** column.
 {
   "ok": true,
   "ideaId": "idea-20260629-a1b2c3",
-  "board": "ideas",
+  "board": "backlog",
   "scratchPreview": "Build a kanban for mission discovery…"
 }
 ```
 
-Creates `mission-board/ideas/{ideaId}/scratch.md`.
+Creates `mission-board/ideas-backlog/{ideaId}/scratch.md` or `mission-board/ideas/{ideaId}/scratch.md`.
 
 #### `GET /ideas`
 
-Lists ideas on **ideas** and **discovering** stages.
+Lists ideas on **ideas-backlog**, **ideas**, and **discovering** stages.
 
 **Response 200**
 
@@ -934,6 +1068,8 @@ List/preview `artifacts/missions/*` (title from `mission.md` frontmatter).
 Guild master approves discovery packages → **Parking**.
 
 Requires ≥1 folder under `artifacts/missions/` with `mission.md`; idea on **discovering** board.
+
+Each draft is copied to parking under an orchestrator-minted id `{slug}-{YYYYMMDD}-{6hex}` (`slug` from draft folder name; `6hex` from `crypto.getRandomValues`). Draft folder names in the discovery room are not preserved on the board.
 
 **Callers:** Web UI **Approve** button, or discovery intake lead via `tools/approve.sh` when guild master approves in attach/inbox (same endpoint).
 

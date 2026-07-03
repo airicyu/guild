@@ -12,6 +12,7 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Read board brief (source): `{{briefPath}}`
 - [ ] Read your playbook: `members/project-owner/agent.md`
 - [ ] Read schema: `.guild/mission-schema.md` (if autonomy or acceptance format unclear)
+- [ ] Read `../skills-bank/catalog.md`; wire needed skills via `.claude/skills/wire-skills-from-bank/wire.sh …` **before evaluator**
 - [ ] If acceptance criteria are ambiguous → record in `memories/common/memory.md` or **escalate** via `tools/escalate.sh` — never rewrite `mission-brief.md`
 
 ## Round 1 — Evaluate (spawn evaluator)
@@ -26,6 +27,8 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Create `squad.md` — YAML frontmatter: `title`, `autonomy`, `members`, `artifact_roots`
 - [ ] Fill body: Why this squad · Architecture intent · Communication rules · Risks
 - [ ] Create `memories/common/memory.md` — scope, acceptance criteria, constraints, decisions
+- [ ] Write `members/{role}/skills.md` for each squad member — wired bank skills per role
+- [ ] Draft `artifact-release.md` — set `mode`, `target`, `source_paths`; keep `status: draft` (refine before review)
 - [ ] Log **milestone**: squad chartered, roles, artifact paths (`tools/log.cmd project-owner milestone "…"`)
 
 ## Round 3 — Execute
@@ -35,10 +38,28 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Distill decisions into `common/memory.md` when scope changes
 - [ ] Signal `round_complete` when first delivery phase ends (e.g. first artifact ready for QA)
 
-## Round 4 — Ship
+## Round 4 — QA & guild master review
 
 - [ ] Spawn or consult **QA** to verify acceptance criteria
-- [ ] When QA logs `qa_pass` for all criteria → `tools/signal.cmd mission_complete` (or `.sh`)
+- [ ] Finalize `artifact-release.md` — set `status: confirmed` if guild master refined in chat; else keep draft plan
+- [ ] When QA passes all criteria → `tools/signal.sh artifacts_ready_for_review "QA pass — ready for guild master"`
+- [ ] Idle — guild master approves/rejects via Web UI or attach (read `inbox.md` on channel events)
+
+## Round 5 — Artifact release (after approve)
+
+- [ ] On `artifacts_approved` (inbox/channel): read `artifact-release.md` and execute plan manually (copy/deploy per mode)
+- [ ] Set `status: released` in `artifact-release.md` when done
+- [ ] Log **milestone**: release complete (`tools/log.sh project-owner milestone "Artifact release complete"`)
+- [ ] Signal `artifact_release_complete` — moves to retrospective phase
+
+## Round 6 — Retrospective & dismiss
+
+- [ ] Read all `retrospective/members/*/feedback.md`
+- [ ] Ping survivors for optional `## Final pass` (only if post-release notes)
+- [ ] Write `retrospective/workflow-report.md` (synthesized feedback + workflow improvements)
+- [ ] Write `retrospective/skills-reports/*.md` (existing-skill feedback + new skill proposals)
+- [ ] Signal `retrospective_complete` — requires workflow report on disk
+- [ ] Signal `mission_complete` — team dismiss; orchestrator moves mission to **done**
 
 ---
 

@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.3.0 — 2026-07-04
+
+Mission close-out, guild channel, backlog ideas, skills bank. **API runtime:** `GET /health` → **0.22.0**.
+
+### Close-out pipeline (Phases 1–4)
+
+- Approve / reject / abort artifacts; extended mission phases through release and retrospective
+- `POST /missions/:id/approve-artifacts`, `reject-artifacts`, `abort` — inbox + guild-channel notify
+- **`mission_complete` breaking:** requires `phase: retrospective` (was: any active phase)
+- `artifact-release.md`, retrospective tree, PO aggregation playbooks
+- Web UI: close-out phase pills, approve artifacts, artifact-release + retro views
+- Parking/queued mission detail; promote from detail view only
+
+### Guild channel (Phase 0)
+
+- Per-mission-room `guild-channel` MCP; orchestrator POST on approve/reject/abort
+- `CLAUDE_DEV_CHANNELS=1` for PO spawn; degraded mode = inbox + checkpoint only
+- Docs: [docs/guild-channel.md](docs/guild-channel.md)
+
+### Backlog ideas (Phase 5)
+
+- **ideas-backlog/** board column; `POST /ideas` default `board: "backlog"`
+- `POST /board/ideas-backlog/:id/promote` → ideas
+- Web UI: eighth column, submit chooser, promote on backlog cards
+
+### Skills bank (Phase 6)
+
+- `data/skills-bank/` seeded from template; `wire-skills-from-bank` in room templates
+- Read-only `GET /skills-bank`, `GET /skills-bank/:name`
+- PO / intake lead Round 0 wire workflow; [docs/skills-bank.md](docs/skills-bank.md)
+
+### Other
+
+- Discovery approve mints canonical mission ids with cryptographically random hex suffix
+- QA: [docs/tests/close-out-e2e.md](docs/tests/close-out-e2e.md), `scripts/e2e-close-out-03.ts`
+
 ## 0.2.0 — 2026-06-29
 
 Mission Discovery (Plan 3) — six-column board, idea intake, discovery pipeline, done column, periodic tick.

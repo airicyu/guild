@@ -11,12 +11,14 @@ import type { Config } from "./config";
 
 /** Plan 3 board folders — names match UI columns. */
 export const BOARD_STAGES = [
+  "ideas-backlog",
   "ideas",
   "discovering",
   "parking",
   "queued",
   "working",
   "done",
+  "aborted",
   "archive",
 ] as const;
 export type BoardStage = (typeof BOARD_STAGES)[number];
@@ -54,6 +56,16 @@ export function legacyMissionBoardPath(config: Config, stage: BoardStage): strin
 /** Path to a mission folder on a board stage (mission-board/{stage}/{id}). */
 export function missionBoardEntryPath(config: Config, stage: BoardStage, missionId: string): string {
   return join(missionBoardPath(config, stage), missionId);
+}
+
+/** Path to data/skills-bank/ — guild master curated skill catalog. */
+export function skillsBankPath(config: Config): string {
+  return join(config.guildHome, "skills-bank");
+}
+
+/** Path to templates/skills-bank seed source. */
+export function skillsBankTemplatePath(config: Config): string {
+  return join(config.projectRoot, "templates", "skills-bank");
 }
 
 /** Path to mission-rooms/{missionId}. */
@@ -121,8 +133,10 @@ export function discoverySessionName(ideaId: string): string {
   return `discovery-${ideaId}-lead`;
 }
 
-/** Path to ideas/ or discovering/ board entry folder. */
-export function ideaBoardEntryPath(config: Config, stage: "ideas" | "discovering", ideaId: string): string {
+export type IdeaBoardStage = "ideas-backlog" | "ideas" | "discovering";
+
+/** Path to ideas-backlog/, ideas/, or discovering/ board entry folder. */
+export function ideaBoardEntryPath(config: Config, stage: IdeaBoardStage, ideaId: string): string {
   return join(missionBoardPath(config, stage), ideaId);
 }
 
