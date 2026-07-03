@@ -58,6 +58,16 @@ export function missionBoardEntryPath(config: Config, stage: BoardStage, mission
   return join(missionBoardPath(config, stage), missionId);
 }
 
+/** Path to data/skills-bank/ — guild master curated skill catalog. */
+export function skillsBankPath(config: Config): string {
+  return join(config.guildHome, "skills-bank");
+}
+
+/** Path to templates/skills-bank seed source. */
+export function skillsBankTemplatePath(config: Config): string {
+  return join(config.projectRoot, "templates", "skills-bank");
+}
+
 /** Path to mission-rooms/{missionId}. */
 export function missionRoomPath(config: Config, missionId: string): string {
   return join(config.guildHome, "mission-rooms", missionId);

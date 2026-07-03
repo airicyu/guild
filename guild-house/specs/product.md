@@ -1,6 +1,6 @@
 # Guild House — product specification (as-built)
 
-Living product truth for **release 0.2.0** (Phase 1 close-out API landed at **0.17.0** — product version bumps at 0.3.0 ship). When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
+Living product truth for **release 0.3.0**. When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
 
 Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archive/idea-v2.md) (archive only — do not extend).
 
@@ -8,8 +8,8 @@ Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archiv
 
 | Kind | Location | Current |
 |------|----------|---------|
-| Product | `version.md` + `changelog.md` | **0.2.0** |
-| API runtime | `GET /health` → `version` | **0.21.0** (Phase 5 backlog ideas) |
+| Product | `version.md` + `changelog.md` | **0.3.0** |
+| API runtime | `GET /health` → `version` | **0.22.0** (Phase 6 skills bank) |
 
 ## Board pipeline
 
@@ -65,6 +65,7 @@ Legacy intake: drop `mission.md` on **queued** (formerly `ready/`) — execution
 15. **Guild channel** — orchestrator POST to per-room `guild-channel` on approve/reject/abort; degraded = inbox + checkpoint only. See [docs/guild-channel.md](../docs/guild-channel.md).
 16. **Artifact release** — PO maintains `artifact-release.md`; `artifact_release_complete` requires `status: released`; manual PO execution (no orchestrator deploy recipes in 0.3.0).
 17. **Retrospective** — members write `retrospective/members/{role}/feedback.md` at exit; PO writes `workflow-report.md` + `skills-reports/`; `retrospective_complete` then `mission_complete`.
+18. **Skills bank** — `data/skills-bank/` curated by guild master; PO/intake lead wire via bundled `wire-skills-from-bank` at Round 0; read-only `GET /skills-bank`. See [docs/skills-bank.md](../docs/skills-bank.md).
 
 ## Guild master (role)
 
@@ -73,7 +74,7 @@ The **guild master** is the **human supervisor** for Guild — not an agent in m
 | Aspect | Detail |
 |--------|--------|
 | **Who** | The operator at Guild Desk, Web UI, or terminal attach (not PO, intake lead, or squad members) |
-| **Does** | Submit ideas (backlog or ideas), promote backlog → ideas, approve discovery, promote parking → queued, archive done missions, answer outbox via `inbox.md`, attach to intervene |
+| **Does** | Submit ideas (backlog or ideas), promote backlog → ideas, approve discovery, promote parking → queued, archive done missions, curate skills bank from retro proposals, answer outbox via `inbox.md`, attach to intervene |
 | **Room files** | Writes `inbox.md` (directives); reads `outbox.jsonl` (escalations). Checkpoint field `awaiting_guild_master` means waiting on this role |
 | **Playbooks** | Use the role term **guild master** — not a personal name baked into templates |
 | **`GUILD_MASTER_NAME`** | Env display label only (`GET /health` → `guildMasterName`, Web UI header). Safe to rename without re-scaffolding rooms |
@@ -89,3 +90,4 @@ The **guild master** is the **human supervisor** for Guild — not an agent in m
 | Plan 3 walkthrough | [docs/e2e-discovery-path.md](../docs/e2e-discovery-path.md) |
 | Terminal attach | [terminal-attach.md](./terminal-attach.md) |
 | Execution QA | [docs/tests/execution-e2e.md](../docs/tests/execution-e2e.md) |
+| Skills bank | [docs/skills-bank.md](../docs/skills-bank.md) |

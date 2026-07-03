@@ -12,6 +12,7 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Read board brief (source): `{{briefPath}}`
 - [ ] Read your playbook: `members/project-owner/agent.md`
 - [ ] Read schema: `.guild/mission-schema.md` (if autonomy or acceptance format unclear)
+- [ ] Read `../skills-bank/catalog.md`; wire needed skills via `.claude/skills/wire-skills-from-bank/wire.sh …` **before evaluator**
 - [ ] If acceptance criteria are ambiguous → record in `memories/common/memory.md` or **escalate** via `tools/escalate.sh` — never rewrite `mission-brief.md`
 
 ## Round 1 — Evaluate (spawn evaluator)
@@ -26,6 +27,7 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Create `squad.md` — YAML frontmatter: `title`, `autonomy`, `members`, `artifact_roots`
 - [ ] Fill body: Why this squad · Architecture intent · Communication rules · Risks
 - [ ] Create `memories/common/memory.md` — scope, acceptance criteria, constraints, decisions
+- [ ] Write `members/{role}/skills.md` for each squad member — wired bank skills per role
 - [ ] Draft `artifact-release.md` — set `mode`, `target`, `source_paths`; keep `status: draft` (refine before review)
 - [ ] Log **milestone**: squad chartered, roles, artifact paths (`tools/log.cmd project-owner milestone "…"`)
 

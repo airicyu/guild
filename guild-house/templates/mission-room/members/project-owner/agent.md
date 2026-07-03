@@ -22,49 +22,55 @@ Read `.guild/handoff-prompt.md` and execute every step before spawning implement
 
 1. Read `memories/common/mission-brief.md` (frozen orchestrator copy — **do not edit**)
 2. Read `members/project-owner/agent.md` (this file)
+3. Read `../skills-bank/catalog.md`; wire needed skills **before evaluator**:
+
+```bash
+.claude/skills/wire-skills-from-bank/wire.sh skill-a skill-b
+```
 
 Clarify requirements via `memories/common/memory.md` or `tools/escalate.sh` — never rewrite `mission-brief.md`.
 
 **Round 1 — evaluate**
 
-3. Spawn **evaluator** (Task subagent); wait for **Task return** with assessment
-4. Log `evaluator_done` event; distill into draft squad recommendation
+4. Spawn **evaluator** (Task subagent); wait for **Task return** with assessment
+5. Log `evaluator_done` event; distill into draft squad recommendation
 
 **Round 2 — charter**
 
-5. Write `squad.md` — YAML frontmatter (members, autonomy) + body sections per template
-6. Write `memories/common/memory.md` — approved truth: scope, acceptance, constraints, decisions
-7. Draft `artifact-release.md` — `mode`, `target`, `source_paths`; `status: draft`
-8. Log **milestone** announcing squad and artifact paths
+6. Write `squad.md` — YAML frontmatter (members, autonomy) + body sections per template
+7. Write `memories/common/memory.md` — approved truth: scope, acceptance, constraints, decisions
+8. Write `members/{role}/skills.md` for each squad member — which wired bank skills they should use
+9. Draft `artifact-release.md` — `mode`, `target`, `source_paths`; `status: draft`
+10. Log **milestone** announcing squad and artifact paths
 
 **Round 3 — execute**
 
-9. Spawn squad members per `squad.md` via **CC agent team / Task**
-10. Coordinate live via Task; update `common/memory.md` when decisions change
-11. Signal `round_complete` when a logical phase ends
+11. Spawn squad members per `squad.md` via **CC agent team / Task**
+12. Coordinate live via Task; update `common/memory.md` when decisions change
+13. Signal `round_complete` when a logical phase ends
 
 **Round 4 — QA & review**
 
-12. When QA confirms acceptance → finalize `artifact-release.md` (`confirmed` if guild master refined in chat)
-13. Signal `artifacts_ready_for_review` — invites guild master; **do not** call `mission_complete` here
-14. Idle until guild master approves or rejects (watch inbox + channel)
+14. When QA confirms acceptance → finalize `artifact-release.md` (`confirmed` if guild master refined in chat)
+15. Signal `artifacts_ready_for_review` — invites guild master; **do not** call `mission_complete` here
+16. Idle until guild master approves or rejects (watch inbox + channel)
 
 **Round 5 — artifact release**
 
-15. On approve (`inbox.md` / channel `artifacts_approved`): execute `artifact-release.md` manually
-16. Default hierarchy when plan is vague: (1) this file, (2) brief deploy hints, (3) `stay` in `artifacts/`
-17. Web/API approve = execute without UI Q&A — PO decides per plan
-18. Set `status: released` in `artifact-release.md`; log milestone; signal `artifact_release_complete`
+17. On approve (`inbox.md` / channel `artifacts_approved`): execute `artifact-release.md` manually
+18. Default hierarchy when plan is vague: (1) this file, (2) brief deploy hints, (3) `stay` in `artifacts/`
+19. Web/API approve = execute without UI Q&A — PO decides per plan
+20. Set `status: released` in `artifact-release.md`; log milestone; signal `artifact_release_complete`
 
 **Round 6 — retrospective & dismiss**
 
-19. Read all `retrospective/members/*/feedback.md` (evaluator wrote at Round 1 exit; implementers at their exit)
-20. **Ping survivors** (usually PO; maybe dev/qa still alive) — optional bounded Task: add `## Final pass` only if post-release notes exist
-21. Write `retrospective/workflow-report.md` — synthesize feedback; self-contained background + themes; pointer to `skills-reports/`
-22. Distill `retrospective/skills-reports/{short-name}.md` — two kinds: (1) feedback on **existing** skills used; (2) **proposals** for new reusable skills
-23. Update `retrospective/members/project-owner/feedback.md` **Final pass** if release/approve notes apply
-24. Signal `retrospective_complete` — requires non-empty `workflow-report.md`
-25. Signal `mission_complete` — final dismiss only after step 24
+21. Read all `retrospective/members/*/feedback.md` (evaluator wrote at Round 1 exit; implementers at their exit)
+22. **Ping survivors** (usually PO; maybe dev/qa still alive) — optional bounded Task: add `## Final pass` only if post-release notes exist
+23. Write `retrospective/workflow-report.md` — synthesize feedback; self-contained background + themes; pointer to `skills-reports/`
+24. Distill `retrospective/skills-reports/{short-name}.md` — two kinds: (1) feedback on **existing** skills used; (2) **proposals** for new reusable skills
+25. Update `retrospective/members/project-owner/feedback.md` **Final pass** if release/approve notes apply
+26. Signal `retrospective_complete` — requires non-empty `workflow-report.md`
+27. Signal `mission_complete` — final dismiss only after step 26
 
 **Not** a live squad retro meeting. Gone members' files are complete from their exit write.
 

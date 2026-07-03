@@ -212,12 +212,12 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 | ID | Task | Notes |
 |----|------|-------|
 | 6.1 | [x] skills-reports → bank: guild master manual | Design §10.5 |
-| 6.2 | [ ] Create `data/skills-bank/` layout + seed `catalog.md` | gitignored; example in templates |
-| 6.3 | [ ] Bundle `wire-skills-from-bank` in mission + discovery room templates | Deterministic bash; `../skills-bank/` |
-| 6.4 | [ ] API: `GET /skills-bank`, `GET /skills-bank/:name` (read-only) | Optional for Web UI |
-| 6.5 | [ ] PO playbook: Round 0 wire → then evaluator | Design §10.4 |
-| 6.6 | [ ] Intake lead playbook: Round 0 wire → explore | Discovery parity |
-| 6.7 | [ ] Document: guild master promotes skills-reports → bank manually | No API in 0.3.0 |
+| 6.2 | [x] Create `data/skills-bank/` layout + seed `catalog.md` | gitignored; example in templates |
+| 6.3 | [x] Bundle `wire-skills-from-bank` in mission + discovery room templates | Deterministic bash; `../skills-bank/` |
+| 6.4 | [x] API: `GET /skills-bank`, `GET /skills-bank/:name` (read-only) | Optional for Web UI |
+| 6.5 | [x] PO playbook: Round 0 wire → then evaluator | Design §10.4 |
+| 6.6 | [x] Intake lead playbook: Round 0 wire → explore | Discovery parity |
+| 6.7 | [x] Document: guild master promotes skills-reports → bank manually | No API in 0.3.0 |
 | 6.8 | [ ] **Defer:** team formation committee | Future |
 
 ---
@@ -226,11 +226,11 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 | ID | Task | Notes |
 |----|------|-------|
-| X.1 | [ ] `guild-desk` guild-master skill: approve-artifacts, new phases | |
-| X.2 | [ ] `guild-house/changelog.md` + `version.md` → **0.3.0** at release | |
-| X.3 | [ ] `guild-desk/version.md` + changelog | |
-| X.4 | [ ] Manual QA script: full close-out path with channel + without | |
-| X.5 | [ ] Consider `CLAUDE_COMMAND` spawn flag for dev channels in `.env.example` | Document dev-only |
+| X.1 | [x] `guild-desk` guild-master skill: approve-artifacts, new phases | |
+| X.2 | [x] `guild-house/changelog.md` + `version.md` → **0.3.0** at release | |
+| X.3 | [x] `guild-desk/version.md` + changelog | |
+| X.4 | [x] Manual QA script: full close-out path with channel + without | |
+| X.5 | [x] Consider `CLAUDE_COMMAND` spawn flag for dev channels in `.env.example` | Document dev-only |
 
 ---
 

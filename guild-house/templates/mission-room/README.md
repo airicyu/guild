@@ -16,5 +16,6 @@ Scaffolded on bell pickup from `templates/mission-room/`.
 | `.guild/mission-schema.md` | Copy of intake schema for PO reference |
 | `tools/*.cmd` / `*.sh` | API wrappers (signal, escalate, say) |
 | `.claude/settings.json` | Mission-scoped CC allow/deny (no user `~/.claude` edits) |
+| `.claude/skills/wire-skills-from-bank/` | Bundled meta-skill — copy bank skills at Round 0 (see [docs/skills-bank.md](../../docs/skills-bank.md)) |
 
 See [specs/mission-schema.md](../../specs/mission-schema.md) for writing `mission.md` on the board.

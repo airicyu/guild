@@ -1,47 +1,40 @@
 # Changelog
 
-## Unreleased — API 0.20.0
+## 0.3.0 — 2026-07-04
 
-Discovery approve mints canonical mission ids with cryptographically random hex suffix.
+Mission close-out, guild channel, backlog ideas, skills bank. **API runtime:** `GET /health` → **0.22.0**.
 
-- `POST /discoveries/:id/approve` copies drafts to `parking/{slug}-{date}-{random-hex}` (not draft folder name)
-- `isMissionIdInUse` includes **aborted** board for collision checks
+### Close-out pipeline (Phases 1–4)
 
-## Unreleased — API 0.19.0 (0.3.0 Phase 3)
-
-Mission retrospective — feedback tree, PO aggregation, signal gates.
-
-- `retrospective/` scaffold: `members/{role}/feedback.md`, `workflow-report.md`, `skills-reports/`
-- Member playbooks: exit contract + safety check; evaluator writes feedback before Task return
-- PO playbook: aggregation steps, `workflow-report.md`, `skills-reports/` distillation
-- `GET /missions/:id/room/retrospective/**` allowlisted
-- `retrospective_complete` requires `workflow-report.md`; `mission_complete` requires prior `retrospective_complete`
-- E2E extended: retro + dismiss gates
-
-## Unreleased — API 0.18.0 (0.3.0 Phase 2)
-
-Artifact release plan file, PO playbook close-out, release gate on signal.
-
-- `artifact-release.md` scaffold in mission-room template (`mode`, `target`, `source_paths`, `status`)
-- Handoff Round 2: draft release plan; Rounds 4–6: QA → release → retro → dismiss
-- PO playbook: 0.3.0 close-out signals, release execution, approve tool usage
-- `GET /missions/:id/room/artifact-release.md` allowlisted
-- `artifact_release_complete` requires `status: released`; orchestrator logs milestone to `events.jsonl`
-- E2E extended: release gate + milestone check
-
-## Unreleased — API 0.17.0 (0.3.0 Phase 1)
-
-Mission close-out lifecycle — approve / reject / abort; `mission_complete` only from `retrospective`.
-
-- `POST /missions/:id/approve-artifacts` — guild master sign-off; `releasing` phase; inbox + guild-channel notify
-- `POST /missions/:id/reject-artifacts` — `blocked` on working; inbox + channel
-- `POST /missions/:id/abort` — **aborted/** board; frees slot; `retrospective/abort-note.md`
-- New signals: `artifacts_ready_for_review`, `artifact_release_complete`, `retrospective_complete`
+- Approve / reject / abort artifacts; extended mission phases through release and retrospective
+- `POST /missions/:id/approve-artifacts`, `reject-artifacts`, `abort` — inbox + guild-channel notify
 - **`mission_complete` breaking:** requires `phase: retrospective` (was: any active phase)
-- `POST /missions/:id/archive` extended for **aborted** board
-- Mission room tools: `approve-artifacts`, `reject-artifacts`, `abort`
-- Boot `reconcileAbortedOnWorking()` migration
-- Docs: [docs/phase1-migration.md](./docs/phase1-migration.md)
+- `artifact-release.md`, retrospective tree, PO aggregation playbooks
+- Web UI: close-out phase pills, approve artifacts, artifact-release + retro views
+- Parking/queued mission detail; promote from detail view only
+
+### Guild channel (Phase 0)
+
+- Per-mission-room `guild-channel` MCP; orchestrator POST on approve/reject/abort
+- `CLAUDE_DEV_CHANNELS=1` for PO spawn; degraded mode = inbox + checkpoint only
+- Docs: [docs/guild-channel.md](docs/guild-channel.md)
+
+### Backlog ideas (Phase 5)
+
+- **ideas-backlog/** board column; `POST /ideas` default `board: "backlog"`
+- `POST /board/ideas-backlog/:id/promote` → ideas
+- Web UI: eighth column, submit chooser, promote on backlog cards
+
+### Skills bank (Phase 6)
+
+- `data/skills-bank/` seeded from template; `wire-skills-from-bank` in room templates
+- Read-only `GET /skills-bank`, `GET /skills-bank/:name`
+- PO / intake lead Round 0 wire workflow; [docs/skills-bank.md](docs/skills-bank.md)
+
+### Other
+
+- Discovery approve mints canonical mission ids with cryptographically random hex suffix
+- QA: [docs/tests/close-out-e2e.md](docs/tests/close-out-e2e.md), `scripts/e2e-close-out-03.ts`
 
 ## 0.2.0 — 2026-06-29
 

@@ -58,6 +58,8 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 | POST | `/missions/:id/outbox/read` | yes | Mark outbox entries read |
 | POST | `/missions/:id/escalate` | yes | Atomic outbox append + `blocked` signal |
 | POST | `/recover` | yes | Manual boot-style recovery |
+| GET | `/skills-bank` | yes | Skills catalog + folder listing (read-only) |
+| GET | `/skills-bank/:name` | yes | Single skill folder contents (read-only) |
 | POST | `/ideas` | yes | Submit rough idea → **ideas-backlog** (default) or **ideas** |
 | GET | `/ideas` | yes | List backlog + ideas + discovering entries |
 | GET | `/ideas/:id` | yes | Idea detail + discovery checkpoint |
@@ -275,6 +277,49 @@ Move one parking folder → **queued** (guild master promotes approved missions 
 
 **404** — not on parking board or folder missing on disk.  
 **409** — queued entry already exists.
+
+**409** — queued entry already exists.
+
+---
+
+## `GET /skills-bank`
+
+Read-only skills bank summary. Runtime path: `data/skills-bank/` (seeded from `templates/skills-bank/` on boot when `catalog.md` is missing).
+
+**Response 200**
+
+```json
+{
+  "catalog": "# Guild skills bank catalog\n…",
+  "skills": [
+    { "name": "example-skill", "description": "Example bank skill — replace or delete…" }
+  ],
+  "count": 1
+}
+```
+
+---
+
+## `GET /skills-bank/:name`
+
+Read a single skill folder. `:name` must match `[a-zA-Z0-9][a-zA-Z0-9._-]*`.
+
+**Response 200**
+
+```json
+{
+  "name": "example-skill",
+  "description": "Example bank skill — replace or delete…",
+  "skillMd": "---\nname: example-skill\n…",
+  "files": [
+    { "path": "SKILL.md", "content": "…" }
+  ]
+}
+```
+
+**404** — skill folder missing or no `SKILL.md`.
+
+See [skills-bank.md](./skills-bank.md).
 
 ---
 

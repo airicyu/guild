@@ -11,6 +11,7 @@ Execute this checklist **in order**. **Do not** spawn mission PO sessions or wri
 - [ ] Read raw idea: `scratch.md`
 - [ ] Read your playbook: `members/intake-lead/agent.md`
 - [ ] Read mission package schema: `.guild/mission-schema.md` (format for each `artifacts/missions/*/mission.md`)
+- [ ] Read `../skills-bank/catalog.md`; wire needed skills via `.claude/skills/wire-skills-from-bank/wire.sh …` **before explore**
 
 ## Round 1 — Explore
 

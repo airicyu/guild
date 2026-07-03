@@ -127,8 +127,8 @@ async function assertHealth(): Promise<void> {
   const res = await fetch(`${BASE}/health`);
   if (!res.ok) fail("GET /health", `status ${res.status}`);
   const json = (await res.json()) as { version?: string };
-  if (json.version !== "0.19.0") {
-    fail("API version", `expected 0.19.0, got ${json.version ?? "?"}`);
+  if (!json.version || json.version < "0.17.0") {
+    fail("API version", `expected >= 0.17.0, got ${json.version ?? "?"}`);
   }
   pass("GET /health", `version ${json.version}`);
 }

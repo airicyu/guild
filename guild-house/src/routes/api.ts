@@ -59,6 +59,7 @@ import {
   restoreMissionSession,
   syncActiveMission,
 } from "../orchestrator/mission/session-lifecycle";
+import { getSkillDetail, getSkillsBankSummary } from "../orchestrator/skills-bank/read";
 import type { EscalateRequest, EventLogRequest, SignalRequest } from "../types/mission";
 import type { CreateIdeaRequest, DiscoveryEventLogRequest, DiscoverySignalRequest } from "../types/discovery";
 
@@ -95,6 +96,22 @@ export async function routeRequest(config: Config, req: Request): Promise<Respon
 
   if (req.method === "GET" && pathname === "/board") {
     return json(await listBoard(config));
+  }
+
+  if (req.method === "GET" && pathname === "/skills-bank") {
+    return json(await getSkillsBankSummary(config));
+  }
+
+  const skillMatch = pathname.match(/^\/skills-bank\/([^/]+)$/);
+  if (req.method === "GET" && skillMatch) {
+    try {
+      const name = decodeURIComponent(skillMatch[1]);
+      const skill = await getSkillDetail(config, name);
+      if (!skill) return notFound("Skill not found");
+      return json(skill);
+    } catch (err) {
+      return badRequest(err instanceof Error ? err.message : String(err));
+    }
   }
 
   const ideasBacklogPromoteMatch = pathname.match(/^\/board\/ideas-backlog\/([^/]+)\/promote$/);
