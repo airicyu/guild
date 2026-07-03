@@ -83,6 +83,7 @@ export interface MissionSessionInfo extends Omit<SessionCommands, "attachCmd"> {
 }
 
 export type BoardStage =
+  | "ideas-backlog"
   | "ideas"
   | "discovering"
   | "parking"
@@ -112,6 +113,7 @@ export interface TickResult {
 export type BellResult = TickResult;
 
 export interface BoardListing {
+  "ideas-backlog": string[];
   ideas: string[];
   discovering: string[];
   parking: string[];

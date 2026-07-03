@@ -33,11 +33,15 @@ export interface DiscoveryCheckpoint {
 export interface CreateIdeaRequest {
   text: string;
   slug?: string;
+  /** Submit destination — default `backlog` (ideas-backlog/); `ideas` skips incubation. */
+  board?: "backlog" | "ideas";
 }
+
+export type IdeaBoard = "backlog" | "ideas" | "discovering";
 
 export interface IdeaListItem {
   id: string;
-  board: "ideas" | "discovering";
+  board: IdeaBoard;
   scratchPreview: string;
   phase?: DiscoveryPhase;
   sessionLive?: boolean;

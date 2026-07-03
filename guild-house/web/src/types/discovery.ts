@@ -29,9 +29,11 @@ export interface DiscoveryCheckpoint {
   last_signal?: DiscoveryLastSignal | null;
 }
 
+export type IdeaBoard = "backlog" | "ideas" | "discovering";
+
 export interface IdeaListItem {
   id: string;
-  board: "ideas" | "discovering";
+  board: IdeaBoard;
   scratchPreview: string;
   phase?: DiscoveryPhase;
   sessionLive?: boolean;
@@ -53,7 +55,7 @@ export interface IdeasResponse {
 export interface CreateIdeaResponse {
   ok: true;
   ideaId: string;
-  board: "ideas";
+  board: "backlog" | "ideas";
   scratchPreview: string;
 }
 
@@ -82,7 +84,7 @@ export interface DiscoveryOutboxEntry {
 
 export interface DiscoveryOutboxResponse {
   ideaId: string;
-  board: "ideas" | "discovering";
+  board: IdeaBoard;
   entries: DiscoveryOutboxEntry[];
   unreadCount: number;
 }

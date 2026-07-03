@@ -49,7 +49,7 @@ async function handleRequest(req: Request): Promise<Response> {
       json({
         ok: true,
         service: "guild-house",
-        version: "0.20.0",
+        version: "0.21.0",
         guildHome: config.guildHome,
         guildMasterName: config.guildMasterName,
         tickIntervalMinutes: config.tickIntervalMinutes,

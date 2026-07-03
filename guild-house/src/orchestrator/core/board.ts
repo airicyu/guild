@@ -56,11 +56,20 @@ async function listStageFolders(config: Config, stage: BoardStage): Promise<stri
 
 /** List all board stage folders; merges legacy ready/active into queued/working. */
 export async function listBoard(config: Config): Promise<BoardListing> {
-  const [ideas, discovering, parking, queued, working, done, aborted, archive] = await Promise.all(
-    BOARD_STAGES.map((stage) => listStageFolders(config, stage)),
-  );
+  const [ideasBacklog, ideas, discovering, parking, queued, working, done, aborted, archive] =
+    await Promise.all(BOARD_STAGES.map((stage) => listStageFolders(config, stage)));
 
-  return { ideas, discovering, parking, queued, working, done, aborted, archive };
+  return {
+    "ideas-backlog": ideasBacklog,
+    ideas,
+    discovering,
+    parking,
+    queued,
+    working,
+    done,
+    aborted,
+    archive,
+  };
 }
 
 /** Working missions that consume a concurrent PO slot (`phase` not terminal on working board). */
@@ -162,6 +171,20 @@ export function isOnDoneBoard(board: BoardListing, missionId: string): boolean {
 /** True when missionId appears on the aborted board listing. */
 export function isOnAbortedBoard(board: BoardListing, missionId: string): boolean {
   return board.aborted.includes(missionId);
+}
+
+/** Resolve ideas-backlog/{ideaId} path; null if missing. */
+export async function resolveIdeasBacklogEntryPath(
+  config: Config,
+  ideaId: string,
+): Promise<string | null> {
+  const path = join(missionBoardPath(config, "ideas-backlog"), ideaId);
+  try {
+    if ((await stat(path)).isDirectory()) return path;
+  } catch {
+    // missing
+  }
+  return null;
 }
 
 /** Resolve parking/{folderName} path; null if missing. */

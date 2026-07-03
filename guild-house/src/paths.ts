@@ -11,6 +11,7 @@ import type { Config } from "./config";
 
 /** Plan 3 board folders — names match UI columns. */
 export const BOARD_STAGES = [
+  "ideas-backlog",
   "ideas",
   "discovering",
   "parking",
@@ -122,8 +123,10 @@ export function discoverySessionName(ideaId: string): string {
   return `discovery-${ideaId}-lead`;
 }
 
-/** Path to ideas/ or discovering/ board entry folder. */
-export function ideaBoardEntryPath(config: Config, stage: "ideas" | "discovering", ideaId: string): string {
+export type IdeaBoardStage = "ideas-backlog" | "ideas" | "discovering";
+
+/** Path to ideas-backlog/, ideas/, or discovering/ board entry folder. */
+export function ideaBoardEntryPath(config: Config, stage: IdeaBoardStage, ideaId: string): string {
   return join(missionBoardPath(config, stage), ideaId);
 }
 

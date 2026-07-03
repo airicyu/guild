@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowUpCircle, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { ConfirmDialog } from "../components/ConfirmDialog";
@@ -9,7 +9,7 @@ import { IdeaDraftsTab } from "../features/discovery/IdeaDraftsTab";
 import { IdeaOutboxTab } from "../features/discovery/IdeaOutboxTab";
 import { IdeaScratchTab } from "../features/discovery/IdeaScratchTab";
 import { IdeaTerminalTab } from "../features/discovery/IdeaTerminalTab";
-import { IDEA_TABS, type IdeaTabId } from "../features/discovery/utils";
+import { ideaTabsForBoard, type IdeaTabId } from "../features/discovery/utils";
 import {
   ApiError,
   approveDiscovery,
@@ -17,6 +17,7 @@ import {
   fetchDiscoverySession,
   fetchIdea,
   fetchIdeaDrafts,
+  promoteIdeasBacklog,
   restoreDiscovery,
 } from "../lib/api";
 import { canApproveDiscovery } from "../lib/board";
@@ -31,6 +32,7 @@ export function IdeaPage() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<IdeaTabId>("scratch");
   const [approveOpen, setApproveOpen] = useState(false);
+  const [promoteOpen, setPromoteOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const ideaQuery = useQuery({
@@ -102,20 +104,54 @@ export function IdeaPage() {
     },
   });
 
+  const promoteMutation = useMutation({
+    mutationFn: () => promoteIdeasBacklog(id!),
+    onSuccess: () => {
+      setPromoteOpen(false);
+      setToasts((prev) => [
+        ...prev,
+        {
+          id: nextToastId(),
+          tone: "success",
+          title: "Promoted to Ideas",
+          detail: "Ring the bell on the board when ready for discovery",
+        },
+      ]);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.board });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.ideas });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.idea(id!) });
+    },
+    onError: (err) => {
+      setToasts((prev) => [
+        ...prev,
+        {
+          id: nextToastId(),
+          tone: "error",
+          title: "Promote failed",
+          detail: err instanceof Error ? err.message : String(err),
+        },
+      ]);
+    },
+  });
+
   const idea = ideaQuery.data;
   const apiError = ideaQuery.error instanceof ApiError ? ideaQuery.error : null;
   const phase = idea?.checkpoint?.phase ?? idea?.phase;
   // Approve only when intake lead has presented packages (see lib/board.canApproveDiscovery).
   const showApprove = idea?.board === "discovering" && canApproveDiscovery(phase);
+  const showPromote = idea?.board === "backlog";
+  const visibleTabs = idea ? ideaTabsForBoard(idea.board) : [];
+  const backTo = idea?.board === "discovering" ? "/discovering" : "/";
+  const backLabel = idea?.board === "discovering" ? "Discovering" : "Back to board";
 
   return (
     <div>
       <Link
-        to="/discovering"
+        to={backTo}
         className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
       >
         <ArrowLeft size={16} />
-        Discovering
+        {backLabel}
       </Link>
 
       {ideaQuery.isLoading && (
@@ -141,6 +177,11 @@ export function IdeaPage() {
                 </span>
                 {phase && <DiscoveryPhasePill phase={phase} />}
                 {idea.board === "discovering" && <SessionDot live={idea.sessionLive} />}
+                {idea.board === "backlog" && (
+                  <span className="text-xs text-[var(--color-text-muted)]">
+                    Promote to Ideas, then ring the bell to start discovery
+                  </span>
+                )}
                 {idea.checkpoint?.awaiting_guild_master && (
                   <span className="text-xs font-medium uppercase tracking-wide text-[var(--phase-blocked)]">
                     Awaiting guild master
@@ -148,6 +189,17 @@ export function IdeaPage() {
                 )}
               </div>
             </div>
+            {showPromote && (
+              <button
+                type="button"
+                onClick={() => setPromoteOpen(true)}
+                disabled={promoteMutation.isPending}
+                className="guild-btn-primary flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
+              >
+                <ArrowUpCircle size={18} />
+                {promoteMutation.isPending ? "Promoting…" : "Promote to Ideas"}
+              </button>
+            )}
             {showApprove && (
               <button
                 type="button"
@@ -162,7 +214,7 @@ export function IdeaPage() {
           </div>
 
           <div className="mb-4 flex gap-1 border-b border-[var(--color-border)]">
-            {IDEA_TABS.map((t) => (
+            {visibleTabs.map((t) => (
               <button
                 key={t.id}
                 type="button"
@@ -196,6 +248,16 @@ export function IdeaPage() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={promoteOpen}
+        title="Promote to Ideas"
+        message={`Move ${id} from backlog to the Ideas column? Ring the bell to start discovery.`}
+        confirmLabel="Promote"
+        pending={promoteMutation.isPending}
+        onConfirm={() => promoteMutation.mutate()}
+        onCancel={() => setPromoteOpen(false)}
+      />
 
       <ConfirmDialog
         open={approveOpen}

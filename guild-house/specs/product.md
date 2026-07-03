@@ -9,7 +9,7 @@ Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archiv
 | Kind | Location | Current |
 |------|----------|---------|
 | Product | `version.md` + `changelog.md` | **0.2.0** |
-| API runtime | `GET /health` → `version` | **0.19.0** (Phase 3 retrospective) |
+| API runtime | `GET /health` → `version` | **0.21.0** (Phase 5 backlog ideas) |
 
 ## Board pipeline
 
@@ -34,6 +34,8 @@ Abort: working → [abort] → aborted → [archive]
 
 | Stage | Who moves | Mechanism |
 |-------|-----------|-----------|
+| submit → ideas-backlog | Guild master | `POST /ideas` with `board: "backlog"` (default) |
+| ideas-backlog → ideas | Guild master | `POST /board/ideas-backlog/:id/promote` |
 | ideas → discovering | Orchestrator | `orchestratorTick()` / `POST /bell` |
 | discovering → parking | Guild master | `POST /discoveries/:id/approve` |
 | parking → queued | Guild master | `POST /board/parking/:folder/promote` |
@@ -71,7 +73,7 @@ The **guild master** is the **human supervisor** for Guild — not an agent in m
 | Aspect | Detail |
 |--------|--------|
 | **Who** | The operator at Guild Desk, Web UI, or terminal attach (not PO, intake lead, or squad members) |
-| **Does** | Submit ideas, approve discovery, promote parking → queued, archive done missions, answer outbox via `inbox.md`, attach to intervene |
+| **Does** | Submit ideas (backlog or ideas), promote backlog → ideas, approve discovery, promote parking → queued, archive done missions, answer outbox via `inbox.md`, attach to intervene |
 | **Room files** | Writes `inbox.md` (directives); reads `outbox.jsonl` (escalations). Checkpoint field `awaiting_guild_master` means waiting on this role |
 | **Playbooks** | Use the role term **guild master** — not a personal name baked into templates |
 | **`GUILD_MASTER_NAME`** | Env display label only (`GET /health` → `guildMasterName`, Web UI header). Safe to rename without re-scaffolding rooms |

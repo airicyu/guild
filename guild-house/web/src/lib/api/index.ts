@@ -6,7 +6,7 @@ export {
   fetchHealth,
   type HealthResponse,
 } from "./client";
-export { fetchBoard, fetchMissions, fetchQueue, promoteParking, ringBell } from "./board";
+export { fetchBoard, fetchMissions, fetchQueue, promoteIdeasBacklog, promoteParking, ringBell } from "./board";
 export {
   approveDiscovery,
   createIdea,

@@ -195,13 +195,13 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 | ID | Task | Notes |
 |----|------|-------|
 | 5.1 | [x] Backlog entry = `ideas-backlog/{id}/scratch.md` (same as ideas) | Design §9.5 |
-| 5.2 | [ ] Add `ideas-backlog/` board stage + `listBoard` support | `paths.ts`, orchestrator |
-| 5.3 | [ ] `POST /ideas` — `board: "backlog" \| "ideas"`; default **backlog** | Design §9.1 |
-| 5.4 | [ ] `POST /board/ideas-backlog/:id/promote` → ideas | Mirror parking promote |
-| 5.5 | [ ] Tick: only consume **ideas** column, not backlog | `orchestratorTick` |
-| 5.6 | [ ] Submit idea modal: backlog vs ideas chooser | `SubmitIdeaModal` |
-| 5.7 | [ ] Web UI: eighth column + promote action on backlog cards | `BoardPage.tsx` |
-| 5.8 | [ ] Update `specs/product.md` pipeline diagram | |
+| 5.2 | [x] Add `ideas-backlog/` board stage + `listBoard` support | `paths.ts`, orchestrator |
+| 5.3 | [x] `POST /ideas` — `board: "backlog" \| "ideas"`; default **backlog** | Design §9.1 |
+| 5.4 | [x] `POST /board/ideas-backlog/:id/promote` → ideas | Mirror parking promote |
+| 5.5 | [x] Tick: only consume **ideas** column, not backlog | `orchestratorTick` |
+| 5.6 | [x] Submit idea modal: backlog vs ideas chooser | `SubmitIdeaModal` |
+| 5.7 | [x] Web UI: eighth column + promote action on backlog cards | `BoardPage.tsx` |
+| 5.8 | [x] Update `specs/product.md` pipeline diagram | |
 
 ---
 
@@ -252,7 +252,7 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 - [x] Channel PoC + dev flag / production path (Phase 0 review)
 - [x] Parking/queued detail UI — design §13.2 (Phase 4.5)
-- [ ] Board UI eighth column layout (Phase 5)
+- [x] Board UI eighth column layout (Phase 5)
 
 ---
 

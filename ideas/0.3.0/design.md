@@ -148,7 +148,7 @@ Guild master sign-off that **deliverables are acceptable**, after internal QA. E
 | Path | Actor | Flow |
 |------|-------|------|
 | **Chat / attach** | Guild master in PO session | PO signals `artifacts_ready_for_review` → presents → guild master says yes → **PO runs approve tool** (e.g. `tools/approve-artifacts.sh` → `POST /missions/:id/approve-artifacts`) |
-| **Web / API** | Guild master from UI | **Approve artifacts** button → orchestrator records approval → notify PO via channel + inbox + checkpoint |
+| **Web / API** | Guild master from UI | **Approve artifacts** button → orchestrator records approval → notify PO via channel (best-effort) + inbox + checkpoint; PO may need attach if channel does not wake idle session (§5.7) |
 
 Discovery parallel:
 
@@ -237,7 +237,7 @@ Use [Claude Code Channels](https://code.claude.com/docs/en/channels-reference) (
 - MCP server declares `capabilities.experimental['claude/channel']`
 - Claude Code spawns channel MCP as subprocess in the **mission room** session (stdio)
 - Channel HTTP listener receives POST from orchestrator → `notifications/claude/channel`
-- Event appears as `<channel source="guild-house" event="…">` on PO’s next turn (queued if busy)
+- Event appears as `<channel source="guild-house" event="…">` on PO’s next turn (**queued if Claude is busy processing**; see §5.7 for idle-session limits)
 
 **Locked: per-mission-room** (not a single guild-house sidecar). Matches CC’s session-scoped MCP model and `MAX_ACTIVE_MISSIONS` routing.
 
@@ -264,16 +264,50 @@ On orchestrator events (e.g. `approve-artifacts`, future inbox API):
 
 1. Update `checkpoint.yaml` (phase, flags)
 2. Append/write `inbox.md` with directive text
-3. If `channel-endpoint.json` exists → POST to localhost with auth (`GUILD_API_KEY` header or shared secret); **sender gating** required (ungated HTTP = prompt injection per CC docs)
-4. If session down or no endpoint → degraded mode; PO picks up on restore/attach via existing resume prompt pattern
+3. If `channel-endpoint.json` exists and port is live → POST to localhost with auth (`GUILD_API_KEY` header or shared secret); **sender gating** required (ungated HTTP = prompt injection per CC docs). API `notify.channel.delivered: true` means **HTTP/MCP transport accepted the POST**, not that the PO executed the playbook.
+4. If session down, stale endpoint, or no port → **degraded mode**; PO picks up on restore/attach (or guild-master chat in attach) via `inbox.md` + checkpoint — see §5.7
 
 Channel `instructions` must tell Claude: events from `source="guild-house"` are orchestrator directives; read `inbox.md` and checkpoint; follow playbook; not user chat.
 
 ### 5.5 Research preview constraints
 
 - Custom channels need `--dangerously-load-development-channels` until allowlisted or org policy enables them
-- PoC must prove: `--bg` PO in mission room loads channel; orchestrator POST delivers event; PO playbook reacts
-- One-way channel sufficient for approve/inbox; two-way / permission relay is future
+- Phase 0 PoC proved: `--bg` PO loads channel MCP; orchestrator POST returns `ok`; optional log poll may show `<channel>` tags. **Did not prove** idle PO auto-executes close-out after approve (§5.7).
+- One-way channel sufficient for approve/inbox **when CC wake works**; two-way / permission relay is future
+
+### 5.7 Known limitation — idle `--bg` PO may not wake on channel (as-built 2026-07)
+
+**Status:** Accepted for 0.3.0. Channel push remains implemented; **do not rely on it alone** for Web approve → release.
+
+Manual validation (channel approve E2E, 2026-07-03) and upstream reports match: orchestrator can succeed end-to-end at the **transport** layer while the PO never starts a new agent turn.
+
+| Layer | What happens | Reliable? |
+|-------|----------------|-----------|
+| **Ledger** | `checkpoint.yaml` + `inbox.md` updated on approve/reject/abort | Yes |
+| **Transport** | POST to `channel-endpoint.json` → `mcp.notification(notifications/claude/channel)` → HTTP `ok` | Usually, when MCP HTTP is live |
+| **PO wake / act** | Idle `--bg` PO at prompt processes channel and runs release playbook | **No** — not dependable today |
+
+**Symptoms observed:**
+
+- Web **Approve artifacts** updates phase to `releasing` and inbox; UI looks “stuck” until PO moves.
+- API logs `notify.channel.delivered: true` but PO attach chat still says “waiting for guild master approval.”
+- PO may report it never saw `<channel source="guild-house" …>` in the conversation; learning approval only after **explicit attach chat** and `Read inbox.md` (non-deterministic).
+- PoC log grep for `<channel` can false-positive on spawn prompts that mention channel tags in prose.
+
+**Upstream:** Claude Code [issue #44380](https://github.com/anthropics/claude-code/issues/44380) — idle sessions receive channel notifications at the harness/transport level but the REPL does not interrupt to process them; stdin takes priority. Related: [#37139](https://github.com/anthropics/claude-code/issues/37139) (silent drop when idle). Guild `guild-channel` uses the same `notifications/claude/channel` path as official channel plugins.
+
+**Secondary edge case:** `channel-endpoint.json` can outlive the MCP HTTP listener after PO stop/resume (stale port). Orchestrator probes port liveness but does not bind endpoint to current session id — can yield `delivered: false` or POST to a dead/orphan listener. Distinct from idle-wake failure.
+
+**Operational workaround (0.3.0):** Guild master **attach** to mission room and approve in chat (PO runs `tools/approve-artifacts.sh` or reads `inbox.md` after guild-master message). Web approve still writes ledger correctly; attach is the reliable wake path until CC or Guild ships a stronger nudge.
+
+**Deferred product fixes (backlog):**
+
+- Approve后 **force respawn** with `resumeSpawnPrompt` embedding inbox directive (orchestrator-owned turn).
+- UI copy: `delivered` → “channel POST ok” + hint if `artifact-release.md` stays non-`released`.
+- PoC: add **idle wake** scenario (spawn → wait for idle → POST → assert filesystem close-out progress).
+- Tighter endpoint health (session id in endpoint file; clear on restore).
+
+**Locked semantics unchanged:** filesystem + checkpoint remain source of truth; channel is **best-effort wake-up bus**, not a guarantee. PO must not edit `checkpoint.yaml` (orchestrator-only); corrupted checkpoint YAML breaks API reads.
 
 ### 5.6 Future reuse
 
@@ -284,7 +318,7 @@ Same channel can carry:
 - `outbox_reply` (guild master answered escalation)
 - Other orchestrator → PO nudges
 
-Filesystem + checkpoint remain the **ledger**; channel is the **wake-up bus** for live sessions.
+Filesystem + checkpoint remain the **ledger**; channel is the **best-effort wake-up bus** for live sessions (§5.7).
 
 ---
 
@@ -685,7 +719,7 @@ Separate short-lived team to decide squad composition + skill wiring + copy skil
 - [x] “Approve” means **approve artifacts** (guild-master deliverable sign-off after QA)
 - [x] Dual path: chat + Web/API (like discovery)
 - [x] Approval does **not** dismiss team or move to done
-- [x] Persistence: checkpoint + `inbox.md` + **per-mission channel push**
+- [x] Persistence: checkpoint + `inbox.md` + **per-mission channel push** (channel = best-effort; §5.7)
 - [x] Channel: **per-mission-room**, one-way, orchestrator → PO
 - [x] Release plan: **`artifact-release.md`**
 - [x] Plan timing: scope eval + chat refine; Web/API → PO decides
@@ -701,7 +735,7 @@ Separate short-lived team to decide squad composition + skill wiring + copy skil
 - [x] Feature 3 backlog ideas — `ideas-backlog/`, default `backlog`, promote only, full entry = `scratch.md`
 - [x] Feature 4 skills bank — wire Round 0, CLI args, `../skills-bank/`, manual bank updates from retro
 - [x] **Parking / queued detail UI** — clickable board cards; promote only in mission detail view (§13.2)
-- [ ] Channel PoC validated on WSL with `--bg` PO (deferred to Phase 0 implementation review)
+- [x] Channel PoC validated transport on WSL with `--bg` PO; **idle wake not validated** (§5.7)
 
 ---
 
@@ -709,7 +743,7 @@ Separate short-lived team to decide squad composition + skill wiring + copy skil
 
 **Alignment complete for 0.3.0 design** (2026-07-01). Open items are **implementation / Phase 0 review** only:
 
-- Channel PoC with `--dangerously-load-development-channels` (resolve production path at Phase 0 review)
+- Channel **idle wake** — upstream CC limitation; Guild workaround = attach approve path until respawn-nudge ships (§5.7)
 - Board UI eighth column layout (implementation detail)
 
 Proceed: [implementation-plan.md](./implementation-plan.md) Phase 0 → review gate → Phase 1 …

@@ -32,6 +32,7 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 |--------|------|------|-------------|
 | GET | `/health` | no | Service status |
 | GET | `/board` | yes | Mission-board folder names by stage |
+| POST | `/board/ideas-backlog/:id/promote` | yes | Move backlog idea → ideas |
 | POST | `/board/parking/:folder/promote` | yes | Move parking folder → queued |
 | POST | `/bell` | yes | Orchestrator tick (discovery + execution pickup) |
 | GET | `/queue` | yes | Ready missions vs active slot availability |
@@ -57,8 +58,8 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 | POST | `/missions/:id/outbox/read` | yes | Mark outbox entries read |
 | POST | `/missions/:id/escalate` | yes | Atomic outbox append + `blocked` signal |
 | POST | `/recover` | yes | Manual boot-style recovery |
-| POST | `/ideas` | yes | Submit rough idea → **ideas** column |
-| GET | `/ideas` | yes | List ideas + discovering entries |
+| POST | `/ideas` | yes | Submit rough idea → **ideas-backlog** (default) or **ideas** |
+| GET | `/ideas` | yes | List backlog + ideas + discovering entries |
 | GET | `/ideas/:id` | yes | Idea detail + discovery checkpoint |
 | GET | `/ideas/:id/drafts` | yes | Mission draft packages under discovery room |
 | POST | `/discoveries/:id/approve` | yes | Copy packages to **parking**; close discovery |
@@ -101,12 +102,13 @@ Public. No Bearer token.
 
 ## `GET /board`
 
-Lists folder names for each board stage (Plan 3 six-column model). Legacy `ready/` merges into `queued`; legacy `active/` merges into `working`.
+Lists folder names for each board stage (Plan 3 eight-column model). Legacy `ready/` merges into `queued`; legacy `active/` merges into `working`.
 
 **Response 200**
 
 ```json
 {
+  "ideas-backlog": ["idea-20260704-a1b2c3"],
   "ideas": ["idea-20260629-a1b2c3"],
   "discovering": [],
   "parking": ["split-guild-master-skill-20260629-8d133b"],
@@ -127,7 +129,7 @@ Calls **`orchestratorTick()`** — same as periodic auto-tick when `GUILD_TICK_I
 
 **Discovery half** (FIFO, slot-limited by `MAX_DISCOVERY_SESSIONS`):
 
-1. Pick ideas from `ideas/` → scaffold discovery room → spawn intake lead `--bg` → move to `discovering/`
+1. Pick ideas from `ideas/` only (not `ideas-backlog/`) → scaffold discovery room → spawn intake lead `--bg` → move to `discovering/`
 
 **Execution half** (FIFO, slot-limited by `MAX_ACTIVE_MISSIONS` on **working** only):
 
@@ -231,6 +233,27 @@ Lists **working** and **done** board missions with checkpoint summary. Working m
 | `restoreRequired` | Mission needs PO but session not live (working only) |
 
 **Slot counting:** Only missions on **working** board count toward `MAX_ACTIVE_MISSIONS`. **Done** board does not consume slots.
+
+---
+
+## `POST /board/ideas-backlog/:id/promote`
+
+Move one backlog idea → **ideas** (guild master promotes when ready for discovery).
+
+**Path:** `id` — idea id on the ideas-backlog board (e.g. `idea-20260704-a1b2c3`).
+
+**Response 200**
+
+```json
+{
+  "ok": true,
+  "ideaId": "idea-20260704-a1b2c3",
+  "stage": "ideas"
+}
+```
+
+**404** — not on ideas-backlog board or folder missing on disk.  
+**409** — ideas entry already exists.
 
 ---
 
@@ -862,18 +885,19 @@ Board/list/tick/queue semantics are documented in the main sections above (`GET 
 
 ### `POST /ideas`
 
-Create a rough idea on the **Ideas** column.
+Create a rough idea on **ideas-backlog** (default) or **ideas**.
 
 **Body**
 
 ```json
 {
   "text": "Build a kanban for mission discovery with six columns.",
-  "slug": "mission-kanban"
+  "slug": "mission-kanban",
+  "board": "backlog"
 }
 ```
 
-`text` required. Optional `slug` prefixes minted id as `{slug}-{YYYYMMDD}-{6hex}`; default prefix is `idea`.
+`text` required. Optional `slug` prefixes minted id as `{slug}-{YYYYMMDD}-{6hex}`; default prefix is `idea`. Optional `board`: `"backlog"` (default) or `"ideas"`.
 
 **Response 201**
 
@@ -881,16 +905,16 @@ Create a rough idea on the **Ideas** column.
 {
   "ok": true,
   "ideaId": "idea-20260629-a1b2c3",
-  "board": "ideas",
+  "board": "backlog",
   "scratchPreview": "Build a kanban for mission discovery…"
 }
 ```
 
-Creates `mission-board/ideas/{ideaId}/scratch.md`.
+Creates `mission-board/ideas-backlog/{ideaId}/scratch.md` or `mission-board/ideas/{ideaId}/scratch.md`.
 
 #### `GET /ideas`
 
-Lists ideas on **ideas** and **discovering** stages.
+Lists ideas on **ideas-backlog**, **ideas**, and **discovering** stages.
 
 **Response 200**
 

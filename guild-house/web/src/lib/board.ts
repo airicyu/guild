@@ -72,11 +72,17 @@ export function toCardData(
 }
 
 export type BoardColumnDef =
-  | { title: string; stage: "ideas" | "discovering"; ids: string[]; kind: "idea" }
+  | { title: string; stage: "ideas-backlog" | "ideas" | "discovering"; ids: string[]; kind: "idea" }
   | { title: string; stage: BoardStage; ids: string[]; kind: "mission" };
 
 export function boardColumns(board: BoardResponse): BoardColumnDef[] {
   return [
+    {
+      title: "Backlog",
+      stage: "ideas-backlog",
+      ids: board["ideas-backlog"] ?? [],
+      kind: "idea",
+    },
     { title: "Ideas", stage: "ideas", ids: board.ideas, kind: "idea" },
     { title: "Discovering", stage: "discovering", ids: board.discovering, kind: "idea" },
     { title: "Parking", stage: "parking", ids: board.parking, kind: "mission" },

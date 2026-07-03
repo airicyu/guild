@@ -50,10 +50,14 @@ export function mintIdeaId(slug?: string, date = todayYmd()): string {
   return id;
 }
 
-/** True when id is on ideas/discovering board or discovery-rooms/ exists. */
+/** True when id is on ideas-backlog/ideas/discovering board or discovery-rooms/ exists. */
 export async function isIdeaIdInUse(config: Config, ideaId: string): Promise<boolean> {
   const board = await listBoard(config);
-  if (board.ideas.includes(ideaId) || board.discovering.includes(ideaId)) {
+  if (
+    board["ideas-backlog"].includes(ideaId) ||
+    board.ideas.includes(ideaId) ||
+    board.discovering.includes(ideaId)
+  ) {
     return true;
   }
 

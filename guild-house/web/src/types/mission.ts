@@ -11,6 +11,7 @@ export type MissionPhase =
   | "aborted";
 
 export type BoardStage =
+  | "ideas-backlog"
   | "ideas"
   | "discovering"
   | "parking"
@@ -84,6 +85,7 @@ export interface TickResult {
 }
 
 export interface BoardResponse {
+  "ideas-backlog": string[];
   ideas: string[];
   discovering: string[];
   parking: string[];

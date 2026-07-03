@@ -32,6 +32,7 @@ import {
 } from "../orchestrator/mission/pickup";
 import { orchestratorTick } from "../orchestrator/tick";
 import { promoteParkingToQueued } from "../orchestrator/mission/promote";
+import { promoteIdeasBacklogToIdeas } from "../orchestrator/discovery/promote-backlog";
 import { createIdea, getIdea, listIdeas } from "../orchestrator/discovery/ideas";
 import { approveDiscovery } from "../orchestrator/discovery/approve";
 import { getIdeaDrafts } from "../orchestrator/discovery/drafts";
@@ -94,6 +95,22 @@ export async function routeRequest(config: Config, req: Request): Promise<Respon
 
   if (req.method === "GET" && pathname === "/board") {
     return json(await listBoard(config));
+  }
+
+  const ideasBacklogPromoteMatch = pathname.match(/^\/board\/ideas-backlog\/([^/]+)\/promote$/);
+  if (req.method === "POST" && ideasBacklogPromoteMatch) {
+    try {
+      const ideaId = decodeURIComponent(ideasBacklogPromoteMatch[1]);
+      const result = await promoteIdeasBacklogToIdeas(config, ideaId);
+      return json({ ok: true, ...result });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes("not found") || message.includes("missing")) {
+        return notFound(message);
+      }
+      if (message.includes("already exists")) return conflict(message);
+      return badRequest(message);
+    }
   }
 
   const parkingPromoteMatch = pathname.match(/^\/board\/parking\/([^/]+)\/promote$/);

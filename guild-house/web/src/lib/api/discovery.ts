@@ -13,10 +13,13 @@ export function fetchIdeas() {
   return apiFetch<IdeasResponse>("/ideas");
 }
 
-export function createIdea(text: string, slug?: string) {
+export function createIdea(text: string, options?: { slug?: string; board?: "backlog" | "ideas" }) {
+  const body: { text: string; slug?: string; board?: "backlog" | "ideas" } = { text };
+  if (options?.slug) body.slug = options.slug;
+  if (options?.board) body.board = options.board;
   return apiFetch<CreateIdeaResponse>("/ideas", {
     method: "POST",
-    body: JSON.stringify(slug ? { text, slug } : { text }),
+    body: JSON.stringify(body),
   });
 }
 

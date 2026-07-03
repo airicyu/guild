@@ -12,12 +12,14 @@ Related: [api.md](./api.md) · [tests/execution-e2e.md](./tests/execution-e2e.md
 ## Pipeline overview
 
 ```
-POST /ideas → ideas → [bell/tick] → discovering → [approve] → parking
+POST /ideas → ideas-backlog → [promote] → ideas → [bell/tick] → discovering → [approve] → parking
 → [promote] → queued → [bell/tick] → working → mission_complete → done → [archive]
 ```
 
 | Stage | Who moves it | How |
 |-------|----------------|-----|
+| submit → ideas-backlog | Guild master | `POST /ideas` (default `board: "backlog"`) or Web submit → **Add to backlog** |
+| ideas-backlog → ideas | Guild master | `POST /board/ideas-backlog/:id/promote` or Web **Promote to Ideas** |
 | ideas → discovering | Orchestrator | `POST /bell` or auto-tick |
 | discovering → parking | Guild master | `POST /discoveries/:id/approve` or Web UI / `tools/approve.sh` |
 | parking → queued | Guild master | `POST /board/parking/:folder/promote` or Web UI **Promote** |
@@ -59,19 +61,27 @@ curl -H "$AUTH" http://127.0.0.1:3847/board
 curl -H "$AUTH" http://127.0.0.1:3847/queue
 ```
 
-Expect six visible stages in Web UI: Ideas, Discovering, Parking, Queued, Working, Done.
+Expect eight visible stages in Web UI: Backlog, Ideas, Discovering, Parking, Queued, Working, Done, Aborted.
 
 ---
 
-## 1. Submit idea → **Ideas**
+## 1. Submit idea → **Backlog** or **Ideas**
 
-**Web:** Board → **Submit idea**
+**Web:** Board → **Submit idea** — choose **Add to backlog** (default) or **Add to ideas**.
 
-**API:**
+**API (direct to Ideas column, skip backlog):**
 
 ```bash
 curl -X POST -H "$AUTH" -H "Content-Type: application/json" \
-  -d '{"text":"Add guild-master skill workflows for discovery approve and parking promote","slug":"discovery-docs"}' \
+  -d '{"text":"Add guild-master skill workflows for discovery approve and parking promote","slug":"discovery-docs","board":"ideas"}' \
+  http://127.0.0.1:3847/ideas
+```
+
+Default submit lands on **Backlog**:
+
+```bash
+curl -X POST -H "$AUTH" -H "Content-Type: application/json" \
+  -d '{"text":"Incubate this idea before discovery","slug":"discovery-docs"}' \
   http://127.0.0.1:3847/ideas
 ```
 
@@ -79,10 +89,27 @@ Note `ideaId` in response. Verify:
 
 ```bash
 curl -H "$AUTH" http://127.0.0.1:3847/board
-# ideas: ["discovery-docs-YYYYMMDD-…"]
+# "ideas-backlog": ["discovery-docs-YYYYMMDD-…"]  OR  ideas: […]
 ```
 
-**Acceptance:** Web or API submit → card on **Ideas**.
+**Acceptance:** Web or API submit → card on **Backlog** (default) or **Ideas**. Promote backlog → Ideas before ringing the bell.
+
+---
+
+## 1b. Promote backlog → **Ideas** (optional)
+
+Skip if you submitted directly to **Ideas** (`board: "ideas"`).
+
+**Web:** Backlog column → **Promote to Ideas** on card (or open idea detail → **Promote to Ideas**)
+
+**API:**
+
+```bash
+curl -X POST -H "$AUTH" \
+  http://127.0.0.1:3847/board/ideas-backlog/IDEA_ID/promote
+```
+
+**Acceptance:** Idea moves from **Backlog** to **Ideas**; bell will pick it up.
 
 ---
 
