@@ -1,11 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Archive, Pause, Play, RotateCcw, Terminal } from "lucide-react";
+import { Archive, Pause, Play, RotateCcw, Terminal, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ConfirmDialog } from "../../components/ConfirmDialog";
 import { nextToastId, ToastStack, type ToastMessage } from "../../components/Toast";
-import { ApiError, archiveMission, pauseMission, restoreMission, resumeMission } from "../../lib/api";
-import { queryKeys } from "../../lib/queryKeys";
+import { invalidateMissionCloseoutQueries } from "./invalidateMissionQueries";
+import {
+  ApiError,
+  abortMission,
+  archiveMission,
+  pauseMission,
+  rejectArtifacts,
+  restoreMission,
+  resumeMission,
+} from "../../lib/api";
 import type { MissionSummaryResponse } from "../../types/mission";
 
 interface MissionActionsProps {
@@ -18,6 +26,10 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [abortOpen, setAbortOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [abortReason, setAbortReason] = useState("");
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const addToast = useCallback((toast: Omit<ToastMessage, "id">) => {
@@ -29,13 +41,7 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
   }, []);
 
   const invalidate = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.missionSummary(missionId) });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.missionSession(missionId) });
-    // Board + hall badges reflect pause/archive/restore side effects.
-    void queryClient.invalidateQueries({ queryKey: queryKeys.board });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.missions });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.queue });
-    void queryClient.invalidateQueries({ queryKey: queryKeys.outbox });
+    invalidateMissionCloseoutQueries(queryClient, missionId);
   }, [queryClient, missionId]);
 
   const onMutationError = useCallback(
@@ -88,20 +94,50 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
     onError: (err) => onMutationError(err, "Restore"),
   });
 
-  if (summary.board !== "working" && summary.board !== "done") return null;
+  const rejectMutation = useMutation({
+    mutationFn: () => rejectArtifacts(missionId, rejectReason.trim() || undefined),
+    onSuccess: () => {
+      setRejectOpen(false);
+      setRejectReason("");
+      addToast({ tone: "info", title: "Artifacts rejected", detail: "Mission blocked — PO awaits directive" });
+      invalidate();
+    },
+    onError: (err) => onMutationError(err, "Reject"),
+  });
+
+  const abortMutation = useMutation({
+    mutationFn: () => abortMission(missionId, abortReason.trim() || undefined),
+    onSuccess: () => {
+      setAbortOpen(false);
+      setAbortReason("");
+      addToast({ tone: "info", title: "Mission aborted", detail: "Moved to aborted board" });
+      invalidate();
+      navigate("/hall");
+    },
+    onError: (err) => onMutationError(err, "Abort"),
+  });
+
+  if (summary.board !== "working" && summary.board !== "done" && summary.board !== "aborted") {
+    return null;
+  }
 
   const phase = summary.checkpoint?.phase;
   const isDone = phase === "done" || summary.board === "done";
+  const isAborted = phase === "aborted" || summary.board === "aborted";
   const isPaused = phase === "paused";
-  const canPause = summary.board === "working" && phase && !isDone && !isPaused;
+  const canPause = summary.board === "working" && phase && !isDone && !isPaused && !isAborted;
   const canResume = summary.board === "working" && (isPaused || summary.restoreRequired);
-  // Archive only from done board with archiveReady — POST /missions/:id/archive (specs/product.md).
-  const showArchive = summary.board === "done" && summary.archiveReady;
+  const canReject = summary.board === "working" && phase === "awaiting_artifact_review";
+  const canAbort = summary.board === "working" && !isDone && !isAborted;
+  // Archive from done or aborted board with archiveReady — POST /missions/:id/archive (specs/product.md).
+  const showArchive = (summary.board === "done" || summary.board === "aborted") && summary.archiveReady;
   const pending =
     archiveMutation.isPending ||
     pauseMutation.isPending ||
     resumeMutation.isPending ||
-    restoreMutation.isPending;
+    restoreMutation.isPending ||
+    rejectMutation.isPending ||
+    abortMutation.isPending;
 
   return (
     <>
@@ -115,6 +151,30 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
           >
             <Archive size={16} />
             Archive
+          </button>
+        )}
+
+        {canReject && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setRejectOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-[var(--phase-blocked)]/40 px-3 py-1.5 text-sm text-[var(--phase-blocked)] hover:bg-[var(--phase-blocked)]/10"
+          >
+            <XCircle size={16} />
+            Reject artifacts
+          </button>
+        )}
+
+        {canAbort && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setAbortOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-[var(--phase-aborted)]/50 px-3 py-1.5 text-sm text-[var(--phase-aborted)] hover:bg-[var(--color-surface-hover)]"
+          >
+            <XCircle size={16} />
+            Abort mission
           </button>
         )}
 
@@ -180,6 +240,60 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
         pending={archiveMutation.isPending}
         onConfirm={() => archiveMutation.mutate()}
         onCancel={() => setArchiveOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={rejectOpen}
+        title="Reject artifacts?"
+        message={
+          <div className="space-y-3">
+            <p>Mission stays on working with phase blocked. PO will await your remediation directive.</p>
+            <label className="block text-sm">
+              <span className="text-[var(--color-text-muted)]">Reason (optional)</span>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2 text-sm text-[var(--color-text)]"
+                placeholder="What needs to change before re-review?"
+              />
+            </label>
+          </div>
+        }
+        confirmLabel="Reject artifacts"
+        pending={rejectMutation.isPending}
+        onConfirm={() => rejectMutation.mutate()}
+        onCancel={() => {
+          setRejectOpen(false);
+          setRejectReason("");
+        }}
+      />
+
+      <ConfirmDialog
+        open={abortOpen}
+        title="Abort mission?"
+        message={
+          <div className="space-y-3">
+            <p>Stops the PO session and moves mission to aborted. Frees an execution slot immediately.</p>
+            <label className="block text-sm">
+              <span className="text-[var(--color-text-muted)]">Reason (optional)</span>
+              <textarea
+                value={abortReason}
+                onChange={(e) => setAbortReason(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elevated)] px-3 py-2 text-sm text-[var(--color-text)]"
+                placeholder="Why is this mission being closed early?"
+              />
+            </label>
+          </div>
+        }
+        confirmLabel="Abort mission"
+        pending={abortMutation.isPending}
+        onConfirm={() => abortMutation.mutate()}
+        onCancel={() => {
+          setAbortOpen(false);
+          setAbortReason("");
+        }}
       />
 
       <ToastStack toasts={toasts} onDismiss={dismissToast} />

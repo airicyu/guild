@@ -1000,6 +1000,8 @@ Guild master approves discovery packages → **Parking**.
 
 Requires ≥1 folder under `artifacts/missions/` with `mission.md`; idea on **discovering** board.
 
+Each draft is copied to parking under an orchestrator-minted id `{slug}-{YYYYMMDD}-{6hex}` (`slug` from draft folder name; `6hex` from `crypto.getRandomValues`). Draft folder names in the discovery room are not preserved on the board.
+
 **Callers:** Web UI **Approve** button, or discovery intake lead via `tools/approve.sh` when guild master approves in attach/inbox (same endpoint).
 
 **Response 200**

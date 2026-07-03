@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — API 0.20.0
+
+Discovery approve mints canonical mission ids with cryptographically random hex suffix.
+
+- `POST /discoveries/:id/approve` copies drafts to `parking/{slug}-{date}-{random-hex}` (not draft folder name)
+- `isMissionIdInUse` includes **aborted** board for collision checks
+
 ## Unreleased — API 0.19.0 (0.3.0 Phase 3)
 
 Mission retrospective — feedback tree, PO aggregation, signal gates.

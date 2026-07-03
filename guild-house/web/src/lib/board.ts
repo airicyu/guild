@@ -91,3 +91,8 @@ export function boardColumns(board: BoardResponse): BoardColumnDef[] {
 export function canApproveDiscovery(phase?: string): boolean {
   return phase === "presenting" || phase === "awaiting_approval";
 }
+
+/** Guild master can approve mission deliverables after PO signals artifacts_ready_for_review. */
+export function canApproveArtifacts(phase?: string): boolean {
+  return phase === "awaiting_artifact_review";
+}

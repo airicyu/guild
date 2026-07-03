@@ -19,5 +19,8 @@ export async function deliverGuildMasterDirective(
     append: input.appendInbox ?? false,
   });
   const channel = await notifyGuildChannel(config, missionId, input.event, input.directive);
+  console.log(
+    `[guild-master-notify] mission=${missionId} event=${input.event} channel.delivered=${channel.delivered}${channel.reason ? ` reason=${channel.reason}` : ""}`,
+  );
   return { channel };
 }

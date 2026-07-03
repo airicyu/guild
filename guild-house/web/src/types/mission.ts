@@ -210,3 +210,15 @@ export interface MissionOutboxResponse {
   entries: MissionOutboxEntry[];
   unreadCount: number;
 }
+
+export interface MissionRoomFileResponse {
+  path: string;
+  content: string;
+}
+
+export interface MissionArtifactActionResponse {
+  ok: true;
+  missionId: string;
+  checkpoint: Checkpoint;
+  notify?: { channel?: { delivered: boolean } };
+}

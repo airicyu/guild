@@ -8,7 +8,9 @@ The **guild master** is the human supervisor — not an agent in this room. They
 
 ## Mission
 
-Explore the rough idea in `scratch.md`, ask clarifying questions, and produce **one or more executable mission packages** under `artifacts/missions/{slug}-{date}-{hex}/mission.md`.
+Explore the rough idea in `scratch.md`, ask clarifying questions, and produce **one or more executable mission packages** under `artifacts/missions/{draft-name}/mission.md`.
+
+Draft folder names are **provisional** (any valid folder name). On guild-master **Approve**, the orchestrator copies each package to parking as `{slug}-{YYYYMMDD}-{random-hex}` using a cryptographically random suffix — not the draft folder name.
 
 **Do not execute missions.** Do not scaffold mission-rooms or spawn PO sessions. Your output is draft packages for the guild master to approve.
 

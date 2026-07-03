@@ -13,7 +13,6 @@ import {
   fetchIdeas,
   fetchMissions,
   fetchQueue,
-  promoteParking,
   ringBell,
 } from "../lib/api";
 import { boardColumns, buildIdeaMap, buildMissionMap, toCardData } from "../lib/board";
@@ -137,25 +136,6 @@ export function BoardPage() {
     },
   });
 
-  const promoteMutation = useMutation({
-    mutationFn: promoteParking,
-    onSuccess: (result) => {
-      invalidateBoard();
-      addToast({
-        tone: "success",
-        title: "Promoted to queued",
-        detail: result.folder,
-      });
-    },
-    onError: (err) => {
-      addToast({
-        tone: "error",
-        title: "Promote failed",
-        detail: err instanceof Error ? err.message : String(err),
-      });
-    },
-  });
-
   const submitMutation = useMutation({
     mutationFn: ({ text, slug }: { text: string; slug?: string }) => createIdea(text, slug),
     onSuccess: (result) => {
@@ -253,7 +233,13 @@ export function BoardPage() {
       {columns && (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {columns.map((col) => (
-            <BoardColumn key={col.title} title={col.title} count={col.ids.length} stage={col.stage}>
+            <BoardColumn
+              key={col.title}
+              title={col.title}
+              count={col.ids.length}
+              stage={col.stage}
+              subtitle={col.stage === "parking" ? "Click a card to review the brief before promoting" : undefined}
+            >
               {col.ids.length === 0 ? (
                 <p className="text-xs text-[var(--color-text-muted)]">Empty</p>
               ) : col.kind === "idea" ? (
@@ -271,12 +257,7 @@ export function BoardPage() {
                 })
               ) : (
                 col.ids.map((id) => (
-                  <MissionCard
-                    key={id}
-                    mission={toCardData(id, col.stage, missionMap)}
-                    onPromote={col.stage === "parking" ? (folder) => promoteMutation.mutate(folder) : undefined}
-                    promotePending={col.stage === "parking" ? promoteMutation.isPending : undefined}
-                  />
+                  <MissionCard key={id} mission={toCardData(id, col.stage, missionMap)} />
                 ))
               )}
             </BoardColumn>

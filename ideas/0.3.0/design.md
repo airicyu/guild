@@ -620,16 +620,49 @@ Separate short-lived team to decide squad composition + skill wiring + copy skil
 
 ---
 
-## 13. Web UI (sketch)
+## 13. Web UI — **aligned (2026-07-03)**
 
-*Not aligned in detail.*
-
-Likely additions:
+### 13.1 Close-out (Phase 4 — shipped)
 
 - **Approve artifacts** on mission room when `phase === awaiting_artifact_review`
-- Phase pills for new close-out phases
-- Read-only views: `artifact-release.md`, `retrospective/**` (may overlap backlog “Files” tab)
+- Phase pills for close-out phases (board, hall, mission room)
+- **Close-out** tab: read-only `artifact-release.md`, `retrospective/**` tree
+- Reject / abort actions on working mission room
 - Board slot meter still counts mission until `done`
+
+### 13.2 Parking & queued intake detail (Phase 4.5 — **locked**)
+
+**Problem (manual test 2026-07-03):** After discovery **Approve**, mission packages land on **Parking**. The board card is not clickable; the only action is a small **Promote → queued** button on the card. Guild masters cannot read `mission.md` before promoting, and promote is easy to click by accident — skipping the intentional parking review step.
+
+**Design principle:** Mirror discovery intake UX — **idea room** has **Approve** in the detail view, not as a tiny board-card action alone.
+
+| Stage | Board card | Detail view (`/missions/:id`) |
+|-------|------------|-------------------------------|
+| **Parking** | Clickable link only (no promote on card) | Read **Brief** (`mission-board/parking/{id}/mission.md` via existing API fallback); primary **Promote to queued** with confirm dialog |
+| **Queued** | Clickable link only | Read **Brief**; status “Awaiting bell”; link/hint to board **Ring bell** — no promote |
+| **Working+** | Unchanged | Full mission room (terminal, close-out, etc.) |
+
+**Route:** Reuse **`/missions/:id`** (`MissionPage`) — no new route. `GET /missions/:id/summary` and `/brief` already resolve parking and queued board entries (`getMission` in orchestrator).
+
+**Tabs by board stage:**
+
+| Board | Tabs shown |
+|-------|------------|
+| `parking`, `queued` | **Brief** only (default tab) |
+| `working` | Brief, checkpoint, close-out, events, outbox, terminal |
+| `done`, `aborted` | Brief + archive-oriented subset (no terminal) |
+
+**Actions by board stage:**
+
+| Board | Header actions |
+|-------|----------------|
+| `parking` | **Promote to queued** (guild master; `POST /board/parking/:folder/promote`) + confirm |
+| `queued` | None (or passive “Ring bell on board to start”) |
+| `working` | Existing MissionActions + approve artifacts when applicable |
+
+**Out of scope (4.5):** New API endpoints; editing `mission.md` from Web UI; mission room files before bell (no room until pickup).
+
+**Exit criteria:** Guild master can open parking package from board, read brief, deliberately promote from detail view; queued package is readable before bell.
 
 ---
 
@@ -667,6 +700,7 @@ Likely additions:
 - [x] Signals: `artifacts_ready_for_review`, `artifact_release_complete`, `retrospective_complete`, `mission_complete`
 - [x] Feature 3 backlog ideas — `ideas-backlog/`, default `backlog`, promote only, full entry = `scratch.md`
 - [x] Feature 4 skills bank — wire Round 0, CLI args, `../skills-bank/`, manual bank updates from retro
+- [x] **Parking / queued detail UI** — clickable board cards; promote only in mission detail view (§13.2)
 - [ ] Channel PoC validated on WSL with `--bg` PO (deferred to Phase 0 implementation review)
 
 ---

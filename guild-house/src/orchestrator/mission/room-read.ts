@@ -192,7 +192,9 @@ export async function getMissionSummary(config: Config, missionId: string) {
     sessionLive: "sessionLive" in mission ? mission.sessionLive : undefined,
     jobState: "jobState" in mission ? mission.jobState : undefined,
     restoreRequired: "restoreRequired" in mission ? mission.restoreRequired : undefined,
-    archiveReady: mission.board === "done" && checkpoint?.phase === "done",
+    archiveReady:
+      (mission.board === "done" && checkpoint?.phase === "done") ||
+      (mission.board === "aborted" && checkpoint?.phase === "aborted"),
     awaitingGuildMaster: checkpoint?.awaiting_guild_master ?? false,
   };
 }

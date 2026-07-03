@@ -41,6 +41,9 @@ export async function approveMissionArtifacts(
     event: "artifacts_approved",
     directive,
   });
+  console.log(
+    `[approve-artifacts] mission=${missionId} phase→releasing channel.delivered=${notify.channel.delivered}${notify.channel.reason ? ` (${notify.channel.reason})` : ""}`,
+  );
 
   const updated: Checkpoint = {
     ...checkpoint,

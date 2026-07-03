@@ -1,15 +1,15 @@
 /**
  * Mission id validation, minting, and kickstart rename at bell pickup.
  *
- * Format: {slug}-{YYYYMMDD}-{6hex}. resolveMissionIdAtKickstart may rename queued folder
- * before pickup when slug-only or colliding id. isMissionIdInUse checks board + room dir.
+ * Format: {slug}-{YYYYMMDD}-{6hex}. Discovery approve and bell pickup mint via crypto RNG.
+ * resolveMissionIdAtKickstart may rename legacy slug-only queued folders before pickup.
  */
 import { stat } from "node:fs/promises";
 import type { Config } from "../../config";
 import { missionRoomPath } from "../../paths";
 import { listBoard, resolveQueuedEntryPath } from "./board";
 
-/** Minted at bell: `{slug}-{YYYYMMDD}-{6hex}` */
+/** Minted on discovery approve or bell kickstart: `{slug}-{YYYYMMDD}-{6hex}` */
 export const MINTED_MISSION_ID_PATTERN = /^(.+)-(\d{8})-([a-f0-9]{6})$/i;
 
 const LEGACY_MISSION_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/;
@@ -72,7 +72,7 @@ export async function isMissionIdInUse(
 ): Promise<boolean> {
   const board = await listBoard(config);
 
-  for (const stage of ["parking", "working", "done", "archive"] as const) {
+  for (const stage of ["parking", "working", "done", "aborted", "archive"] as const) {
     if (board[stage].includes(missionId)) return true;
   }
 

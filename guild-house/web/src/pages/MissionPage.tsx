@@ -1,25 +1,37 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, ArrowUpCircle, CheckCircle } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { MissionActions } from "../features/missions/MissionActions";
 import { PhasePill, SessionDot } from "../components/PhasePill";
+import { nextToastId, ToastStack, type ToastMessage } from "../components/Toast";
 import { MissionBriefTab } from "../features/missions/MissionBriefTab";
 import { MissionCheckpointTab } from "../features/missions/MissionCheckpointTab";
+import { MissionCloseoutTab } from "../features/missions/MissionCloseoutTab";
 import { MissionEventsTab } from "../features/missions/MissionEventsTab";
 import { MissionOutboxTab } from "../features/missions/MissionOutboxTab";
 import { MissionTerminalTab } from "../features/missions/MissionTerminalTab";
-import { isMissionPhase, MISSION_TABS, type MissionTabId } from "../features/missions/utils";
+import { invalidateMissionCloseoutQueries } from "../features/missions/invalidateMissionQueries";
+import {
+  isIntakeBoard,
+  isMissionPhase,
+  missionTabsForBoard,
+  type MissionTabId,
+} from "../features/missions/utils";
 import {
   ApiError,
+  approveArtifacts,
   fetchMissionBrief,
   fetchMissionEvents,
   fetchMissionOutbox,
   fetchMissionSession,
   fetchMissionSummary,
   markMissionOutboxRead,
+  promoteParking,
   restoreMission,
 } from "../lib/api";
+import { canApproveArtifacts } from "../lib/board";
 import { queryKeys } from "../lib/queryKeys";
 
 /**
@@ -29,7 +41,18 @@ import { queryKeys } from "../lib/queryKeys";
 export function MissionPage() {
   const { id } = useParams<{ id: string }>();
   const [tab, setTab] = useState<MissionTabId>("brief");
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const queryClient = useQueryClient();
+
+  const addToast = useCallback((toast: Omit<ToastMessage, "id">) => {
+    setToasts((prev) => [...prev, { ...toast, id: nextToastId() }]);
+  }, []);
+
+  const dismissToast = useCallback((toastId: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== toastId));
+  }, []);
 
   const summaryQuery = useQuery({
     queryKey: queryKeys.missionSummary(id!),
@@ -43,7 +66,11 @@ export function MissionPage() {
   const briefQuery = useQuery({
     queryKey: queryKeys.missionBrief(id!),
     queryFn: () => fetchMissionBrief(id!),
-    enabled: Boolean(id) && tab === "brief",
+    enabled:
+      Boolean(id) &&
+      (tab === "brief" ||
+        summaryQuery.data?.board === "parking" ||
+        summaryQuery.data?.board === "queued"),
   });
 
   // PO session exists only on working board. ensureLive on terminal tab restores PO before attach.
@@ -83,10 +110,50 @@ export function MissionPage() {
   const restoreMutation = useMutation({
     mutationFn: () => restoreMission(id!),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.missionSummary(id!) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.missionSession(id!) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.board });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.missions });
+      invalidateMissionCloseoutQueries(queryClient, id!);
+    },
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: () => approveArtifacts(id!),
+    onSuccess: (result) => {
+      setApproveOpen(false);
+      const channelOk = result.notify?.channel?.delivered;
+      addToast({
+        tone: "success",
+        title: "Artifacts approved",
+        detail: channelOk === false ? "PO notified via inbox (channel offline)" : "PO notified to begin release",
+      });
+      invalidateMissionCloseoutQueries(queryClient, id!);
+    },
+    onError: (err) => {
+      const apiErr = err instanceof ApiError ? err : null;
+      addToast({
+        tone: "error",
+        title: "Approve failed",
+        detail: apiErr?.message ?? (err instanceof Error ? err.message : String(err)),
+      });
+    },
+  });
+
+  const promoteMutation = useMutation({
+    mutationFn: () => promoteParking(id!),
+    onSuccess: () => {
+      setPromoteOpen(false);
+      addToast({
+        tone: "success",
+        title: "Promoted to queued",
+        detail: "Ring the bell on the board when ready to start execution",
+      });
+      invalidateMissionCloseoutQueries(queryClient, id!);
+    },
+    onError: (err) => {
+      const apiErr = err instanceof ApiError ? err : null;
+      addToast({
+        tone: "error",
+        title: "Promote failed",
+        detail: apiErr?.message ?? (err instanceof Error ? err.message : String(err)),
+      });
     },
   });
 
@@ -97,15 +164,22 @@ export function MissionPage() {
   const title = summary?.briefTitle ?? id;
   const phase = summary?.checkpoint?.phase;
   const showPhase = phase && isMissionPhase(phase);
+  const showApprove =
+    summary?.board === "working" && canApproveArtifacts(phase);
+  const showPromote = summary?.board === "parking";
+  const intake = isIntakeBoard(summary?.board);
+  const visibleTabs = summary ? missionTabsForBoard(summary.board) : [];
+  const backTo = intake ? "/" : "/hall";
+  const backLabel = intake ? "Back to board" : "Back to missions";
 
   return (
     <div>
       <Link
-        to="/hall"
+        to={backTo}
         className="mb-4 flex items-center gap-1 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-accent)]"
       >
         <ArrowLeft size={14} />
-        Back to missions
+        {backLabel}
       </Link>
 
       {summaryQuery.isLoading && (
@@ -125,20 +199,58 @@ export function MissionPage() {
               <div>
                 <h2 className="guild-display text-2xl font-bold text-[var(--color-text)]">{title}</h2>
                 <p className="mt-1 font-mono text-sm text-[var(--color-text-muted)]">{summary.id}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  {showPhase && <PhasePill phase={phase} />}
+                  {summary.board === "working" && (
+                    <SessionDot
+                      live={summary.sessionLive ?? false}
+                      restoreRequired={summary.restoreRequired ?? false}
+                    />
+                  )}
+                  <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
+                    {summary.board}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-3">
-                {showPhase && <PhasePill phase={phase} />}
-                {summary.board === "working" && (
-                  <SessionDot
-                    live={summary.sessionLive ?? false}
-                    restoreRequired={summary.restoreRequired ?? false}
-                  />
-                )}
-                <span className="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
-                  {summary.board}
-                </span>
-              </div>
+              {showApprove && (
+                <button
+                  type="button"
+                  onClick={() => setApproveOpen(true)}
+                  disabled={approveMutation.isPending}
+                  className="guild-btn-primary flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
+                >
+                  <CheckCircle size={18} />
+                  {approveMutation.isPending ? "Approving…" : "Approve artifacts"}
+                </button>
+              )}
+              {showPromote && (
+                <button
+                  type="button"
+                  onClick={() => setPromoteOpen(true)}
+                  disabled={promoteMutation.isPending}
+                  className="guild-btn-primary flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm"
+                >
+                  <ArrowUpCircle size={18} />
+                  {promoteMutation.isPending ? "Promoting…" : "Promote to queued"}
+                </button>
+              )}
             </div>
+
+            {summary.board === "parking" && (
+              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+                Review the mission brief below. Promote when ready to queue for execution.
+              </p>
+            )}
+
+            {summary.board === "queued" && (
+              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+                Awaiting an execution slot —{" "}
+                <Link to="/" className="text-[var(--color-accent)] hover:underline">
+                  ring the bell on the board
+                </Link>{" "}
+                to start this mission.
+              </p>
+            )}
 
             {summary.squadMembers.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -157,15 +269,18 @@ export function MissionPage() {
               <p className="mt-3 text-sm text-[var(--phase-blocked)]">Awaiting guild master decision</p>
             )}
 
-            <MissionActions
-              missionId={summary.id}
-              summary={summary}
-              onOpenTerminal={() => setTab("terminal")}
-            />
+            {!intake && (
+              <MissionActions
+                missionId={summary.id}
+                summary={summary}
+                onOpenTerminal={() => setTab("terminal")}
+              />
+            )}
           </header>
 
-          <nav className="mb-6 flex flex-wrap gap-1 border-b border-[var(--color-border)]">
-            {MISSION_TABS.map(({ id: tabId, label }) => (
+          {visibleTabs.length > 1 && (
+            <nav className="mb-6 flex flex-wrap gap-1 border-b border-[var(--color-border)]">
+              {visibleTabs.map(({ id: tabId, label }) => (
               <button
                 key={tabId}
                 type="button"
@@ -183,25 +298,49 @@ export function MissionPage() {
                 )}
               </button>
             ))}
-          </nav>
+            </nav>
+          )}
 
-          {tab === "brief" && <MissionBriefTab briefQuery={briefQuery} />}
-          {tab === "checkpoint" && (
+          {(intake || tab === "brief") && <MissionBriefTab briefQuery={briefQuery} />}
+          {!intake && tab === "checkpoint" && (
             <MissionCheckpointTab summary={summary} sessionQuery={sessionQuery} />
           )}
-          {tab === "events" && <MissionEventsTab eventsQuery={eventsQuery} />}
-          {tab === "terminal" && (
+          {!intake && tab === "closeout" && <MissionCloseoutTab missionId={summary.id} summary={summary} />}
+          {!intake && tab === "events" && <MissionEventsTab eventsQuery={eventsQuery} />}
+          {!intake && tab === "terminal" && (
             <MissionTerminalTab
               summary={summary}
               sessionQuery={sessionQuery}
               restoreMutation={restoreMutation}
             />
           )}
-          {tab === "outbox" && (
+          {!intake && tab === "outbox" && (
             <MissionOutboxTab outboxQuery={outboxQuery} markOutboxMutation={markOutboxMutation} />
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={promoteOpen}
+        title="Promote to queued?"
+        message={`Move ${id} from parking to the execution queue. Ring the bell on the board when you want the orchestrator to pick it up.`}
+        confirmLabel="Promote to queued"
+        pending={promoteMutation.isPending}
+        onConfirm={() => promoteMutation.mutate()}
+        onCancel={() => setPromoteOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={approveOpen}
+        title="Approve artifacts?"
+        message={`Accept deliverables for ${id}? The PO will proceed with artifact release — mission stays on working until final dismiss.`}
+        confirmLabel="Approve artifacts"
+        pending={approveMutation.isPending}
+        onConfirm={() => approveMutation.mutate()}
+        onCancel={() => setApproveOpen(false)}
+      />
+
+      <ToastStack toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
 }

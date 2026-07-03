@@ -6,11 +6,17 @@ import type { BoardStage, MissionCardData } from "../../types/mission";
 interface MissionCardProps {
   mission: MissionCardData;
   compact?: boolean;
-  onPromote?: (folder: string) => void;
-  promotePending?: boolean;
 }
 
-export function MissionCard({ mission, compact, onPromote, promotePending }: MissionCardProps) {
+export function MissionCard({ mission, compact }: MissionCardProps) {
+  const isClickable =
+    mission.stage === "parking" ||
+    mission.stage === "queued" ||
+    mission.stage === "working" ||
+    mission.stage === "done" ||
+    mission.stage === "aborted" ||
+    mission.stage === "archive";
+
   const inner = (
     <>
       <div className="flex items-start justify-between gap-2">
@@ -31,28 +37,16 @@ export function MissionCard({ mission, compact, onPromote, promotePending }: Mis
               Awaiting bell
             </p>
           )}
+          {!compact && mission.stage === "parking" && (
+            <p className="mt-2 text-[10px] text-[var(--color-text-muted)]">Click to review brief</p>
+          )}
         </div>
         {mission.stage === "working" && (
           <SessionDot live={mission.sessionLive} restoreRequired={mission.restoreRequired} />
         )}
       </div>
-      {mission.stage === "parking" && onPromote && (
-        <button
-          type="button"
-          disabled={promotePending}
-          onClick={(e) => {
-            e.stopPropagation();
-            onPromote(mission.id);
-          }}
-          className="mt-2 w-full rounded-md border border-[var(--board-parking-accent)]/40 bg-white/80 px-2 py-1 text-xs font-medium text-[var(--board-parking-accent)] hover:bg-white disabled:opacity-50"
-        >
-          {promotePending ? "Promoting…" : "Promote → queued"}
-        </button>
-      )}
     </>
   );
-
-  const isClickable = mission.stage === "working" || mission.stage === "done" || mission.stage === "archive";
 
   const className = [
     "block rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-3 shadow-sm transition",
@@ -76,10 +70,11 @@ interface BoardColumnProps {
   title: string;
   count: number;
   stage: BoardStage;
+  subtitle?: string;
   children: ReactNode;
 }
 
-export function BoardColumn({ title, count, stage, children }: BoardColumnProps) {
+export function BoardColumn({ title, count, stage, subtitle, children }: BoardColumnProps) {
   return (
     <section
       className={`board-column board-column--${stage} flex min-w-[240px] max-w-[320px] flex-1 flex-col rounded-xl border-2 p-3`}
@@ -97,14 +92,19 @@ export function BoardColumn({ title, count, stage, children }: BoardColumnProps)
           style={{ backgroundColor: "var(--board-accent)" }}
           aria-hidden
         />
-        <h3
-          className="flex-1 text-xs font-bold uppercase tracking-wider"
-          style={{ color: "var(--board-accent)" }}
-        >
-          {title}
-        </h3>
+        <div className="min-w-0 flex-1">
+          <h3
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: "var(--board-accent)" }}
+          >
+            {title}
+          </h3>
+          {subtitle && (
+            <p className="mt-0.5 text-[10px] leading-snug text-[var(--color-text-muted)]">{subtitle}</p>
+          )}
+        </div>
         <span
-          className="rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums"
+          className="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums"
           style={{
             backgroundColor: "var(--color-bg-elevated)",
             color: "var(--board-accent)",

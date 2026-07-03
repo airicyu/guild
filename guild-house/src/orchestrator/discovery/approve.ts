@@ -1,8 +1,8 @@
 /**
  * Guild master Approve — copy valid draft packages to parking, close discovery.
  *
- * Valid package = artifacts/missions/{folder}/mission.md. Stops lead session,
- * sets phase closed, removes discovering/{id} board folder (room retained).
+ * Valid package = artifacts/missions/{folder}/mission.md. Copies to parking under
+ * orchestrator-minted mission id (random hex). Stops lead session, sets phase closed.
  */
 import { cp, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
@@ -10,6 +10,7 @@ import type { Config } from "../../config";
 import { ideaBoardEntryPath, missionBoardEntryPath } from "../../paths";
 import type { DiscoveryCheckpoint } from "../../types/discovery";
 import { assertIdeaId } from "../core/idea-id";
+import { mintUniqueMissionId, slugFromFolderName } from "../core/mission-id";
 import { stopSession } from "../core/session";
 import { listBoard } from "../core/board";
 import { readDiscoveryCheckpoint, writeDiscoveryCheckpoint } from "./checkpoint";
@@ -48,13 +49,15 @@ export async function approveDiscovery(
     throw new Error(`No mission packages under artifacts/missions/ for ${ideaId}`);
   }
 
-  // Copy each valid package folder to parking; idea leaves board, room stays for audit.
+  // Copy each valid package to parking under orchestrator-minted id (crypto random hex).
   const parkingFolders: string[] = [];
   for (const folder of draftFolders) {
-    const dest = missionBoardEntryPath(config, "parking", folder);
+    const slug = slugFromFolderName(folder);
+    const missionId = await mintUniqueMissionId(config, slug);
+    const dest = missionBoardEntryPath(config, "parking", missionId);
     try {
       await stat(dest);
-      throw new Error(`Parking entry already exists: ${folder}`);
+      throw new Error(`Parking entry already exists: ${missionId}`);
     } catch (err) {
       if (err instanceof Error && err.message.startsWith("Parking entry already exists")) {
         throw err;
@@ -64,7 +67,7 @@ export async function approveDiscovery(
 
     const src = join(config.guildHome, "discovery-rooms", ideaId, "artifacts", "missions", folder);
     await cp(src, dest, { recursive: true });
-    parkingFolders.push(folder);
+    parkingFolders.push(missionId);
   }
 
   await stopSessionSafe(config, checkpoint.claude_session.id);

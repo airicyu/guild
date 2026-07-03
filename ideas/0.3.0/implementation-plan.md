@@ -14,7 +14,8 @@ flowchart TD
   P1[Phase 1: Lifecycle + approve API]
   P2[Phase 2: Artifact release]
   P3[Phase 3: Retrospective]
-  P4[Phase 4: Web UI]
+  P4[Phase 4: Web UI close-out]
+  P45[Phase 4.5: Parking/queued detail]
   P5[Phase 5: Backlog ideas]
   P6[Phase 6: Skills bank]
 
@@ -25,11 +26,12 @@ flowchart TD
   P1 --> P4
   P2 --> P4
   P3 --> P4
+  P4 --> P45
   P6 --> P5
-  P4 -.-> P5
+  P45 -.-> P5
 ```
 
-**Suggested 0.3.0 MVP slice:** Phases 0–4 (close-out + notification). Phases 5–6 may ship as 0.3.x or 0.4.0 after alignment.
+**Suggested 0.3.0 MVP slice:** Phases 0–4.5 (close-out + intake detail). Phases 5–6 may ship as 0.3.x or 0.4.0 after alignment.
 
 ---
 
@@ -50,7 +52,7 @@ All phases complete → ship product 0.3.0 (version.md, specs, changelog)
 
 Do not bump product to **0.3.0** until all planned phases are done and reviewed. Intermediate API bumps (`GET /health`) per phase are fine.
 
-**Phase order:** 0 → 1 → 2 → 3 → 4 → 5 → 6 (see dependency diagram below). Phase 5 and 6 can overlap with 4 only after 4 review if desired — default is sequential.
+**Phase order:** 0 → 1 → 2 → 3 → 4 → **4.5** → 5 → 6 (see dependency diagram below). Phase 5 and 6 can overlap with 4 only after 4.5 review if desired — default is sequential.
 
 ---
 
@@ -65,6 +67,7 @@ After each phase, guild master reviews before the next phase starts:
 | **2** | `artifact-release.md` + PO playbook |
 | **3** | Retrospective files + exit contract |
 | **4** | Web UI close-out actions |
+| **4.5** | Parking/queued mission detail; promote from detail view |
 | **5** | Backlog column + submit chooser + promote |
 | **6** | Skills bank + `wire-skills-from-bank` in templates |
 
@@ -154,16 +157,34 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 
 | ID | Task | Notes |
 |----|------|-------|
-| 4.1 | [ ] Phase pills / badges for close-out phases | Board, hall, mission room |
-| 4.2 | [ ] **Approve artifacts** button on mission room | When `awaiting_artifact_review` |
-| 4.3 | [ ] Wire `approveArtifacts` in `lib/api/missions.ts` | |
-| 4.4 | [ ] Mission room: view `artifact-release.md` | Files tab or dedicated section |
-| 4.5 | [ ] Mission room: view `retrospective/workflow-report.md` (+ tree) | Read-only |
-| 4.6 | [ ] Invalidate queries on approve + phase change | board, hall, summary |
-| 4.7 | [ ] Update execution E2E doc for new close-out path | `docs/tests/execution-e2e.md` |
-| 4.8 | [ ] Update discovery-path doc if cross-links needed | Minor |
+| 4.1 | [x] Phase pills / badges for close-out phases | Board, hall, mission room |
+| 4.2 | [x] **Approve artifacts** button on mission room | When `awaiting_artifact_review` |
+| 4.3 | [x] Wire `approveArtifacts` in `lib/api/missions.ts` | |
+| 4.4 | [x] Mission room: view `artifact-release.md` | Files tab or dedicated section |
+| 4.5 | [x] Mission room: view `retrospective/workflow-report.md` (+ tree) | Read-only |
+| 4.6 | [x] Invalidate queries on approve + phase change | board, hall, summary |
+| 4.7 | [x] Update execution E2E doc for new close-out path | `docs/tests/execution-e2e.md` |
+| 4.8 | [x] Update discovery-path doc if cross-links needed | Minor |
 
 **Exit criteria:** Guild master can approve artifacts from browser and see phase progression without attach.
+
+---
+
+## Phase 4.5 — Parking & queued mission detail
+
+*Design §13.2. Blocks comfortable full-pipeline manual QA before Phase 5.*
+
+| ID | Task | Notes |
+|----|------|-------|
+| 4.5.1 | [x] Make parking + queued `MissionCard` clickable → `/missions/:id` | Remove promote button from board card |
+| 4.5.2 | [x] `MissionPage` stage-aware: parking/queued show **Brief** only | Hide terminal, close-out, checkpoint until `working` |
+| 4.5.3 | [x] **Promote to queued** in mission detail header when `board === parking` | Confirm dialog; reuse `promoteParking` API |
+| 4.5.4 | [x] Queued detail: status copy + hint to ring bell on board | No promote action |
+| 4.5.5 | [x] Invalidate board + summary after promote | Same pattern as idea approve |
+| 4.5.6 | [x] Update `e2e-discovery-path.md` — parking review step in Web UI | Click card → read brief → promote |
+| 4.5.7 | [x] Optional: parking column subtitle on board | “Click to review before promoting” |
+
+**Exit criteria:** Guild master opens parking package from board, reads `mission.md`, promotes from detail view only; no accidental promote from kanban card.
 
 ---
 
@@ -219,8 +240,9 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 2. Phase 1.1–1.6 (lifecycle skeleton + approve API)  
 3. Phase 2 + 3 templates/playbooks (can parallelize)  
 4. Phase 1.7–1.11 (polish signals, docs, migration)  
-5. Phase 4 (Web UI)  
-6. Alignment sessions → Phase 5 / 6  
+5. Phase 4 (Web UI close-out)  
+6. Phase 4.5 (parking/queued detail)  
+7. Alignment sessions → Phase 5 / 6  
 
 ---
 
@@ -229,6 +251,7 @@ Refactor close-out so `mission_complete` is final dismiss only; add approve-arti
 **Alignment complete.** Remaining items are Phase 0+ implementation:
 
 - [x] Channel PoC + dev flag / production path (Phase 0 review)
+- [x] Parking/queued detail UI — design §13.2 (Phase 4.5)
 - [ ] Board UI eighth column layout (Phase 5)
 
 ---

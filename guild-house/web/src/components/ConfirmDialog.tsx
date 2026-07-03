@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
+
 interface ConfirmDialogProps {
   open: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   pending?: boolean;
@@ -25,7 +27,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="guild-glass w-full max-w-md rounded-lg p-5 shadow-xl">
         <h3 className="guild-display text-lg font-bold text-[var(--color-text)]">{title}</h3>
-        <p className="mt-2 text-sm text-[var(--color-text-muted)]">{message}</p>
+        <div className="mt-2 text-sm text-[var(--color-text-muted)]">{message}</div>
         <div className="mt-5 flex justify-end gap-2">
           <button
             type="button"

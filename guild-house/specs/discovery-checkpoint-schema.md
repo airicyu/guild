@@ -77,6 +77,6 @@ Parser may accept legacy `awaiting_eric` as alias for `awaiting_guild_master` (p
 | Web UI **Approve** | Guild master (browser → API) |
 | Attach / inbox | Discovery intake lead runs `tools/approve.sh` when guild master clearly approves in chat |
 
-On success: copy each mission folder → `mission-board/parking/{folder}/`, set `phase: closed`, remove `discovering/{ideaId}` (retain `discovery-rooms/{ideaId}/`).
+On success: copy each mission folder → `mission-board/parking/{minted-id}/` (`{slug}-{YYYYMMDD}-{6hex}` via `crypto.getRandomValues`; slug from draft folder name), set `phase: closed`, remove `discovering/{ideaId}` (retain `discovery-rooms/{ideaId}/`).
 
 Lead must **not** `cp` folders manually or log approval before `approve.sh` succeeds.

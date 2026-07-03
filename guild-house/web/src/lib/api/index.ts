@@ -19,14 +19,18 @@ export {
   restoreDiscovery,
 } from "./discovery";
 export {
+  abortMission,
+  approveArtifacts,
   archiveMission,
   fetchMissionBrief,
   fetchMissionEvents,
   fetchMissionOutbox,
+  fetchMissionRoomFile,
   fetchMissionSession,
   fetchMissionSummary,
   markMissionOutboxRead,
   pauseMission,
+  rejectArtifacts,
   restoreMission,
   resumeMission,
 } from "./missions";

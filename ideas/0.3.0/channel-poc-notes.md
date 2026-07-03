@@ -29,8 +29,8 @@ This file captures **what we learned validating the PoC** — gotchas, Claude Co
 ```
 mission-rooms/{id}/
   .mcp.json                    → Claude spawns guild-channel (stdio MCP)
-  .claude/settings.json        → PO permissions (template; no MCP auto-enable)
-  .claude/settings.local.json  → per-room MCP approval (created after user approves)
+  .claude/settings.json        → PO permissions (template)
+  .claude/settings.local.json  → pre-enable guild-channel MCP (template; required for --bg)
   .guild/channel-endpoint.json → HTTP port for orchestrator POST (written by MCP on bind)
 ```
 
@@ -66,7 +66,7 @@ We tried adding this to the template; with untrusted workspace it led to:
 Channels are not currently available
 ```
 
-**Locked template rule:** `settings.json` = permissions only. MCP enablement lives in **`settings.local.json`** after user approval (not committed in template).
+**Locked template rule:** `settings.json` = permissions only. **No** `enableAllProjectMcpServers`. Pre-enable **`guild-channel` only** via committed `settings.local.json` (`enabledMcpjsonServers`) so `--bg` spawn works.
 
 ### 3. Spawn argument order
 
@@ -118,7 +118,7 @@ Do not `claude attach` the same session while PoC polls `claude logs`. Run PoC t
 - `permissions.allow` / `deny` only
 - **No** `enableAllProjectMcpServers`
 
-### `settings.local.json` (per room, after approval)
+### `settings.local.json` (scaffolded from template)
 
 ```json
 {
@@ -126,7 +126,9 @@ Do not `claude attach` the same session while PoC polls `claude logs`. Run PoC t
 }
 ```
 
-Created when user selects “Use this MCP server” in interactive Claude. Example: `channel-poc-mr3mts83/.claude/settings.local.json`.
+Shipped in `templates/mission-room/.claude/settings.local.json` so **`claude --bg` PO spawn does not stall** on MCP approval (background jobs cannot answer the interactive prompt). For rooms created before this template change, copy the file from the template or approve once in an interactive session (option 2).
+
+**Do not** add `enableAllProjectMcpServers` to `settings.json` — see §2 above.
 
 ### `.mcp.json` (committed in template)
 

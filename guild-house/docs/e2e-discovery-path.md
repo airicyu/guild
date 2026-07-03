@@ -22,8 +22,8 @@ POST /ideas → ideas → [bell/tick] → discovering → [approve] → parking
 | discovering → parking | Guild master | `POST /discoveries/:id/approve` or Web UI / `tools/approve.sh` |
 | parking → queued | Guild master | `POST /board/parking/:folder/promote` or Web UI **Promote** |
 | queued → working | Orchestrator | `POST /bell` or auto-tick |
-| working → done | PO | `POST /missions/:id/signals` `mission_complete` |
-| done → archive | Guild master | `POST /missions/:id/archive` |
+| working → done | PO | `mission_complete` after 0.3.0 close-out (see [tests/execution-e2e.md](./tests/execution-e2e.md)) |
+| done / aborted → archive | Guild master | `POST /missions/:id/archive` or Web UI **Archive** |
 
 ---
 
@@ -136,7 +136,7 @@ Lead signals presentation (`phase: presenting` / `awaiting_approval`) when ready
 curl -X POST -H "$AUTH" http://127.0.0.1:3847/discoveries/{ideaId}/approve
 ```
 
-Expect `parkingFolders` in response. Idea leaves **discovering**; folders appear on **parking**.
+Expect `parkingFolders` in response (orchestrator-minted ids, not draft folder names). Idea leaves **discovering**; folders appear on **parking**.
 
 **Acceptance:** Mission folder(s) on parking; idea gone from board columns.
 
@@ -144,16 +144,16 @@ Expect `parkingFolders` in response. Idea leaves **discovering**; folders appear
 
 ## 5. Promote → **Queued**
 
-One folder at a time:
+Open the parking package from the board (**click the card** → mission detail), read the **Brief**, then **Promote to queued** (confirm dialog).
+
+**API** (one folder at a time):
 
 ```bash
 curl -X POST -H "$AUTH" \
   "http://127.0.0.1:3847/board/parking/{parkingFolder}/promote"
 ```
 
-**Web:** Parking card → **Promote → queued**
-
-**Acceptance:** Folder on **Queued**.
+**Acceptance:** Folder on **Queued**; detail view shows “ring the bell” hint. Promote is **not** on the kanban card (design §13.2).
 
 ---
 

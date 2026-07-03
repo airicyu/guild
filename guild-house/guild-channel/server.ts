@@ -46,6 +46,11 @@ async function resolveChannelSecret(): Promise<string> {
 
 const CHANNEL_SECRET = await resolveChannelSecret();
 
+function channelLog(message: string, extra?: Record<string, unknown>): void {
+  const suffix = extra ? ` ${JSON.stringify(extra)}` : "";
+  console.error(`[guild-channel] ${message}${suffix}`);
+}
+
 function authorize(req: Request): boolean {
   if (!CHANNEL_SECRET) {
     console.error("[guild-channel] No GUILD_API_KEY or GUILD_CHANNEL_SECRET — rejecting all POSTs");
@@ -93,17 +98,32 @@ const server = Bun.serve({
     }
 
     if (!content.trim()) {
+      channelLog("reject empty body", { port: server.port });
       return new Response("empty body", { status: 400 });
     }
 
-    await mcp.notification({
-      method: "notifications/claude/channel",
-      params: {
-        content,
-        meta: { event },
-      },
+    channelLog("POST received", {
+      port: server.port,
+      event,
+      contentBytes: content.length,
+      cwd: process.cwd(),
     });
 
+    try {
+      await mcp.notification({
+        method: "notifications/claude/channel",
+        params: {
+          content,
+          meta: { event },
+        },
+      });
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      channelLog("notification failed", { port: server.port, event, reason });
+      return new Response(`notification failed: ${reason}`, { status: 502 });
+    }
+
+    channelLog("notification sent", { port: server.port, event });
     return new Response("ok");
   },
 });
@@ -114,3 +134,4 @@ const endpoint = {
   path: "/",
 };
 await writeFile(join(guildDir, "channel-endpoint.json"), `${JSON.stringify(endpoint, null, 2)}\n`, "utf8");
+channelLog("listening", endpoint);

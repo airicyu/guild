@@ -78,8 +78,10 @@ function conflict(message: string): Response {
 }
 
 async function readJsonBody<T>(req: Request): Promise<T> {
+  const text = await req.text();
+  if (!text.trim()) return {} as T;
   try {
-    return (await req.json()) as T;
+    return JSON.parse(text) as T;
   } catch {
     throw new Error("Invalid JSON body");
   }

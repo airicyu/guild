@@ -12,6 +12,12 @@ import { assertMissionId } from "../core/board";
 export interface ChannelNotifyResult {
   delivered: boolean;
   reason?: string;
+  httpStatus?: number;
+}
+
+function channelNotifyLog(message: string, extra?: Record<string, unknown>): void {
+  const suffix = extra ? ` ${JSON.stringify(extra)}` : "";
+  console.log(`[channel-notify] ${message}${suffix}`);
 }
 
 async function readChannelEndpoint(
@@ -59,9 +65,14 @@ export async function notifyGuildChannel(
 
   const endpoint = await readChannelEndpoint(config, missionId);
   if (!endpoint) {
+    channelNotifyLog("skip", { missionId, event, reason: "no channel endpoint" });
     return { delivered: false, reason: "no channel endpoint" };
   }
+
+  channelNotifyLog("endpoint", { missionId, event, host: endpoint.host, port: endpoint.port });
+
   if (!(await channelPortLive(config.apiKey, endpoint))) {
+    channelNotifyLog("skip", { missionId, event, reason: "channel port not live", port: endpoint.port });
     return { delivered: false, reason: "channel port not live" };
   }
 
@@ -75,14 +86,26 @@ export async function notifyGuildChannel(
       },
       body: JSON.stringify({ event, content }),
     });
+    const bodyText = await res.text();
     if (!res.ok) {
-      return { delivered: false, reason: `POST failed: ${res.status}` };
+      channelNotifyLog("POST failed", {
+        missionId,
+        event,
+        url,
+        status: res.status,
+        body: bodyText.slice(0, 200),
+      });
+      return {
+        delivered: false,
+        reason: `POST failed: ${res.status}${bodyText ? ` ${bodyText.slice(0, 120)}` : ""}`,
+        httpStatus: res.status,
+      };
     }
-    return { delivered: true };
+    channelNotifyLog("POST ok", { missionId, event, url, status: res.status, body: bodyText });
+    return { delivered: true, httpStatus: res.status };
   } catch (err) {
-    return {
-      delivered: false,
-      reason: err instanceof Error ? err.message : String(err),
-    };
+    const reason = err instanceof Error ? err.message : String(err);
+    channelNotifyLog("POST error", { missionId, event, url, reason });
+    return { delivered: false, reason };
   }
 }
