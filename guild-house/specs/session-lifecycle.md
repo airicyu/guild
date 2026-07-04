@@ -26,6 +26,12 @@ Guild-master may receive a stale `attachCmd` that fails.
 
 Durability for “continue later” lives in the **mission room**, not in CC’s `--resume UUID` (foreground-only) or completed bg jobs.
 
+### Background worktree isolation (Claude Code 2.1.139+)
+
+Default `--bg` in a **git repo**: first `Edit`/`Write` triggers `EnterWorktree` into `.claude/worktrees/…`. That applies even when session `cwd` is gitignored `data/mission-rooms/` or `data/discovery-rooms/` — the harness keys off repo membership, not tracked paths.
+
+Room templates set `"worktree": { "bgIsolation": "none" }` in `.claude/settings.json` (CC **2.1.143+**) so PO and intake lead write artifacts in-place without worktree → `cp` workaround. **Existing rooms:** merge that block into the room’s `.claude/settings.json` and restore the bg session.
+
 ---
 
 ## Two live states
