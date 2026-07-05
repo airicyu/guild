@@ -1,5 +1,5 @@
 /**
- * Approve discovering — Option B: parent → done; spawn children → parking.
+ * Approve discovering — Option B: parent → archive; spawn children → parking.
  */
 import { cp, mkdir, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -84,11 +84,11 @@ export async function approveDiscovery(
   };
   await writeCheckpoint(config, noteId, closed);
 
-  // Parent board note → done (Option B)
+  // Parent board note → archive (intake terminal; missions live in parking+)
   const discoveringPath = missionBoardEntryPath(config, "discovering", noteId);
-  const donePath = missionBoardEntryPath(config, "done", noteId);
-  await rename(discoveringPath, donePath);
-  await markBoardNoteCompleted(config, "done", noteId);
+  const archivePath = missionBoardEntryPath(config, "archive", noteId);
+  await rename(discoveringPath, archivePath);
+  await markBoardNoteCompleted(config, "archive", noteId);
 
   await archiveMissionRoom(config, noteId);
 

@@ -22,7 +22,7 @@ Unqualified **mission** in API means **room runtime**. Intake and execution are 
 
 ```
 ideas-backlog → ideas → discovering → [approve] → parking → queued → working → done → archive
-                         parent idea_exploring → done (mission_plan_complete)
+                         parent idea_exploring → archive (mission_plan_complete)
                          children work_execution → parking
 ```
 
@@ -36,7 +36,7 @@ ideas-backlog → ideas → discovering → [approve] → parking → queued →
 | queued → working | Orchestrator | bell — fresh execution scaffold |
 | working → done | PO | `mission_complete` from `retrospective` |
 | abort (any pre-terminal) | Guild master | `POST /mission-board-notes/:id/abort` |
-| done / aborted → archive | Guild master | `POST /missions/:id/archive` |
+| done / aborted → archive | Guild master | `POST /missions/:id/archive` (`done` or `mission_plan_complete` on done board) |
 
 ## Locked semantics
 
@@ -45,8 +45,8 @@ ideas-backlog → ideas → discovering → [approve] → parking → queued →
 3. **WS close = detach only** — does not stop bg job.
 4. **`mission_complete`** → `phase: done`, board note → `done/`; from `retrospective` only.
 5. **Frozen brief** — `mission-brief.md` at mission room root (orchestrator write).
-6. **Approve Option B** — spawn child board notes to `parking/`; parent `idea_exploring` → `done/`.
-7. **Archive** — board → `archive/`; room → `mission-rooms/archive/` (legacy `achive/` read compat).
+6. **Approve Option B** — spawn child board notes to `parking/`; parent `idea_exploring` → `archive/` (`mission_plan_complete`).
+7. **Archive** — board → `archive/`; room → `mission-rooms/archive/` (legacy `achive/` read compat). Done board accepts `phase: done` (execution) or `mission_plan_complete` (intake parent).
 8. **Slots** — `MAX_DISCOVERY_SESSIONS` (discovering + live intake); `MAX_ACTIVE_MISSIONS` (working).
 9. **GET never spawns** — restore on boot / `POST /restore` / `?ensureLive=true`.
 10. **`checkpoint.yaml`** — orchestrator-only; unified phases (intake + execution).

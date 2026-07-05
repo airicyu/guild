@@ -142,11 +142,12 @@ async function testDiscoveryOptionB(): Promise<{ execMissionId: string; parentId
   pass("approve-discovery", `child ${childId}`);
 
   const board = await listBoard(config);
-  if (!board.done.includes(noteId)) fail("parent on done", `done=${board.done.join(",")}`);
-  pass("parent board note → done");
+  if (!board.archive.includes(noteId)) fail("parent on archive", `archive=${board.archive.join(",")}`);
+  if (board.done.includes(noteId)) fail("parent should not be on done", noteId);
+  pass("parent board note → archive");
 
   const parentMeta = await readFile(
-    join(missionBoardEntryPath(config, "done", noteId), "meta.yaml"),
+    join(missionBoardEntryPath(config, "archive", noteId), "meta.yaml"),
     "utf8",
   );
   if (!parentMeta.includes("type: idea_exploring")) fail("parent meta.type", parentMeta);

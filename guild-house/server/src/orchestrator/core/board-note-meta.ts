@@ -82,7 +82,7 @@ export async function writeBoardNoteMeta(
   await writeFile(path, serializeBoardNoteMeta(meta), "utf8");
 }
 
-/** Mark note completed when moving to done/ or aborted/. */
+/** Mark note completed when moving to done/, aborted/, or archive/. */
 export async function markBoardNoteCompleted(
   config: Config,
   stage: BoardStage,

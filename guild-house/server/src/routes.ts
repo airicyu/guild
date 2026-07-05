@@ -35,7 +35,7 @@ export function buildRoutes(config: Config): RoutesSlice {
           Response.json({
             ok: true,
             service: "guild-house",
-            version: "0.32.0",
+            version: "0.34.0",
             guildHome: config.guildHome,
             guildMasterName: config.guildMasterName,
             tickIntervalMinutes: config.tickIntervalMinutes,

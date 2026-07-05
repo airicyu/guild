@@ -182,7 +182,9 @@ export function missionRoutes(config: Config): RoutesSlice {
           return mapOrchestratorError(err, [
             mapNotFound,
             (m) =>
-              m.includes("must be phase done") || m.includes("must be phase aborted")
+              m.includes("must be phase done") ||
+              m.includes("mission_plan_complete") ||
+              m.includes("must be phase aborted")
                 ? Response.json({ error: m }, { status: 409 })
                 : null,
           ]);

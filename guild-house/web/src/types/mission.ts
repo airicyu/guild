@@ -8,7 +8,8 @@ export type MissionPhase =
   | "releasing"
   | "retrospective"
   | "done"
-  | "aborted";
+  | "aborted"
+  | "mission_plan_complete";
 
 export type BoardStage =
   | "ideas-backlog"

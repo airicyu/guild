@@ -233,6 +233,11 @@ export function isTerminalPhase(phase: MissionPhase): boolean {
   return phase === "done" || phase === "aborted" || phase === "mission_plan_complete";
 }
 
+/** Done-board notes ready for POST /missions/:id/archive. */
+export function canArchiveFromDoneBoard(phase: MissionPhase): boolean {
+  return phase === "done" || phase === "mission_plan_complete";
+}
+
 export function inferModeFromPhase(phase: MissionPhase): MissionMode {
   return isIntakePhase(phase) ? "intake" : "execution";
 }

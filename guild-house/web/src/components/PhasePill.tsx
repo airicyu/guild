@@ -34,6 +34,7 @@ const labels: Record<MissionPhase, string> = {
   retrospective: "Retrospective",
   done: "Done",
   aborted: "Aborted",
+  mission_plan_complete: "Plan complete",
 };
 
 export function PhasePill({ phase }: { phase: MissionPhase }) {

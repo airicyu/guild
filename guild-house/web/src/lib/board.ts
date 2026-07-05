@@ -20,6 +20,7 @@ function isMissionPhase(p: string): p is MissionPhase {
     "retrospective",
     "done",
     "aborted",
+    "mission_plan_complete",
   ].includes(p);
 }
 

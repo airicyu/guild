@@ -13,6 +13,7 @@ import {
   poSessionName,
 } from "../../paths";
 import type { BoardListing, SlotMeter, TickResult } from "../../types/mission";
+import { canArchiveFromDoneBoard } from "../../types/mission";
 import {
   countDiscoveringSessions,
   countWorkingMissions,
@@ -215,7 +216,7 @@ export async function listMissions(config: Config) {
         jobState: checkpoint?.claude_session.job_state ?? "done",
         restoreRequired: false,
         awaitingGuildMaster: checkpoint?.awaiting_guild_master ?? false,
-        archiveReady: checkpoint?.phase === "done",
+        archiveReady: checkpoint?.phase != null && canArchiveFromDoneBoard(checkpoint.phase),
       };
     }),
   );

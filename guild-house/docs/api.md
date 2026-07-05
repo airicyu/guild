@@ -36,7 +36,7 @@ Related: [specs/product.md](../specs/product.md) · [session-lifecycle.md](../sp
 | GET | `/missions` | yes | Working + done + aborted missions + session liveness |
 | GET | `/missions/:id` | yes | Single mission / intake runtime detail |
 | GET | `/missions/:id/drafts` | yes | Mission draft packages under intake room |
-| POST | `/missions/:id/approve-discovery` | yes | Approve intake — children → parking, parent → done |
+| POST | `/missions/:id/approve-discovery` | yes | Approve intake — children → parking, parent → archive |
 | GET | `/missions/:id/brief` | yes | Frozen `mission-brief.md` |
 | GET | `/missions/:id/summary` | yes | Mission + checkpoint + brief title + squad + outbox unread |
 | GET | `/missions/:id/room/*` | yes | Read-only file under mission room |
@@ -216,7 +216,7 @@ Lists **working** and **done** board missions with checkpoint summary. Working m
 | Field | Meaning |
 |-------|---------|
 | `board` | `working` (live PO) or `done` (complete, awaiting archive) |
-| `archiveReady` | `true` when on **done** board with `phase: done` — guild master may `POST .../archive` |
+| `archiveReady` | `true` when on **done** board with `phase: done` or `mission_plan_complete`, or **aborted** with `phase: aborted` — guild master may `POST .../archive` |
 | `awaitingGuildMaster` | `true` when blocked and waiting for guild master decision |
 | `sessionLive` | PO bg agent present in `claude agents --json` (working only) |
 | `restoreRequired` | Mission needs PO but session not live (working only) |
@@ -624,7 +624,7 @@ Mission room tool: `tools/abort.sh [reason]` (PO may write abort-note first on c
 
 ## `POST /missions/:id/archive`
 
-Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`, **or** **aborted** board with `phase: aborted`.
+Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done` or `mission_plan_complete`, **or** **aborted** board with `phase: aborted`.
 
 Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room moves to `mission-rooms/archive/{id}/` (idempotent if already archived on done/abort). Legacy `mission-rooms/achive/` is read-only compat.
 
@@ -639,7 +639,7 @@ Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room
 ```
 
 **404** — not on done board.  
-**409** — `phase` is not `done`.
+**409** — `phase` is not archive-ready (`done`, `mission_plan_complete`, or `aborted`).
 
 ---
 
@@ -1078,7 +1078,7 @@ Each draft is copied to parking under an orchestrator-minted id `{slug}-{YYYYMMD
 }
 ```
 
-Removes parent from `discovering/` → `done/`; archives intake room to `mission-rooms/archive/{ideaId}/`; copies each draft package to `parking/`.
+Removes parent from `discovering/` → `archive/`; archives intake room to `mission-rooms/archive/{ideaId}/`; copies each draft package to `parking/`.
 
 ### Shipped in v0.14.0 (Phase 5)
 

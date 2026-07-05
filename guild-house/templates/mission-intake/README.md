@@ -33,6 +33,6 @@ Background lead session: `discovery-{ideaId}-lead` (spawned in Plan 3 Phase 2).
 
 `exploring` → `drafting` → `presenting` → `awaiting_approval` → `closed`
 
-Guild master **Approve** — either Web UI / `POST /missions/:id/approve-discovery`, or intake lead runs `tools/approve.sh` when guild master approves in attach or inbox. Copies `artifacts/missions/*` to parking and closes intake.
+Guild master **Approve** — either Web UI / `POST /missions/:id/approve-discovery`, or intake lead runs `tools/approve.sh` when guild master approves in attach or inbox. Copies `artifacts/missions/*` to parking; parent idea board note moves to `archive/` (hidden column).
 
 See [mission-discovery-plan.md](../../../ideas/mission-discovery-plan.md).

@@ -7,6 +7,7 @@
 import { readFile } from "node:fs/promises";
 import { join, normalize, sep } from "node:path";
 import type { Config } from "../../config";
+import { canArchiveFromDoneBoard } from "../../types/mission";
 import { parseFrontmatter } from "../../frontmatter";
 import {
   BOARD_STAGES,
@@ -173,7 +174,9 @@ export async function getMissionSummary(config: Config, missionId: string) {
     jobState: "jobState" in mission ? mission.jobState : undefined,
     restoreRequired: "restoreRequired" in mission ? mission.restoreRequired : undefined,
     archiveReady:
-      (mission.board === "done" && checkpoint?.phase === "done") ||
+      (mission.board === "done" &&
+        checkpoint?.phase != null &&
+        canArchiveFromDoneBoard(checkpoint.phase)) ||
       (mission.board === "aborted" && checkpoint?.phase === "aborted"),
     awaitingGuildMaster: checkpoint?.awaiting_guild_master ?? false,
   };

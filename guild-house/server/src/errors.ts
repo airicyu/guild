@@ -34,6 +34,7 @@ export const mapConflict: ErrorMapper = (message) =>
   message.includes("No mission packages") ||
   message.includes("must be awaiting_artifact_review") ||
   message.includes("must be phase done") ||
+  message.includes("mission_plan_complete") ||
   message.includes("must be phase aborted") ||
   message.includes("Parking entry already exists")
     ? Response.json({ error: message }, { status: 409 })

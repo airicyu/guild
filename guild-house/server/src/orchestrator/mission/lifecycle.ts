@@ -8,7 +8,7 @@ import { rename } from "node:fs/promises";
 import type { Config } from "../../config";
 import { missionBoardEntryPath } from "../../paths";
 import type { Checkpoint, MissionPhase, SignalRequest, SignalType } from "../../types/mission";
-import { isIntakePhase } from "../../types/mission";
+import { canArchiveFromDoneBoard, isIntakePhase } from "../../types/mission";
 import {
   assertMissionId,
   isOnAbortedBoard,
@@ -145,8 +145,10 @@ export async function archiveMission(config: Config, missionId: string): Promise
   }
 
   if (onDone) {
-    if (checkpoint.phase !== "done") {
-      throw new Error(`Mission ${missionId} must be phase done before archive (current: ${checkpoint.phase})`);
+    if (!canArchiveFromDoneBoard(checkpoint.phase)) {
+      throw new Error(
+        `Mission ${missionId} must be phase done or mission_plan_complete before archive (current: ${checkpoint.phase})`,
+      );
     }
     await moveDoneToArchive(config, missionId);
     await archiveMissionRoom(config, missionId);
