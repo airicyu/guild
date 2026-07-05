@@ -65,7 +65,7 @@ PO executes `artifact-release.md`, sets `status: released`, signals `artifact_re
 ### Automated close-out (API)
 
 ```bash
-bun server/scripts/e2e-close-out-03.ts
+bun server/scripts/e2e-phase1-closeout.ts
 ```
 
 Covers approve → release → retro → `mission_complete`; reject; abort. No live PO — channel degraded. See [close-out-e2e.md](./close-out-e2e.md).

@@ -24,10 +24,9 @@ Optional Web UI: `bun run dev:ui` → http://127.0.0.1:3848
 Channel **degraded** — approve writes `inbox.md` + checkpoint only; no HTTP POST to guild-channel.
 
 ```bash
-cd guild/guild-house
-bun server/scripts/e2e-close-out-03.ts
-# or directly:
-bun server/scripts/e2e-phase1-closeout.ts
+cd guild/guild-house/server
+bun run test:closeout
+# or: bun server/scripts/e2e-phase1-closeout.ts
 ```
 
 **Covers:**
@@ -66,7 +65,7 @@ Follow [execution-e2e.md](./execution-e2e.md) §1–3: drop brief on **queued**,
 **Prerequisites:** `CLAUDE_DEV_CHANNELS=1`, Claude Code 2.1.80+, WSL/Linux. See [guild-channel.md](../guild-channel.md).
 
 ```bash
-bun server/scripts/setup-channel-approve-test.ts
+bun server/scripts/archive/channel/setup-channel-approve-test.ts
 ```
 
 Then approve via Web UI or API and verify:
@@ -111,4 +110,6 @@ See [e2e-discovery-path.md](../e2e-discovery-path.md).
 | [execution-e2e.md](./execution-e2e.md) | Queued → archive execution path |
 | [e2e-discovery-path.md](../e2e-discovery-path.md) | Full discovery pipeline |
 | [session-poke.md](../session-poke.md) | Session poke (0.5.0 primary wake) |
+| `server/scripts/e2e-040.ts` | Primary automated E2E (discovery + close-out) |
+| `server/scripts/e2e-phase1-closeout.ts` | Close-out only (reject / abort) |
 | `server/scripts/e2e-050-session-poke.ts` | Automated poke API + dead-session path |

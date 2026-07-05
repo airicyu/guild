@@ -63,4 +63,4 @@ See [.env.example](.env.example). Web UI needs matching `VITE_GUILD_API_KEY` in 
 
 ## Scripts
 
-Server E2E and WS tests live under `server/scripts/` (e.g. `bun server/scripts/e2e-040.ts` from house root, or `bun scripts/e2e-040.ts` from `server/`).
+Server E2E and WS tests live under `server/scripts/` — see [server/scripts/README.md](server/scripts/README.md). Quick run: `cd server && bun run test:e2e` (API must be up).

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "bun --env-file=../.env --watch src/server.ts",
     "start": "bun --env-file=../.env src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "bun --env-file=../.env scripts/e2e-040.ts",
+    "test:closeout": "bun --env-file=../.env scripts/e2e-phase1-closeout.ts",
+    "test:poke": "bun --env-file=../.env scripts/e2e-050-session-poke.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

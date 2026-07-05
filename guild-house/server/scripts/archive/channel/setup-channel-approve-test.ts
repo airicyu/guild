@@ -11,9 +11,9 @@
  *   - claude 2.1.80+ on PATH
  *   - guild-channel MCP pre-approved (template settings.local.json)
  *
- * Usage:
- *   bun scripts/setup-channel-approve-test.ts
- *   bun scripts/setup-channel-approve-test.ts --keep-existing   # skip rm if mission id exists
+ * Usage (from server/):
+ *   bun scripts/archive/channel/setup-channel-approve-test.ts
+ *   bun scripts/archive/channel/setup-channel-approve-test.ts --keep-existing
  *
  * Cleanup:
  *   claude stop <sessionId>
@@ -21,15 +21,15 @@
  */
 import { cp, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { config } from "../src/config";
-import { buildCheckpoint, writeCheckpoint } from "../src/orchestrator/mission/checkpoint";
-import { spawnPoSession } from "../src/orchestrator/core/spawn";
+import { config } from "../../../src/config";
+import { buildCheckpoint, writeCheckpoint } from "../../../src/orchestrator/mission/checkpoint";
+import { spawnPoSession } from "../../../src/orchestrator/core/spawn";
 import {
   missionBoardEntryPath,
   missionRoomPath,
   missionExecutionTemplatePath,
   poSessionName,
-} from "../src/paths";
+} from "../../../src/paths";
 
 const KEEP_EXISTING = process.argv.includes("--keep-existing");
 const DATE = new Date().toISOString().slice(0, 10).replace(/-/g, "");

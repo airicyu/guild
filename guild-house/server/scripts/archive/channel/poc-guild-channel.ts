@@ -12,16 +12,16 @@
  *   - claude 2.1.80+
  *   - Approve guild-channel MCP on first spawn if prompted
  *
- * Usage:
- *   bun scripts/poc-guild-channel.ts --http-only
- *   bun scripts/poc-guild-channel.ts
- *   bun scripts/poc-guild-channel.ts --verify-logs   # optional; never attach same session while polling
+ * Usage (from server/):
+ *   bun scripts/archive/channel/poc-guild-channel.ts --http-only
+ *   bun scripts/archive/channel/poc-guild-channel.ts
+ *   bun scripts/archive/channel/poc-guild-channel.ts --verify-logs
  */
 import { cp, mkdir, readFile, unlink } from "node:fs/promises";
 import { join } from "node:path";
-import { config } from "../src/config";
-import { missionExecutionTemplatePath, missionRoomPath, poSessionName } from "../src/paths";
-import { spawnBackgroundSession } from "../src/orchestrator/core/spawn";
+import { config } from "../../../src/config";
+import { missionExecutionTemplatePath, missionRoomPath, poSessionName } from "../../../src/paths";
+import { spawnBackgroundSession } from "../../../src/orchestrator/core/spawn";
 
 const HTTP_ONLY = process.argv.includes("--http-only");
 const VERIFY_LOGS = process.argv.includes("--verify-logs");
@@ -82,7 +82,7 @@ Run ONCE in an interactive session (same directory):
   claude --dangerously-load-development-channels server:guild-channel
 
 When prompted → choose 2 (all future MCP in this project).
-Then Ctrl+C and re-run: bun scripts/poc-guild-channel.ts
+Then Ctrl+C and re-run: bun scripts/archive/channel/poc-guild-channel.ts
 
 Note: trusting guild-house root does NOT approve MCP in data/mission-rooms/* — each new room needs this once.
 Reusing room channel-poc-trusted avoids repeating (default; omit --fresh).

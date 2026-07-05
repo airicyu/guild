@@ -65,7 +65,7 @@ server/
       mission/             Execution pickup, lifecycle, checkpoint, scaffold
       skills-bank/
     types/
-  scripts/                 E2E + WS smoke (not typechecked with src)
+  scripts/                 E2E + WS smoke — see scripts/README.md
   package.json
 ```
 
@@ -115,7 +115,8 @@ bun run start        # production-style
 bun run typecheck    # tsc --noEmit
 
 # E2E (API must be running)
-bun scripts/e2e-040.ts
+bun run test:e2e       # primary: e2e-040
+bun run test:closeout  # close-out only
 bun scripts/test-ws-attach.ts <missionId>
 ```
 

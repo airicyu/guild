@@ -97,19 +97,21 @@ When the PO session is stopped or the channel never started:
 
 PO playbook: on restore, always read `inbox.md` before continuing. Channel is an optimization for **live** sessions, not the source of truth.
 
-## PoC script
+## PoC script (archived — `GUILD_CHANNEL_PUSH=0` by default)
 
 ```bash
 cd guild-house
 # Automated: channel server + auth gate (no Claude session)
-bun server/scripts/poc-guild-channel.ts --http-only
+bun server/scripts/archive/channel/poc-guild-channel.ts --http-only
 
 # Full E2E: spawn PO, POST event, pass (default; no logs poll — avoids TTY clash if you attach elsewhere)
-bun server/scripts/poc-guild-channel.ts
+bun server/scripts/archive/channel/poc-guild-channel.ts
 
 # Optional: also poll claude logs for <channel> (do not attach the same session while this runs)
-bun server/scripts/poc-guild-channel.ts --verify-logs
+bun server/scripts/archive/channel/poc-guild-channel.ts --verify-logs
 ```
+
+See [server/scripts/archive/channel/README.md](../server/scripts/archive/channel/README.md).
 
 Automates: version check → temp mission room → PO spawn (with dev channels) → wait for endpoint → POST test event → poll `claude logs` for channel delivery.
 
