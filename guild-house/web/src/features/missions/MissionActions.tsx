@@ -252,7 +252,7 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
       <ConfirmDialog
         open={archiveOpen}
         title="Archive mission?"
-        message={`Move ${missionId} to the archive board. The mission room moves to mission-rooms/achive/.`}
+        message={`Move ${missionId} to the archive board. The mission room moves to mission-rooms/archive/.`}
         confirmLabel="Archive"
         pending={archiveMutation.isPending}
         onConfirm={() => archiveMutation.mutate()}

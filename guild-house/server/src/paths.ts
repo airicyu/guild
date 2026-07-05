@@ -38,7 +38,6 @@ export async function ensureDataLayout(config: Config): Promise<void> {
     config.guildHome,
     join(config.guildHome, "mission-rooms"),
     join(config.guildHome, "mission-rooms", ROOM_ARCHIVE_DIR),
-    join(config.guildHome, "mission-rooms", ROOM_ACHIVE_DIR),
     ...BOARD_STAGES.map((s) => join(config.guildHome, "mission-board", s)),
   ];
 

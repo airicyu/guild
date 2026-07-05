@@ -4,6 +4,7 @@ import type { Config } from "../../config";
 import {
   __clearPokeMutexForTests,
   __setAttachActiveCheckForTests,
+  __setAttachInjectFnForTests,
   __setPokeRunnerForTests,
   __setProbeSessionForTests,
   buildPokeMessage,
@@ -49,12 +50,14 @@ describe("pokeMissionSession", () => {
     __setPokeRunnerForTests(null);
     __setProbeSessionForTests(null);
     __setAttachActiveCheckForTests(null);
+    __setAttachInjectFnForTests(null);
   });
 
   afterEach(() => {
     __setPokeRunnerForTests(null);
     __setProbeSessionForTests(null);
     __setAttachActiveCheckForTests(null);
+    __setAttachInjectFnForTests(null);
     __clearPokeMutexForTests();
   });
 
@@ -111,15 +114,29 @@ describe("pokeMissionSession", () => {
     expect(result.reason).toBe("attach inject timeout");
   });
 
-  test("attach_in_use skips poke", async () => {
+  test("attach active injects via ws attach pty", async () => {
     __setProbeSessionForTests(liveProbe);
     __setAttachActiveCheckForTests(() => true);
+    __setAttachInjectFnForTests(async () => ({ delivered: true }));
 
     const result = await pokeMissionSession(baseConfig, "longbridge-validation-20260704-bc317a", {
       event: "artifacts_approved",
       phase: "releasing",
     });
-    expect(result).toEqual({ delivered: false, reason: "attach_in_use" });
+    expect(result).toEqual({ delivered: true, durationMs: expect.any(Number) });
+  });
+
+  test("attach active inject failure surfaces reason", async () => {
+    __setProbeSessionForTests(liveProbe);
+    __setAttachActiveCheckForTests(() => true);
+    __setAttachInjectFnForTests(async () => ({ delivered: false, reason: "attach not ready" }));
+
+    const result = await pokeMissionSession(baseConfig, "longbridge-validation-20260704-bc317a", {
+      event: "artifacts_approved",
+      phase: "releasing",
+    });
+    expect(result.delivered).toBe(false);
+    expect(result.reason).toBe("attach not ready");
   });
 
   test("concurrent poke skips with poke in flight", async () => {

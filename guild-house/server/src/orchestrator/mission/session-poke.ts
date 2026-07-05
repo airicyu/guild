@@ -7,7 +7,7 @@ import type { Config } from "../../config";
 import { missionRoomPath } from "../../paths";
 import type { MissionMode, MissionPhase } from "../../types/mission";
 import { runEphemeralAttachPoke } from "../core/attach-pty-core";
-import { isMissionAttachWsActive } from "../../websocket/attach-pty";
+import { injectMissionAttachChatInput, isMissionAttachWsActive } from "../../websocket/attach-pty";
 import { readCheckpoint } from "./checkpoint";
 import { probeSession as defaultProbeSession } from "./session-lifecycle";
 
@@ -29,8 +29,8 @@ type PokeRunner = typeof runEphemeralAttachPoke;
 let pokeRunner: PokeRunner = runEphemeralAttachPoke;
 type ProbeSessionFn = typeof defaultProbeSession;
 let probeSessionFn: ProbeSessionFn = defaultProbeSession;
-type AttachActiveFn = typeof isMissionAttachWsActive;
-let attachActiveCheck: AttachActiveFn = isMissionAttachWsActive;
+type AttachInjectFn = typeof injectMissionAttachChatInput;
+let attachInjectFn: AttachInjectFn = injectMissionAttachChatInput;
 
 /** Test hook — inject mock PTY runner without live Claude. */
 export function __setPokeRunnerForTests(runner: PokeRunner | null): void {
@@ -40,6 +40,14 @@ export function __setPokeRunnerForTests(runner: PokeRunner | null): void {
 /** Test hook — stub session probe. */
 export function __setProbeSessionForTests(fn: ProbeSessionFn | null): void {
   probeSessionFn = fn ?? defaultProbeSession;
+}
+
+type AttachActiveFn = typeof isMissionAttachWsActive;
+let attachActiveCheck: AttachActiveFn = isMissionAttachWsActive;
+
+/** Test hook — stub WS attach inject. */
+export function __setAttachInjectFnForTests(fn: AttachInjectFn | null): void {
+  attachInjectFn = fn ?? injectMissionAttachChatInput;
 }
 
 /** Test hook — stub WS attach-active check. */
@@ -88,10 +96,6 @@ export async function pokeMissionSession(
     return { delivered: false, reason: "poke in flight" };
   }
 
-  if (attachActiveCheck(missionId)) {
-    return { delivered: false, reason: "attach_in_use" };
-  }
-
   pokeInFlight.add(missionId);
   const started = Date.now();
 
@@ -107,14 +111,42 @@ export async function pokeMissionSession(
       return { delivered: false, reason: "session not live" };
     }
 
-    const cwd = checkpoint.claude_session.cwd || missionRoomPath(config, missionId);
-
     const message = buildPokeMessage(
       input.event,
       input.phase,
       input.mode ?? checkpoint.mode,
       config.sessionPokeMessageTemplate,
     );
+
+    if (attachActiveCheck(missionId)) {
+      const viaAttach = await attachInjectFn(missionId, message);
+      const durationMs = Date.now() - started;
+      if (!viaAttach.delivered) {
+        console.log(
+          `[session-poke] mission=${missionId} event=${input.event} via=ws-attach delivered=false reason=${viaAttach.reason ?? "unknown"} durationMs=${durationMs}`,
+        );
+        return { delivered: false, reason: viaAttach.reason, durationMs };
+      }
+
+      const afterAttachProbe = await probeSessionFn(config, sessionId);
+      if (!afterAttachProbe.processLive) {
+        console.log(
+          `[session-poke] mission=${missionId} event=${input.event} via=ws-attach delivered=false reason=bg job not live after inject durationMs=${durationMs}`,
+        );
+        return {
+          delivered: false,
+          reason: "bg job not live after poke teardown",
+          durationMs,
+        };
+      }
+
+      console.log(
+        `[session-poke] mission=${missionId} event=${input.event} via=ws-attach delivered=true durationMs=${durationMs}`,
+      );
+      return { delivered: true, durationMs };
+    }
+
+    const cwd = checkpoint.claude_session.cwd || missionRoomPath(config, missionId);
 
     const result = await pokeRunner({
       claudeCommand: config.claudeCommand,
@@ -148,7 +180,7 @@ export async function pokeMissionSession(
     }
 
     console.log(
-      `[session-poke] mission=${missionId} event=${input.event} delivered=true durationMs=${result.durationMs ?? Date.now() - started}`,
+      `[session-poke] mission=${missionId} event=${input.event} via=ephemeral delivered=true durationMs=${result.durationMs ?? Date.now() - started}`,
     );
     return { delivered: true, durationMs: result.durationMs };
   } catch (err) {

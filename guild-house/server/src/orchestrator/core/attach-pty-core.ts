@@ -8,8 +8,12 @@ import type { Subprocess } from "bun";
 export const ATTACH_DEFAULT_COLS = 80;
 export const ATTACH_DEFAULT_ROWS = 24;
 export const ATTACH_LAUNCH_DELAY_MS = 500;
-export const POKE_POST_INJECT_SETTLE_MS = 400;
+/** Delay between message body and Enter submit (separate writes). */
+export const POKE_SUBMIT_DELAY_MS = 80;
+/** Wait after Enter before tearing down ephemeral poke PTY. */
+export const POKE_POST_INJECT_SETTLE_MS = 1500;
 export const POKE_PTY_EXIT_WAIT_MS = 2000;
+export const POKE_SUBMIT_CHAR = "\r";
 
 export type EphemeralAttachPokeResult = {
   delivered: boolean;
@@ -46,6 +50,28 @@ export function attachLooksReady(output: string): boolean {
   if (/Connected to/i.test(plain)) return true;
   if (/❯/.test(plain)) return true;
   return false;
+}
+
+/** Stricter ready gate for ephemeral poke — avoid injecting into bash before `claude attach` settles. */
+export function pokeAttachLooksReady(output: string, sinceAttachMs: number): boolean {
+  const plain = stripAnsi(output);
+  if (/attached/i.test(plain)) return true;
+  if (/esc to (?:exit|detach)/i.test(plain)) return true;
+  if (/Connected to/i.test(plain)) return true;
+  if (sinceAttachMs >= 3000) return true;
+  return false;
+}
+
+type TerminalWriter = { write(data: string): void };
+
+/** Write poke message then Enter as separate PTY writes (single-buffer `\r` often does not submit). */
+export async function writeTerminalPokeSubmit(
+  terminal: TerminalWriter,
+  message: string,
+): Promise<void> {
+  terminal.write(message);
+  await Bun.sleep(POKE_SUBMIT_DELAY_MS);
+  terminal.write(POKE_SUBMIT_CHAR);
 }
 
 export function spawnEphemeralBashPty(
@@ -114,11 +140,10 @@ export async function runEphemeralAttachPoke(input: {
 
     while (Date.now() < injectDeadline) {
       const sinceAttach = Date.now() - attachStarted;
-      const ready =
-        sinceAttach >= ATTACH_LAUNCH_DELAY_MS + 1200 || attachLooksReady(output);
+      const ready = pokeAttachLooksReady(output, sinceAttach);
 
-      if (ready && !injected) {
-        proc.terminal?.write(`${message}\r`);
+      if (ready && !injected && proc.terminal) {
+        await writeTerminalPokeSubmit(proc.terminal, message);
         injected = true;
         await Bun.sleep(POKE_POST_INJECT_SETTLE_MS);
         break;

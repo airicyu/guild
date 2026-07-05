@@ -17,6 +17,8 @@ import {
   attachTerminalEnv,
   buildAttachLine,
   decodeTerminalData,
+  POKE_POST_INJECT_SETTLE_MS,
+  writeTerminalPokeSubmit,
 } from "../orchestrator/core/attach-pty-core";
 import type { ServerWebSocket, Subprocess } from "bun";
 
@@ -425,9 +427,40 @@ export function handleAttachMessage(
   }
 }
 
-/** True when a browser WS attach client holds the mission terminal (poke should skip). */
+/** True when a browser WS attach client holds the mission terminal. */
 export function isMissionAttachWsActive(missionId: string): boolean {
   return activeAttachByKey.has(terminalKey("mission", missionId));
+}
+
+const ATTACH_INJECT_POLL_MS = 100;
+const ATTACH_INJECT_WAIT_MS = 4000;
+
+/**
+ * Inject poke text through the live browser attach server PTY (same path as chat_input).
+ * Prefer this over ephemeral poke when guild master already has Terminal tab open.
+ */
+export async function injectMissionAttachChatInput(
+  missionId: string,
+  message: string,
+): Promise<{ delivered: boolean; reason?: string }> {
+  const key = terminalKey("mission", missionId);
+  if (!activeAttachByKey.has(key)) {
+    return { delivered: false, reason: "attach not active" };
+  }
+
+  const deadline = Date.now() + ATTACH_INJECT_WAIT_MS;
+  while (Date.now() < deadline) {
+    const terminal = serverTerminals.get(key);
+    const writer = terminal?.proc.terminal;
+    if (terminal?.attachLaunched && writer) {
+      await writeTerminalPokeSubmit(writer, message);
+      await Bun.sleep(POKE_POST_INJECT_SETTLE_MS);
+      return { delivered: true };
+    }
+    await Bun.sleep(ATTACH_INJECT_POLL_MS);
+  }
+
+  return { delivered: false, reason: "attach not ready" };
 }
 
 /** WS close: kill server attach PTY only — background PO job keeps running. */

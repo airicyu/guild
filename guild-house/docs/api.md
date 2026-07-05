@@ -626,7 +626,7 @@ Mission room tool: `tools/abort.sh [reason]` (PO may write abort-note first on c
 
 Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`, **or** **aborted** board with `phase: aborted`.
 
-Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room moves to `mission-rooms/achive/{id}/` (idempotent if already achived on done/abort).
+Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room moves to `mission-rooms/archive/{id}/` (idempotent if already archived on done/abort). Legacy `mission-rooms/achive/` is read-only compat.
 
 **Response 200**
 
@@ -1078,7 +1078,7 @@ Each draft is copied to parking under an orchestrator-minted id `{slug}-{YYYYMMD
 }
 ```
 
-Removes `discovering/{ideaId}` from board; moves `discovery-rooms/{ideaId}/` → `discovery-rooms/achive/{ideaId}/`.
+Removes parent from `discovering/` → `done/`; archives intake room to `mission-rooms/archive/{ideaId}/`; copies each draft package to `parking/`.
 
 ### Shipped in v0.14.0 (Phase 5)
 

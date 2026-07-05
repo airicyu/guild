@@ -20,8 +20,8 @@ export function formatGuildMasterNotifyDetail(notify?: GuildMasterNotify): strin
   if (notify?.poke?.reason === "session not live") {
     return "Inbox updated — restore session, then attach or retry";
   }
-  if (notify?.poke?.reason === "attach_in_use") {
-    return "Inbox updated — close browser terminal attach, then retry";
+  if (notify?.poke?.reason === "attach not ready") {
+    return "Inbox updated — wait for terminal attach, then retry or message PO manually";
   }
   return "Inbox only — restore session and attach if PO is idle";
 }
