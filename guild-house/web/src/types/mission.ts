@@ -218,9 +218,14 @@ export interface MissionRoomFileResponse {
   content: string;
 }
 
+export type GuildMasterNotify = {
+  channel?: { delivered: boolean; reason?: string };
+  poke?: { delivered: boolean; reason?: string; durationMs?: number };
+};
+
 export interface MissionArtifactActionResponse {
   ok: true;
   missionId: string;
   checkpoint: Checkpoint;
-  notify?: { channel?: { delivered: boolean } };
+  notify?: GuildMasterNotify;
 }

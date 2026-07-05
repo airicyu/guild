@@ -55,15 +55,37 @@ curl -H "%AUTH%" http://127.0.0.1:3847/outbox
 
 `POST /ideas` is **retained** for submit — it creates a mission board note (`mission.md` + `meta.yaml`).
 
-`GET /health` also returns `tickIntervalMinutes` and **`channelPushEnabled`** — when &gt; 0, guild-house runs `orchestratorTick()` on that interval (same as bell). When `channelPushEnabled` is false, do not rely on `approve-artifacts` / `reject-artifacts` to wake an idle PO (inbox + checkpoint only).
+`GET /health` also returns `tickIntervalMinutes`, **`sessionPokeEnabled`** (default on), and **`channelPushEnabled`** (default off).
 
-## Channel push
+## Session poke (0.5.0 — primary wake path)
+
+| Health field | Env | Default |
+|--------------|-----|---------|
+| `sessionPokeEnabled` | `GUILD_SESSION_POKE=0` disables | **on** |
+| `sessionPokeTimeoutMs` | `GUILD_SESSION_POKE_TIMEOUT_MS` | `8000` |
+
+`POST /missions/{id}/approve-artifacts`, `reject-artifacts`, and `abort` return:
+
+```json
+"notify": {
+  "channel": { "delivered": false, "reason": "GUILD_CHANNEL_PUSH disabled" },
+  "poke": { "delivered": true, "durationMs": 2400 }
+}
+```
+
+| `notify.poke` | Meaning |
+|---------------|---------|
+| `delivered: true` | Idle live PO received `[guild-house]` poke via ephemeral attach |
+| `delivered: false`, `reason: session not live` | Inbox/checkpoint updated — restore + attach or retry |
+| `delivered: false`, `reason: attach_in_use` | Browser terminal attach open — close tab and retry |
+
+## Channel push (secondary)
 
 | Health field | Env | Default |
 |--------------|-----|---------|
 | `channelPushEnabled` | `GUILD_CHANNEL_PUSH=1` on guild-house | **off** |
 
-Web UI hides approve/reject artifact buttons when off. Guild desk: **attach-first** close-out (see [workflows.md](workflows.md#approve-mission-artifacts-close-out)).
+Orthogonal to session poke. Web UI shows approve/reject when **either** poke or channel is enabled.
 
 ## Intake phases (0.4.0)
 
@@ -77,7 +99,7 @@ Web UI hides approve/reject artifact buttons when off. Guild desk: **attach-firs
 
 | Phase | Guild master action |
 |-------|---------------------|
-| `awaiting_artifact_review` | **Channel off:** attach + direct PO; optional `approve-artifacts` / `reject-artifacts` with attach. **Channel on:** API approve/reject may wake PO |
+| `awaiting_artifact_review` | **`POST .../approve-artifacts`** or reject (poke wakes idle PO by default); attach fallback if `poke.delivered: false` |
 | `releasing` | PO executes release — no guild master API |
 | `retrospective` | PO aggregates retro — no guild master API |
 | `done` (on **done** board) | `POST .../archive` |

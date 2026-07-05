@@ -7,14 +7,21 @@
  * - WS close kills server attach PTY only — background job keeps running.
  * - ensure*SessionLive runs on every WS open.
  */
-import type { ServerWebSocket, Subprocess } from "bun";
 import type { Config } from "../config";
 import { ensureMissionSessionLive } from "../orchestrator/mission/session-lifecycle";
 import type { MissionSessionInfo } from "../types/mission";
+import {
+  ATTACH_DEFAULT_COLS,
+  ATTACH_DEFAULT_ROWS,
+  ATTACH_LAUNCH_DELAY_MS,
+  attachTerminalEnv,
+  buildAttachLine,
+  decodeTerminalData,
+} from "../orchestrator/core/attach-pty-core";
+import type { ServerWebSocket, Subprocess } from "bun";
 
-const DEFAULT_COLS = 80;
-const DEFAULT_ROWS = 24;
-const ATTACH_LAUNCH_DELAY_MS = 500;
+const DEFAULT_COLS = ATTACH_DEFAULT_COLS;
+const DEFAULT_ROWS = ATTACH_DEFAULT_ROWS;
 
 export type AttachPipeline = "mission" | "discovery";
 
@@ -58,9 +65,6 @@ function terminalKey(pipeline: AttachPipeline, resourceId: string): string {
   return `${pipeline}:${resourceId}`;
 }
 
-function decodeTerminalData(data: string | Uint8Array): string {
-  return typeof data === "string" ? data : new TextDecoder().decode(data);
-}
 
 function getServerTerminal(key: string): ServerTerminal | undefined {
   return serverTerminals.get(key);
@@ -178,7 +182,7 @@ function launchAttachInTerminal(config: Config, terminal: ServerTerminal): void 
     terminal.attachLaunchTimer = null;
   }
 
-  const attachLine = `${config.claudeCommand} attach ${terminal.sessionId}\r`;
+  const attachLine = buildAttachLine(config.claudeCommand, terminal.sessionId);
   try {
     terminal.proc.terminal?.write(attachLine);
     console.log(
@@ -222,12 +226,7 @@ function spawnServerTerminal(
       },
     },
     cwd,
-    env: {
-      ...process.env,
-      TERM: "xterm-256color",
-      COLORTERM: "truecolor",
-      FORCE_COLOR: "3",
-    },
+    env: attachTerminalEnv(),
   });
 
   const terminal: ServerTerminal = {
@@ -424,6 +423,11 @@ export function handleAttachMessage(
     default:
       break;
   }
+}
+
+/** True when a browser WS attach client holds the mission terminal (poke should skip). */
+export function isMissionAttachWsActive(missionId: string): boolean {
+  return activeAttachByKey.has(terminalKey("mission", missionId));
 }
 
 /** WS close: kill server attach PTY only — background PO job keeps running. */

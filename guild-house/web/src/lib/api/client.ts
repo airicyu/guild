@@ -84,6 +84,8 @@ export interface HealthResponse {
   tickIntervalMinutes?: number;
   /** Orchestrator HTTP push to live PO via guild-channel (GUILD_CHANNEL_PUSH=1). */
   channelPushEnabled?: boolean;
+  /** Ephemeral attach poke on guild-master directives (GUILD_SESSION_POKE, default on). */
+  sessionPokeEnabled?: boolean;
 }
 
 export function fetchHealth() {

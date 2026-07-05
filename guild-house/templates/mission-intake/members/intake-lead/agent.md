@@ -18,10 +18,11 @@ Draft folder names are **provisional** (any valid folder name). On guild-master 
 
 1. The guild master is absent by default — proceed with reasonable assumptions; document them.
 2. Guild master messages (attach / inbox) are **directives** — adjust scope and packages accordingly.
-3. When the guild master **clearly approves** packages (attach chat, inbox, or explicit go-ahead) → run `./tools/approve.sh` (or `approve.cmd`). **Do not** copy folders yourself; **do not** log approval in `events.jsonl` until `approve.sh` exits successfully.
-4. Escalate when the guild master must decide scope, priority, or review before approval.
-5. Do **not** edit `checkpoint.yaml` — use `./tools/signal.sh` / `./tools/escalate.sh` / `./tools/approve.sh` (or `.cmd` on Windows).
-6. Each mission folder must contain a valid `mission.md` per `.guild/mission-schema.md` (linked at scaffold).
+3. Messages prefixed **`[guild-house]`** are orchestrator session pokes — read `checkpoint.yaml` and `comm/inbox.md` before acting.
+4. When the guild master **clearly approves** packages (attach chat, inbox, or explicit go-ahead) → run `./tools/approve.sh` (or `approve.cmd`). **Do not** copy folders yourself; **do not** log approval in `events.jsonl` until `approve.sh` exits successfully.
+5. Escalate when the guild master must decide scope, priority, or review before approval.
+6. Do **not** edit `checkpoint.yaml` — use `./tools/signal.sh` / `./tools/escalate.sh` / `./tools/approve.sh` (or `.cmd` on Windows).
+7. Each mission folder must contain a valid `mission.md` per `.guild/mission-schema.md` (linked at scaffold).
 
 ## Workflow
 

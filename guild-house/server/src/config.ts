@@ -68,6 +68,11 @@ export const config = {
   claudeDevChannels: process.env.CLAUDE_DEV_CHANNELS === "1",
   /** HTTP POST to guild-channel MCP. Unreliable on idle CC — default off; set GUILD_CHANNEL_PUSH=1 to enable. */
   channelPushEnabled: process.env.GUILD_CHANNEL_PUSH === "1",
+  /** Ephemeral attach poke on guild-master directives. Unset or non-0 = on; GUILD_SESSION_POKE=0 disables. */
+  sessionPokeEnabled: process.env.GUILD_SESSION_POKE !== "0",
+  sessionPokeTimeoutMs: envInt("GUILD_SESSION_POKE_TIMEOUT_MS", 8000),
+  /** Optional poke template; supports {{event}} {{phase}} {{role}} {{phasePart}} */
+  sessionPokeMessageTemplate: process.env.GUILD_SESSION_POKE_MESSAGE?.trim() || undefined,
 } as const;
 
 export type Config = typeof config;

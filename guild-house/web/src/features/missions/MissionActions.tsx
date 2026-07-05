@@ -14,6 +14,7 @@ import {
   restoreMission,
   resumeMission,
 } from "../../lib/api";
+import { formatGuildMasterNotifyDetail, guildMasterWakeEnabled } from "../../lib/guildMasterNotify";
 import { useHealth } from "../../providers/AppProviders";
 import type { MissionSummaryResponse } from "../../types/mission";
 
@@ -26,7 +27,12 @@ interface MissionActionsProps {
 export function MissionActions({ missionId, summary, onOpenTerminal }: MissionActionsProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const channelPushEnabled = useHealth().data?.channelPushEnabled === true;
+  const health = useHealth().data;
+  const channelPushEnabled = health?.channelPushEnabled === true;
+  const wakeEnabled = guildMasterWakeEnabled({
+    channelPushEnabled,
+    sessionPokeEnabled: health?.sessionPokeEnabled,
+  });
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [abortOpen, setAbortOpen] = useState(false);
@@ -98,10 +104,14 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
 
   const rejectMutation = useMutation({
     mutationFn: () => rejectArtifacts(missionId, rejectReason.trim() || undefined),
-    onSuccess: () => {
+    onSuccess: (result) => {
       setRejectOpen(false);
       setRejectReason("");
-      addToast({ tone: "info", title: "Artifacts rejected", detail: "Mission blocked — PO awaits directive" });
+      addToast({
+        tone: "info",
+        title: "Artifacts rejected",
+        detail: formatGuildMasterNotifyDetail(result.notify) || "Mission blocked — PO awaits directive",
+      });
       invalidate();
     },
     onError: (err) => onMutationError(err, "Reject"),
@@ -109,10 +119,14 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
 
   const abortMutation = useMutation({
     mutationFn: () => abortMission(missionId, abortReason.trim() || undefined),
-    onSuccess: () => {
+    onSuccess: (result) => {
       setAbortOpen(false);
       setAbortReason("");
-      addToast({ tone: "info", title: "Mission aborted", detail: "Moved to aborted board" });
+      addToast({
+        tone: "info",
+        title: "Mission aborted",
+        detail: formatGuildMasterNotifyDetail(result.notify) || "Moved to aborted board",
+      });
       invalidate();
       navigate("/hall");
     },
@@ -130,7 +144,7 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
   const canPause = summary.board === "working" && phase && !isDone && !isPaused && !isAborted;
   const canResume = summary.board === "working" && (isPaused || summary.restoreRequired);
   const canReject =
-    channelPushEnabled && summary.board === "working" && phase === "awaiting_artifact_review";
+    wakeEnabled && summary.board === "working" && phase === "awaiting_artifact_review";
   const canAbort = summary.board === "working" && !isDone && !isAborted;
   // Archive from done or aborted board with archiveReady — POST /missions/:id/archive (specs/product.md).
   const showArchive = (summary.board === "done" || summary.board === "aborted") && summary.archiveReady;

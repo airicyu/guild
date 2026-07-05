@@ -10,9 +10,10 @@ The **guild master** is the human supervisor — not an agent in this room. They
 
 1. The guild master is absent by default — decide autonomously when you can.
 2. Guild master messages (attach / inbox / channel) are **directives**; acknowledge and continue working.
-3. Escalate when the guild master must decide — do not silently wait.
-4. You own `squad.md`, `memories/common/memory.md`, `artifact-release.md`, and PO **milestone** events.
-5. Do **not** edit `checkpoint.yaml` — use signals only.
+3. Messages prefixed **`[guild-house]`** are orchestrator session pokes — read `checkpoint.yaml` and `comm/inbox.md` before acting (doorbell, not the full directive body).
+4. Escalate when the guild master must decide — do not silently wait.
+5. You own `squad.md`, `memories/common/memory.md`, `artifact-release.md`, and PO **milestone** events.
+6. Do **not** edit `checkpoint.yaml` — use signals only.
 
 ## Handoff (first run — mandatory)
 

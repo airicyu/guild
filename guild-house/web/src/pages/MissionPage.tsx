@@ -32,6 +32,7 @@ import {
   restoreMission,
 } from "../lib/api";
 import { canApproveArtifacts } from "../lib/board";
+import { formatGuildMasterNotifyDetail, guildMasterWakeEnabled } from "../lib/guildMasterNotify";
 import { queryKeys } from "../lib/queryKeys";
 import { useHealth } from "../providers/AppProviders";
 
@@ -48,6 +49,11 @@ export function MissionPage() {
   const queryClient = useQueryClient();
   const healthQuery = useHealth();
   const channelPushEnabled = healthQuery.data?.channelPushEnabled === true;
+  const sessionPokeEnabled = healthQuery.data?.sessionPokeEnabled === true;
+  const wakeEnabled = guildMasterWakeEnabled({
+    channelPushEnabled,
+    sessionPokeEnabled,
+  });
 
   const addToast = useCallback((toast: Omit<ToastMessage, "id">) => {
     setToasts((prev) => [...prev, { ...toast, id: nextToastId() }]);
@@ -121,11 +127,10 @@ export function MissionPage() {
     mutationFn: () => approveArtifacts(id!),
     onSuccess: (result) => {
       setApproveOpen(false);
-      const channelOk = result.notify?.channel?.delivered;
       addToast({
         tone: "success",
         title: "Artifacts approved",
-        detail: channelOk === false ? "PO notified via inbox (channel offline)" : "PO notified to begin release",
+        detail: formatGuildMasterNotifyDetail(result.notify),
       });
       invalidateMissionCloseoutQueries(queryClient, id!);
     },
@@ -168,9 +173,9 @@ export function MissionPage() {
   const phase = summary?.checkpoint?.phase;
   const showPhase = phase && isMissionPhase(phase);
   const showApprove =
-    summary?.board === "working" && canApproveArtifacts(phase) && channelPushEnabled;
+    summary?.board === "working" && canApproveArtifacts(phase) && wakeEnabled;
   const approveNeedsAttach =
-    summary?.board === "working" && canApproveArtifacts(phase) && !channelPushEnabled;
+    summary?.board === "working" && canApproveArtifacts(phase) && !wakeEnabled;
   const showPromote = summary?.board === "parking";
   const intake = isIntakeBoard(summary?.board);
   const visibleTabs = summary ? missionTabsForBoard(summary.board) : [];
@@ -259,8 +264,8 @@ export function MissionPage() {
 
             {approveNeedsAttach && (
               <p className="mt-3 text-sm text-[var(--color-text-muted)]">
-                Artifact approve is disabled in the Web UI while channel push is off — use Guild
-                Desk or terminal attach, then direct the PO via inbox.
+                Artifact approve is disabled in the Web UI while session poke and channel push are
+                off — use Guild Desk or terminal attach, then direct the PO via inbox.
               </p>
             )}
 

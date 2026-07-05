@@ -1,7 +1,7 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.30.0` (see `GET /health` → `version`)
+**Version:** `0.32.0` (see `GET /health` → `version`)
 
 > **0.4.0:** Unified mission board note + mission room model. API code lives under `guild-house/server/src/`. Intake runs in `mission-rooms/{id}/` (not `discovery-rooms/`). Legacy `GET /ideas*` and `/discoveries/*` routes were removed; **`POST /ideas`** remains for submit.
 
@@ -23,7 +23,7 @@ Related: [specs/product.md](../specs/product.md) · [session-lifecycle.md](../sp
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/health` | no | Service status (`version`, `channelPushEnabled`, `tickIntervalMinutes`) |
+| GET | `/health` | no | Service status (`version`, `sessionPokeEnabled`, `channelPushEnabled`, `tickIntervalMinutes`) |
 | GET | `/board` | yes | Mission-board folder names by stage (incl. `aborted`) |
 | POST | `/board/ideas-backlog/:id/promote` | yes | Move backlog note → ideas |
 | POST | `/board/parking/:folder/promote` | yes | Move parking folder → queued |
@@ -72,16 +72,20 @@ Public. No Bearer token.
 {
   "ok": true,
   "service": "guild-house",
-  "version": "0.16.0",
+  "version": "0.32.0",
   "guildHome": "C:\\...\\guild-house\\data",
   "guildMasterName": "Eric",
-  "tickIntervalMinutes": 0
+  "tickIntervalMinutes": 0,
+  "sessionPokeEnabled": true,
+  "channelPushEnabled": false
 }
 ```
 
-`guildMasterName` comes from `GUILD_MASTER_NAME` (default `Guild Master`). **Display only** — Web UI header; not substituted into room playbooks (use role term **guild master**; see [specs/product.md](../specs/product.md) § Guild master).
+`sessionPokeEnabled` — ephemeral `claude attach` poke on guild-master directives (`approve-artifacts`, `reject-artifacts`, `abort`). Default **on** (`GUILD_SESSION_POKE=0` disables). See [session-poke.md](./session-poke.md).
 
-`tickIntervalMinutes` from `GUILD_TICK_INTERVAL_MINUTES` (default `0` = disabled). When &gt; 0, server runs `orchestratorTick()` on that interval (same as `POST /bell`); logs to stdout as `[tick] …`.
+`channelPushEnabled` — HTTP POST to per-room guild-channel MCP. Default **off**. Orthogonal to session poke.
+
+`guildMasterName` from `GUILD_MASTER_NAME`. `tickIntervalMinutes` from `GUILD_TICK_INTERVAL_MINUTES` (`0` = manual bell only).
 
 ---
 
@@ -562,7 +566,7 @@ Guild master approves mission deliverables after internal QA. **Does not** stop 
 
 Requires mission on **working** with `phase: awaiting_artifact_review`.
 
-**Side effects:** `phase: releasing`; writes `inbox.md`; POST guild-channel `artifacts_approved` when endpoint live.
+**Side effects:** `phase: releasing`; writes `inbox.md`; session poke when `sessionPokeEnabled`; optional guild-channel when `GUILD_CHANNEL_PUSH=1`.
 
 **Response 200**
 
@@ -571,7 +575,10 @@ Requires mission on **working** with `phase: awaiting_artifact_review`.
   "ok": true,
   "missionId": "hello-world-20260627-a3f9c2",
   "checkpoint": { "...": "..." },
-  "notify": { "channel": { "delivered": true } }
+  "notify": {
+    "channel": { "delivered": false, "reason": "GUILD_CHANNEL_PUSH disabled" },
+    "poke": { "delivered": true, "durationMs": 2400 }
+  }
 }
 ```
 
@@ -899,6 +906,10 @@ Legacy checkpoints may use `awaiting_eric`; parser accepts both.
 | `MAX_ACTIVE_MISSIONS` | `4` | Concurrent PO slots on **working** board (excludes `phase: done`) |
 | `MAX_DISCOVERY_SESSIONS` | `2` | Concurrent live discovery lead sessions on **discovering** board |
 | `GUILD_TICK_INTERVAL_MINUTES` | `0` | Auto `orchestratorTick()` interval; `0` = manual bell only |
+| `GUILD_SESSION_POKE` | on (unset) | `0` = disable orchestrator attach poke on guild-master directives |
+| `GUILD_SESSION_POKE_TIMEOUT_MS` | `8000` | Max wait for poke attach + inject |
+| `GUILD_SESSION_POKE_MESSAGE` | unset | Optional poke template (`{{event}}`, `{{phase}}`, `{{role}}`, `{{phasePart}}`) |
+| `GUILD_CHANNEL_PUSH` | off | `1` = enable guild-channel HTTP push (secondary to poke) |
 | `GUILD_UI_ORIGIN` | `http://127.0.0.1:3848,…` | CORS allowed origins for Web UI |
 
 See `.env.example`.

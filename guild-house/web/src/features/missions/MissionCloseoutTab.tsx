@@ -68,6 +68,12 @@ export function MissionCloseoutTab({ missionId, summary }: MissionCloseoutTabPro
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(12rem,16rem)_1fr]">
+      {phase === "awaiting_artifact_review" && (
+        <p className="lg:col-span-2 text-sm text-[var(--color-text-muted)]">
+          Guild master can approve or reject from the header when session poke is enabled (default).
+          If poke fails, restore the PO session and attach — inbox and checkpoint are always updated.
+        </p>
+      )}
       <aside className="guild-glass rounded-lg p-3">
         <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
           Release

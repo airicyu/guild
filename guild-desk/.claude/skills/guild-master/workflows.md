@@ -4,7 +4,7 @@
 
 `POST /bell` runs **intake** (ideas → discovering) then **execution** (queued → working), slot-limited. **ideas-backlog** never auto-ticks.
 
-1. `GET /health` — up + `guildMasterName` + `tickIntervalMinutes` + **`channelPushEnabled`**
+1. `GET /health` — up + `guildMasterName` + `tickIntervalMinutes` + **`sessionPokeEnabled`** + `channelPushEnabled`
 2. `GET /board` — Backlog, Ideas, Discovering, Parking, Queued, Working, Done, Aborted
 3. `GET /queue` — preview what tick would start vs queue
 4. `POST /bell`
@@ -53,25 +53,30 @@ One folder at a time (no batch promote):
 
 After PO signals `artifacts_ready_for_review` (`phase: awaiting_artifact_review`):
 
-1. `GET /health` — if **`channelPushEnabled` is false** (default), skip standalone API approve below; use **attach-first** (step A). If `true`, API-only may wake PO (still prefer attach when unsure).
+1. `GET /health` — check **`sessionPokeEnabled`** (default on) and `channelPushEnabled` (default off)
 2. `GET /missions/{id}` — confirm `board: working`, phase, `awaitingGuildMaster`
 3. Review deliverables (room files, attach, or Web UI close-out tab)
 
-**A — Attach-first (required when channel push off)**
+**A — API poke path (default, 0.5.0)**
+
+1. `POST /missions/{id}/approve-artifacts` — inbox + checkpoint → `releasing`; **`notify.poke`** when PO session is live
+2. If `notify.poke.delivered: true` — PO should pick up without guild master attach
+3. If `notify.poke.delivered: false` and `reason: session not live` — `GET .../session?ensureLive=true`, then attach or retry approve
+4. If `reason: attach_in_use` — close browser terminal attach on mission room, then retry
+
+**B — Attach fallback (poke failed or both wake paths off)**
 
 1. `GET /missions/{id}/session?ensureLive=true`
 2. Print attach commands for guild master (separate terminal)
-3. Guild master approves or rejects **in the PO session** (verbal + inbox as needed)
-4. Optional ledger sync: `POST /missions/{id}/approve-artifacts` or `reject-artifacts` **while or after** attach so checkpoint phase matches (`releasing` / `blocked`) — never call these alone without telling guild master to attach
+3. Guild master directs PO in session; inbox/checkpoint may already be updated from API
 
-**B — API wake path (only when `channelPushEnabled: true`)**
+**C — Channel path (optional, `GUILD_CHANNEL_PUSH=1`)**
 
-1. `POST /missions/{id}/approve-artifacts` — → `releasing`; inbox + channel notify
-2. Confirm PO picked up (outbox, phase, or attach if idle)
+Secondary to poke; `notify.channel` may deliver in parallel.
 
-PO then executes release, retro, `mission_complete` — **do not** call `mission_complete` for the PO.
+**Reject:** `POST /missions/{id}/reject-artifacts` — same poke semantics (`phase: blocked`).
 
-**Reject:** same attach-first rule. `POST /missions/{id}/reject-artifacts` with optional `{ "reason": "…" }` only paired with attach when channel push is off.
+When **`sessionPokeEnabled` and `channelPushEnabled` are both false**, Web UI hides approve/reject — use attach + inbox.
 
 ### Abort a board note (0.4.0)
 

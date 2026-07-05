@@ -120,6 +120,20 @@ Rationale: dead PO will not call these tools; outbox remains valid for guild mas
 
 ---
 
+## Session poke vs attach (0.5.0)
+
+Guild-master `approve-artifacts` / `reject-artifacts` / `abort` write inbox + checkpoint, then optionally **session poke** (ephemeral attach inject). Poke uses `probeSession` only — **does not** call `ensureLive` on the notify path.
+
+| Situation | Poke | Guild master |
+|-----------|------|--------------|
+| PO live at idle prompt | `notify.poke.delivered: true` typical | Monitor phase/outbox |
+| PO dead | `reason: session not live` | `ensureLive` + attach |
+| Browser WS attach open | `reason: attach_in_use` | Close terminal tab, retry |
+
+Long attach conversations remain guild-master driven via `ensureLive` + WS terminal. See [docs/session-poke.md](../docs/session-poke.md).
+
+---
+
 ## Checkpoint fields (proposed)
 
 ```yaml

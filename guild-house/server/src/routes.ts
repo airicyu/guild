@@ -35,11 +35,12 @@ export function buildRoutes(config: Config): RoutesSlice {
           Response.json({
             ok: true,
             service: "guild-house",
-            version: "0.30.0",
+            version: "0.32.0",
             guildHome: config.guildHome,
             guildMasterName: config.guildMasterName,
             tickIntervalMinutes: config.tickIntervalMinutes,
             channelPushEnabled: config.channelPushEnabled,
+            sessionPokeEnabled: config.sessionPokeEnabled,
           }),
         ),
     },

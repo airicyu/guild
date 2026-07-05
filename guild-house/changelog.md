@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.5.0 — 2026-07-06
+
+Session poke — orchestrator ephemeral `claude attach` inject wakes idle `--bg` PO on guild-master approve/reject/abort. **API runtime:** `GET /health` → **0.32.0**.
+
+### Session poke
+
+- Primary wake bus when `GUILD_SESSION_POKE` enabled (default on)
+- `notify.poke` on approve/reject/abort responses; inbox + checkpoint always written first
+- Option A: `probeSession` only — no `ensureLive` on notify path
+- Skip poke when browser WS attach active (`attach_in_use`)
+- Spike: `server/scripts/poc-session-poke.ts`; E2E: `server/scripts/e2e-050-session-poke.ts`
+
+### Web UI
+
+- Approve/reject artifacts when `sessionPokeEnabled` **or** `channelPushEnabled`
+- Toasts reflect `notify.poke.delivered`
+
+### guild-desk
+
+- Close-out workflow: API approve viable when poke enabled; attach fallback on poke failure
+
 ## 0.4.0 — 2026-07-05
 
 Unified mission model: intake + execution in `mission-rooms/`; mission board notes with `mission.md` + `meta.yaml`. **API runtime:** `GET /health` → **0.30.0**.

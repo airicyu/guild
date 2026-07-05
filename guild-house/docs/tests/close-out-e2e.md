@@ -97,8 +97,8 @@ See [e2e-discovery-path.md](../e2e-discovery-path.md).
 ## Checklist (sign-off)
 
 - [ ] Part A automated script passes
-- [ ] Part B2 Web approve + close-out tabs (no attach required for approve)
-- [ ] Part B3 channel wake (or document degraded skip with reason)
+- [ ] Part B2 Web approve + close-out tabs (`sessionPokeEnabled` — no attach required when poke succeeds)
+- [ ] Part B3 poke wake (`notify.poke.delivered: true`) or degraded path documented (`session not live`)
 - [ ] Reject and abort paths exercised once (API or Web)
 - [ ] Archive from **done** and **aborted**
 
@@ -110,5 +110,5 @@ See [e2e-discovery-path.md](../e2e-discovery-path.md).
 |----------|---------|
 | [execution-e2e.md](./execution-e2e.md) | Queued → archive execution path |
 | [e2e-discovery-path.md](../e2e-discovery-path.md) | Full discovery pipeline |
-| [guild-channel.md](../guild-channel.md) | Channel PoC + dev setup |
-| `server/scripts/e2e-close-out-03.ts` | Runner: Part A auto + Part B instructions |
+| [session-poke.md](../session-poke.md) | Session poke (0.5.0 primary wake) |
+| `server/scripts/e2e-050-session-poke.ts` | Automated poke API + dead-session path |

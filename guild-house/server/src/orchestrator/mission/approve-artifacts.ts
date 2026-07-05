@@ -7,13 +7,13 @@ import type { Config } from "../../config";
 import type { Checkpoint } from "../../types/mission";
 import { assertMissionId, isOnWorkingBoard, listBoard } from "../core/board";
 import { readCheckpoint, writeCheckpoint } from "./checkpoint";
-import { deliverGuildMasterDirective } from "./guild-master-notify";
+import { deliverGuildMasterDirective, type GuildMasterNotifyResult } from "./guild-master-notify";
 
 /** Approve mission deliverables; transitions to releasing phase on working board. */
 export async function approveMissionArtifacts(
   config: Config,
   missionId: string,
-): Promise<{ missionId: string; checkpoint: Checkpoint; notify: { channel: { delivered: boolean; reason?: string } } }> {
+): Promise<{ missionId: string; checkpoint: Checkpoint; notify: GuildMasterNotifyResult }> {
   assertMissionId(missionId);
 
   const board = await listBoard(config);
@@ -40,9 +40,11 @@ export async function approveMissionArtifacts(
   const notify = await deliverGuildMasterDirective(config, missionId, {
     event: "artifacts_approved",
     directive,
+    pokePhase: "releasing",
+    pokeMode: checkpoint.mode,
   });
   console.log(
-    `[approve-artifacts] mission=${missionId} phase→releasing channel.delivered=${notify.channel.delivered}${notify.channel.reason ? ` (${notify.channel.reason})` : ""}`,
+    `[approve-artifacts] mission=${missionId} phase→releasing channel.delivered=${notify.channel.delivered}${notify.channel.reason ? ` (${notify.channel.reason})` : ""} poke.delivered=${notify.poke.delivered}`,
   );
 
   const updated: Checkpoint = {

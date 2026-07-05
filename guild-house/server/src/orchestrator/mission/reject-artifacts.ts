@@ -5,7 +5,7 @@ import type { Config } from "../../config";
 import type { Checkpoint } from "../../types/mission";
 import { assertMissionId, isOnWorkingBoard, listBoard } from "../core/board";
 import { readCheckpoint, writeCheckpoint } from "./checkpoint";
-import { deliverGuildMasterDirective } from "./guild-master-notify";
+import { deliverGuildMasterDirective, type GuildMasterNotifyResult } from "./guild-master-notify";
 
 export interface RejectArtifactsRequest {
   reason?: string;
@@ -17,7 +17,7 @@ export async function rejectMissionArtifacts(
   config: Config,
   missionId: string,
   input: RejectArtifactsRequest = {},
-): Promise<{ missionId: string; checkpoint: Checkpoint; notify: { channel: { delivered: boolean; reason?: string } } }> {
+): Promise<{ missionId: string; checkpoint: Checkpoint; notify: GuildMasterNotifyResult }> {
   assertMissionId(missionId);
 
   const board = await listBoard(config);
@@ -47,6 +47,8 @@ export async function rejectMissionArtifacts(
     event: "artifacts_rejected",
     directive,
     appendInbox: true,
+    pokePhase: "blocked",
+    pokeMode: checkpoint.mode,
   });
 
   const updated: Checkpoint = {

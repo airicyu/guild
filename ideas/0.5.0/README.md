@@ -5,6 +5,7 @@ Replace unreliable **guild-channel HTTP push** for guild-master directives with 
 | Doc | Purpose |
 |-----|---------|
 | [design.md](./design.md) | **Proposal** — problem, approach, feasibility, risks, API, phases |
+| [implementation-plan.md](./implementation-plan.md) | **Checklist** — phased work items with `[ ]` / `[x]` tracking |
 
 **Baseline:** product **0.4.0** · API **0.30.0** · channel push **off by default** (`GUILD_CHANNEL_PUSH=0`).
 

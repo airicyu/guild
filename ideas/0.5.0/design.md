@@ -191,7 +191,7 @@ API response on approve/reject/abort extends notify block:
 | **A — poke only if live** (recommended v1) | Simple; matches “don’t spawn from notify path” | Dead session → guild master still restores manually |
 | **B — ensureLive then poke** | Better automation | Notify path may spawn/restore PO — heavier, surprise side effects |
 
-**Recommendation:** **A** for 0.5.0 v1. Document that `restore` + poke can be a 0.5.1 enhancement.
+**Locked (2026-07-06):** **A** — poke only if `probeSession` reports live; notify path does not call `ensureLive`. Option B (`GUILD_SESSION_POKE_RESTORE=1`) deferred to 0.5.1.
 
 ### 5.2 Which routes get poke?
 

@@ -52,6 +52,7 @@ ideas-backlog → ideas → discovering → [approve] → parking → queued →
 10. **`checkpoint.yaml`** — orchestrator-only; unified phases (intake + execution).
 11. **`meta.type`** — `idea_exploring` \| `work_execution`; immutable after mint.
 12. **Skills bank** — `data/skills-bank/`; `GET /skills-bank`.
+13. **Session poke** — orchestrator ephemeral `claude attach` inject on guild-master directives; **no second PO**; best-effort; poke PTY teardown does not stop `--bg` job. Option A: poke only if session already live (no `ensureLive` on notify path). See [docs/session-poke.md](../docs/session-poke.md).
 
 ## API (canonical)
 

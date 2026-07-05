@@ -15,7 +15,7 @@ import {
 import { archiveMissionRoom } from "../core/room-achive";
 import { stopSession } from "../core/session";
 import { readCheckpoint, writeCheckpoint } from "./checkpoint";
-import { deliverGuildMasterDirective } from "./guild-master-notify";
+import { deliverGuildMasterDirective, type GuildMasterNotifyResult } from "./guild-master-notify";
 
 export interface AbortMissionRequest {
   reason?: string;
@@ -51,7 +51,7 @@ export async function abortMission(
   config: Config,
   missionId: string,
   input: AbortMissionRequest = {},
-): Promise<{ missionId: string; checkpoint: Checkpoint; notify: { channel: { delivered: boolean; reason?: string } } }> {
+): Promise<{ missionId: string; checkpoint: Checkpoint; notify: GuildMasterNotifyResult }> {
   assertMissionId(missionId);
 
   const board = await listBoard(config);
@@ -81,6 +81,8 @@ export async function abortMission(
     event: "mission_aborted",
     directive,
     appendInbox: true,
+    pokePhase: "aborted",
+    pokeMode: checkpoint.mode,
   });
 
   await stopSessionSafe(config, checkpoint.claude_session.id);
