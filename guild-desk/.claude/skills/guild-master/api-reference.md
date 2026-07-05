@@ -48,7 +48,7 @@ curl -H "%AUTH%" "http://127.0.0.1:3847/missions/demo-001/session?ensureLive=tru
 curl -X POST -H "%AUTH%" http://127.0.0.1:3847/missions/demo-001/restore
 curl -X POST -H "%AUTH%" http://127.0.0.1:3847/missions/demo-001/archive
 curl -H "%AUTH%" http://127.0.0.1:3847/skills-bank
-curl -H "%AUTH%" http://127.0.0.1:3847/skills-bank/example-skill
+curl -H "%AUTH%" http://127.0.0.1:3847/skills-bank/ad-hoc-create
 curl -X POST -H "%AUTH%" http://127.0.0.1:3847/recover
 curl -H "%AUTH%" http://127.0.0.1:3847/outbox
 ```

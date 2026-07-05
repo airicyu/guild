@@ -279,7 +279,7 @@ Read-only skills bank summary. Runtime path: `data/skills-bank/` (singleton; com
 {
   "catalog": "# Guild skills bank catalog\n…",
   "skills": [
-    { "name": "example-skill", "description": "Example bank skill — replace or delete…" }
+    { "name": "ad-hoc-create", "description": "從任何 discovery 或 mission room 內建立 ad-hoc idea（backlog/ideas）或 mission（parking/queued）— 純檔案系統，無 API 相依" }
   ],
   "count": 1
 }
@@ -294,10 +294,10 @@ Read a single skill folder. `:name` must match `[a-zA-Z0-9][a-zA-Z0-9._-]*`.
 **Response 200**
 
 ```json
-{
-  "name": "example-skill",
-  "description": "Example bank skill — replace or delete…",
-  "skillMd": "---\nname: example-skill\n…",
+  {
+  "name": "ad-hoc-create",
+  "description": "從任何 discovery 或 mission room 內建立 ad-hoc idea（backlog/ideas）或 mission（parking/queued）— 純檔案系統，無 API 相依",
+  "skillMd": "---\nname: ad-hoc-create\ndescription: 從任何 discovery 或 mission room 內建立 ad-hoc idea（backlog/ideas）或 mission（parking/queued）— 純檔案系統，無 API 相依\n---",
   "files": [
     { "path": "SKILL.md", "content": "…" }
   ]
