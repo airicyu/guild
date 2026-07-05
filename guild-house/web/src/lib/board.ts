@@ -89,13 +89,17 @@ export function boardColumns(board: BoardResponse): BoardColumnDef[] {
     { title: "Queued", stage: "queued", ids: board.queued, kind: "mission" },
     { title: "Working", stage: "working", ids: board.working, kind: "mission" },
     { title: "Done", stage: "done", ids: board.done, kind: "mission" },
-    { title: "Aborted", stage: "aborted", ids: board.aborted ?? [], kind: "mission" },
   ];
 }
 
 /** Guild master can approve only after intake lead presents draft missions. */
 export function canApproveDiscovery(phase?: string): boolean {
-  return phase === "presenting" || phase === "awaiting_approval";
+  return (
+    phase === "mission_plan_presenting" ||
+    phase === "mission_plan_awaiting_approval" ||
+    phase === "presenting" ||
+    phase === "awaiting_approval"
+  );
 }
 
 /** Guild master can approve mission deliverables after PO signals artifacts_ready_for_review. */

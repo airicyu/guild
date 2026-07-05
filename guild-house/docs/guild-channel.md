@@ -50,6 +50,17 @@ Mission rooms scaffold `templates/mission-room/.claude/settings.local.json` with
 
 Startup banner shows: `Channels (experimental) messages from server:guild-channel inject directly in this session`.
 
+### 1b. Orchestrator channel push (optional)
+
+HTTP POST from approve / reject / abort is **off by default** — idle PO sessions often miss channel delivery (see [ideas/0.3.0/channel-poc-notes.md](../../ideas/0.3.0/channel-poc-notes.md)). Inbox + checkpoint are always written (degraded mode).
+
+```bash
+# Enable orchestrator → guild-channel HTTP push (experimental)
+GUILD_CHANNEL_PUSH=1
+```
+
+`GET /health` includes `channelPushEnabled`. API logs `[channel-notify] skip … reason=GUILD_CHANNEL_PUSH disabled` when off.
+
 ### 2. Mission room layout
 
 Scaffolded from `templates/mission-room/`:
@@ -91,13 +102,13 @@ PO playbook: on restore, always read `inbox.md` before continuing. Channel is an
 ```bash
 cd guild-house
 # Automated: channel server + auth gate (no Claude session)
-bun scripts/poc-guild-channel.ts --http-only
+bun server/scripts/poc-guild-channel.ts --http-only
 
 # Full E2E: spawn PO, POST event, pass (default; no logs poll — avoids TTY clash if you attach elsewhere)
-bun scripts/poc-guild-channel.ts
+bun server/scripts/poc-guild-channel.ts
 
 # Optional: also poll claude logs for <channel> (do not attach the same session while this runs)
-bun scripts/poc-guild-channel.ts --verify-logs
+bun server/scripts/poc-guild-channel.ts --verify-logs
 ```
 
 Automates: version check → temp mission room → PO spawn (with dev channels) → wait for endpoint → POST test event → poll `claude logs` for channel delivery.

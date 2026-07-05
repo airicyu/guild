@@ -1,6 +1,6 @@
 # Guild House
 
-Filesystem-first **mission orchestrator**: Bun REST API daemon, six-column mission board, Claude Code PO and discovery sessions via `claudew --bg`.
+Filesystem-first **mission orchestrator**: Bun REST API daemon (`server/`), six-column mission board, Claude Code PO and discovery sessions via `claudew --bg`.
 
 **Not an agent** — deterministic lifecycle logic only. PO/agents live in mission and discovery rooms.
 
@@ -8,7 +8,7 @@ Filesystem-first **mission orchestrator**: Bun REST API daemon, six-column missi
 
 | Path | Role |
 |------|------|
-| `guild-house/` (here) | API daemon + `data/` + templates + **web/** UI |
+| `guild-house/` (here) | **server/** API + `data/` + templates + **web/** UI |
 | `../guild-desk/` | CC control plane + **guild-master** skill |
 | `../ideas/archive/` | Historical design only (do not extend) |
 
@@ -17,23 +17,23 @@ Filesystem-first **mission orchestrator**: Bun REST API daemon, six-column missi
 ```bash
 cd guild/guild-house
 cp .env.example .env
-bun install
+bun run install:all
 bun run dev
 ```
 
 - API: `http://127.0.0.1:3847` · **Web UI:** `bun run dev:ui` → `http://127.0.0.1:3848`
-- Health: `GET /health` → API **0.22.0** · product **0.3.0**
+- Health: `GET /health` → API version in `server/src/server.ts`
 
 ## Layout
 
 ```
 guild-house/
-  src/           server.ts, routes/, orchestrator/
-  specs/         product.md, schemas, session-lifecycle rules
-  docs/          api.md, E2E guides (no runtime dep except api.md for desk)
+  server/        Bun API — src/, scripts/ — see server/CLAUDE.md
   web/           React command center — see web/CLAUDE.md
+  specs/         product.md, schemas, session-lifecycle rules
+  docs/          api.md, E2E guides
+  templates/     mission-intake, mission-execution scaffolds
   data/          gitignored
-  templates/     mission-room, discovery-room scaffolds
 ```
 
 ## Rules (orchestrator)

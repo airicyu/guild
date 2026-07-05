@@ -2,71 +2,93 @@
 
 ### Ring the bell (orchestrator tick)
 
-`POST /bell` runs **discovery** (ideas → discovering) then **execution** (queued → working), slot-limited. **ideas-backlog** never auto-ticks.
+`POST /bell` runs **intake** (ideas → discovering) then **execution** (queued → working), slot-limited. **ideas-backlog** never auto-ticks.
 
-1. `GET /health` — up + `guildMasterName` + optional `tickIntervalMinutes`
+1. `GET /health` — up + `guildMasterName` + `tickIntervalMinutes` + **`channelPushEnabled`**
 2. `GET /board` — Backlog, Ideas, Discovering, Parking, Queued, Working, Done, Aborted
 3. `GET /queue` — preview what tick would start vs queue
 4. `POST /bell`
-5. Summarize `discoveriesStarted`, `missionsStarted`, `queuedDiscovery`, `queuedExecution`, `errors`, slot meters
+5. Summarize `intakeStarted` / `missionsStarted` (legacy: `discoveriesStarted`), `queuedIntake` / `queuedExecution`, `errors`, slot meters
 6. Per new mission id → `GET /missions/{id}/session?ensureLive=true`
 
 When `tickIntervalMinutes` &gt; 0 on guild-house, tick runs automatically — guild master may skip manual bell.
 
-### Submit an idea
+### Submit a board note (rough prompt)
 
 1. `POST /ideas` with JSON `{ "text": "…", "slug": "optional", "board": "backlog" }` — default **backlog**; use `"board": "ideas"` to skip incubation
-2. Summarize `ideaId`, `board`, and `scratchPreview`
-3. If on **backlog** → promote first (below). If on **ideas** → ring bell when discovery slots free
+2. Summarize `noteId` (or `ideaId`), `board`, and `briefPreview` / `scratchPreview`
+3. If on **backlog** → promote first (below). If on **ideas** → ring bell when intake slots free
 
 ### Promote backlog → ideas
 
-One idea at a time:
+One board note at a time:
 
 1. `GET /board` — list `ideas-backlog` ids
-2. `POST /board/ideas-backlog/{ideaId}/promote` — moves to **ideas**
-3. Ring bell when ready for discovery
+2. `POST /board/ideas-backlog/{noteId}/promote` — moves to **ideas** (validates non-empty `mission.md`)
+3. Ring bell when ready for intake
 
-### Approve discovery
+### Approve intake (Option B — 0.4.0)
 
-After intake lead presents mission packages (`phase: presenting` or `awaiting_approval`):
+After intake-lead presents mission packages (`phase: mission_plan_presenting` or `mission_plan_awaiting_approval`):
 
-1. `GET /ideas/{id}` — scratch, drafts, phase
-2. `GET /ideas/{id}/drafts` — optional package list
-3. `POST /discoveries/{id}/approve` — copies valid `artifacts/missions/*/mission.md` packages to **parking**
-4. Summarize `parkingFolders` returned
+1. `GET /mission-board-notes/{id}` — brief, `meta.type`, phase, drafts context
+2. `GET /missions/{id}/drafts` — optional package list
+3. `POST /missions/{id}/approve-discovery` — spawns child **work_execution** board notes on **parking**; parent **idea_exploring** → **done**
+4. Summarize `parkingFolders` (child note ids)
 
-Discovery lead may also run `./tools/approve.sh` in the discovery room — same API.
+Intake-lead may also run `./tools/approve.sh` in the mission room — same API.
+
+**Do not** expect parent on parking/queued/working — parent lands on **done** with label *Mission plan complete*.
 
 ### Promote parking → queued
 
 One folder at a time (no batch promote):
 
-1. `GET /board` — list `parking` folder names
+1. `GET /board` — list `parking` folder names (child board note ids)
 2. Open mission detail in Web UI to review brief (recommended), or promote directly
 3. `POST /board/parking/{folder}/promote` — moves folder to **queued**
 4. Ring bell (or auto-tick) to pick up when execution slots free
 
-### Approve mission artifacts (0.3.0 close-out)
+### Approve mission artifacts (close-out)
 
 After PO signals `artifacts_ready_for_review` (`phase: awaiting_artifact_review`):
 
-1. `GET /missions/{id}` — confirm `board: working`, phase, `awaitingGuildMaster`
-2. Review deliverables (Web UI close-out tab, attach, or room files)
-3. `POST /missions/{id}/approve-artifacts` — → `releasing`; PO notified via inbox + guild-channel (if live)
-4. PO executes release, retro, then `mission_complete` — **do not** approve for the PO
+1. `GET /health` — if **`channelPushEnabled` is false** (default), skip standalone API approve below; use **attach-first** (step A). If `true`, API-only may wake PO (still prefer attach when unsure).
+2. `GET /missions/{id}` — confirm `board: working`, phase, `awaitingGuildMaster`
+3. Review deliverables (room files, attach, or Web UI close-out tab)
 
-**Reject:** `POST /missions/{id}/reject-artifacts` with optional `{ "reason": "…" }` → `blocked` on working.
+**A — Attach-first (required when channel push off)**
 
-**Abort:** `POST /missions/{id}/abort` with optional `{ "reason": "…" }` → **aborted** board; frees slot.
+1. `GET /missions/{id}/session?ensureLive=true`
+2. Print attach commands for guild master (separate terminal)
+3. Guild master approves or rejects **in the PO session** (verbal + inbox as needed)
+4. Optional ledger sync: `POST /missions/{id}/approve-artifacts` or `reject-artifacts` **while or after** attach so checkpoint phase matches (`releasing` / `blocked`) — never call these alone without telling guild master to attach
+
+**B — API wake path (only when `channelPushEnabled: true`)**
+
+1. `POST /missions/{id}/approve-artifacts` — → `releasing`; inbox + channel notify
+2. Confirm PO picked up (outbox, phase, or attach if idle)
+
+PO then executes release, retro, `mission_complete` — **do not** call `mission_complete` for the PO.
+
+**Reject:** same attach-first rule. `POST /missions/{id}/reject-artifacts` with optional `{ "reason": "…" }` only paired with attach when channel push is off.
+
+### Abort a board note (0.4.0)
+
+From **ideas-backlog** through **working** (single entry point):
+
+1. `POST /mission-board-notes/{id}/abort` with optional `{ "reason": "…" }`
+2. Note → **aborted**; live mission session stopped and room archived when applicable
+
+Legacy: `POST /missions/{id}/abort` (working only) — prefer board-note abort.
 
 ### Close a completed mission
 
-After PO signals `mission_complete` (only from `retrospective` phase), mission moves to **done** board:
+After PO signals `mission_complete` (only from `retrospective` phase), board note moves to **done**:
 
 1. `GET /missions` — find `board: "done"` / `archiveReady: true`
 2. Review room artifacts under `mission-rooms/{id}/`
-3. `POST /missions/{id}/archive` — moves `done/` → `archive/` (room stays on disk)
+3. `POST /missions/{id}/archive` — board note `done/` → `archive/`; room → `mission-rooms/archive/{id}/`
 4. **Done** and **aborted** boards do not consume execution slots
 
 Archive also works from **aborted** board after guild master abort.
@@ -79,7 +101,7 @@ Archive also works from **aborted** board after guild master abort.
 
 ### Show attach for a mission
 
-1. `GET /missions/{id}` — board must be `working`; check `awaiting_guild_master`, `sessionLive`, `restoreRequired`
+1. `GET /missions/{id}` — board must be `discovering` (intake) or `working` (execution); check `awaiting_guild_master`, `sessionLive`, `restoreRequired`
 2. `GET /missions/{id}/session?ensureLive=true` — auto-restore if needed
 3. Only if `live: true` and `attachCmd` set, print:
 
@@ -88,13 +110,13 @@ cd {cwd}
 {attachCmd}
 ```
 
-Discovery attach: `GET /discoveries/{id}/session?ensureLive=true` (discovering board only).
+Intake and execution both use **`/missions/{id}/session`** (same room root `mission-rooms/{id}/`).
 
 ### Who is waiting?
 
 1. `GET /outbox` — unread escalations (discovering + working missions)
-2. `GET /ideas` — backlog, ideas, discovering entries with `phase` / session liveness
-3. `GET /missions` — `awaitingGuildMaster: true`, check `sessionLive` / `restoreRequired`; note close-out phases (`awaiting_artifact_review`, `releasing`, `retrospective`)
+2. `GET /mission-board-notes?stage=discovering` — phase / session liveness
+3. `GET /missions` — `awaitingGuildMaster: true`, close-out phases (`awaiting_artifact_review`, `releasing`, `retrospective`)
 4. For blocked missions with `restoreRequired`, use `ensureLive` before attach
 
 ---

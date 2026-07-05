@@ -252,4 +252,4 @@ Requires mission on **done** board with `phase: done`. Room stays at `mission-ro
 | Promote 404 | Folder name must match `parking` entry exactly |
 | Mission stuck on Queued | Execution slots full — `queuedExecution` |
 | Archive 404 | Mission must be on **done** board (not working) |
-| Legacy `ready/` / `active/` on disk | API merges into `queued` / `working` in responses; rename folders manually or use `scripts/migrate-board-stages.ts` |
+| Legacy `ready/` / `active/` on disk | API merges into `queued` / `working` in responses; rename folders manually or use `server/scripts/migrate-board-stages.ts` |

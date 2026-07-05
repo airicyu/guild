@@ -1,93 +1,77 @@
 # Guild House — product specification (as-built)
 
-Living product truth for **release 0.3.0**. When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
-
-Historical early design narrative: [ideas/archive/idea-v2.md](../../ideas/archive/idea-v2.md) (archive only — do not extend).
+Living product truth for **release 0.4.0**. When code and prose disagree, trust this file + `GET /health` → `version`, then update specs/docs in the same change.
 
 ## Release
 
 | Kind | Location | Current |
 |------|----------|---------|
-| Product | `version.md` + `changelog.md` | **0.3.0** |
-| API runtime | `GET /health` → `version` | **0.22.0** (Phase 6 skills bank) |
+| Product | `version.md` + `changelog.md` | **0.4.0** |
+| API runtime | `GET /health` → `version` | **0.30.0** |
+
+## Domain language (0.4.0)
+
+| Term | Where | Moves with column? |
+|------|-------|-------------------|
+| **Mission board note** | `mission-board/{stage}/{id}/` — `mission.md` + `meta.yaml` | Yes |
+| **Mission** | `mission-rooms/{id}/` — checkpoint, squad, artifacts | No (stable by id) |
+
+Unqualified **mission** in API means **room runtime**. Intake and execution are **modes** in one mission room root (not `discovery-rooms/`).
 
 ## Board pipeline
 
-**0.2.0 execution close-out:**
-
 ```
-… → working → mission_complete → done → [archive]
-```
-
-**0.3.0 close-out (Phase 1+ API):**
-
-```
-… → working
-  → [artifacts_ready_for_review]
-  → [guild master approve-artifacts] → releasing
-  → [artifact_release_complete] → retrospective
-  → [mission_complete] → done → [archive]
-
-Reject: awaiting_artifact_review → [reject-artifacts] → blocked (stays on working)
-Abort: working → [abort] → aborted → [archive]
+ideas-backlog → ideas → discovering → [approve] → parking → queued → working → done → archive
+                         parent idea_exploring → done (mission_plan_complete)
+                         children work_execution → parking
 ```
 
 | Stage | Who moves | Mechanism |
 |-------|-----------|-----------|
-| submit → ideas-backlog | Guild master | `POST /ideas` with `board: "backlog"` (default) |
+| submit | Guild master | `POST /ideas` → `mission.md` + `meta.yaml` |
 | ideas-backlog → ideas | Guild master | `POST /board/ideas-backlog/:id/promote` |
-| ideas → discovering | Orchestrator | `orchestratorTick()` / `POST /bell` |
-| discovering → parking | Guild master | `POST /discoveries/:id/approve` |
+| ideas → discovering | Orchestrator | `POST /bell` — intake mission in `mission-rooms/` |
+| approve discovering | Guild master | `POST /missions/:id/approve-discovery` — Option B |
 | parking → queued | Guild master | `POST /board/parking/:folder/promote` |
-| queued → working | Orchestrator | tick / bell |
-| working → done | PO | `mission_complete` from **`retrospective`** only |
-| working → aborted | Guild master | `POST /missions/:id/abort` |
+| queued → working | Orchestrator | bell — fresh execution scaffold |
+| working → done | PO | `mission_complete` from `retrospective` |
+| abort (any pre-terminal) | Guild master | `POST /mission-board-notes/:id/abort` |
 | done / aborted → archive | Guild master | `POST /missions/:id/archive` |
-
-Legacy intake: drop `mission.md` on **queued** (formerly `ready/`) — execution half of tick only.
 
 ## Locked semantics
 
-1. **Attach existing PO** — `claude attach {shortId}` to live `--bg` job; not a fresh spawn.
-2. **`ensureMissionSessionLive` / `ensureDiscoverySessionLive`** — restore before attach when `?ensureLive=true` or WS connect.
-3. **WS close = detach only** — kills attach PTY; does not stop bg job.
-4. **Terminal tab lazy mount** — xterm mounts when tab opens.
-5. **`mission_complete`** → `phase: done`, move **working/** → **done/**; requires **`retrospective`** phase; no auto-archive.
-6. **Approve artifacts** — `POST /missions/:id/approve-artifacts`; does **not** stop session or move board; notifies PO via inbox + guild-channel.
-7. **Reject / abort** — `reject-artifacts` → `blocked` on working; `abort` → **aborted/** board, frees slot.
-8. **Archive** — from **done** (`phase: done`) or **aborted** (`phase: aborted`); room folder stays on disk.
-9. **Slots** — `MAX_ACTIVE_MISSIONS` counts **working** only; **done** and **aborted** do not. `MAX_DISCOVERY_SESSIONS` counts live **discovering** leads.
-10. **GET never spawns** — restore only on boot / `POST /restore` / `POST /resume` / `?ensureLive=true`.
-11. **`checkpoint.yaml`** — orchestrator-only writer; agents use signals API.
-12. **Filesystem-first** — UI does not edit board folders or checkpoint directly.
-13. **Frozen brief** — `memories/common/mission-brief.md` is read-only for PO; clarify via `memory.md` or escalate.
-14. **Discovery approve** — HTTP 200 from `POST /discoveries/:id/approve` (or `tools/approve.sh`); lead must not narrate approval without API success.
-15. **Guild channel** — orchestrator POST to per-room `guild-channel` on approve/reject/abort; degraded = inbox + checkpoint only. See [docs/guild-channel.md](../docs/guild-channel.md).
-16. **Artifact release** — PO maintains `artifact-release.md`; `artifact_release_complete` requires `status: released`; manual PO execution (no orchestrator deploy recipes in 0.3.0).
-17. **Retrospective** — members write `retrospective/members/{role}/feedback.md` at exit; PO writes `workflow-report.md` + `skills-reports/`; `retrospective_complete` then `mission_complete`.
-18. **Skills bank** — `data/skills-bank/` curated by guild master; PO/intake lead wire via bundled `wire-skills-from-bank` at Round 0; read-only `GET /skills-bank`. See [docs/skills-bank.md](../docs/skills-bank.md).
+1. **Attach** — `claude attach {shortId}` to live `--bg` job at `mission-rooms/{id}/`.
+2. **`ensureLive`** — restore before attach when `?ensureLive=true` or WS connect.
+3. **WS close = detach only** — does not stop bg job.
+4. **`mission_complete`** → `phase: done`, board note → `done/`; from `retrospective` only.
+5. **Frozen brief** — `mission-brief.md` at mission room root (orchestrator write).
+6. **Approve Option B** — spawn child board notes to `parking/`; parent `idea_exploring` → `done/`.
+7. **Archive** — board → `archive/`; room → `mission-rooms/archive/` (legacy `achive/` read compat).
+8. **Slots** — `MAX_DISCOVERY_SESSIONS` (discovering + live intake); `MAX_ACTIVE_MISSIONS` (working).
+9. **GET never spawns** — restore on boot / `POST /restore` / `?ensureLive=true`.
+10. **`checkpoint.yaml`** — orchestrator-only; unified phases (intake + execution).
+11. **`meta.type`** — `idea_exploring` \| `work_execution`; immutable after mint.
+12. **Skills bank** — `data/skills-bank/`; `GET /skills-bank`.
 
-## Guild master (role)
+## API (canonical)
 
-The **guild master** is the **human supervisor** for Guild — not an agent in mission or discovery rooms.
+| Operation | Route |
+|-----------|-------|
+| Submit | `POST /ideas` |
+| List board notes | `GET /mission-board-notes?stage=` |
+| Board note detail | `GET /mission-board-notes/:id` |
+| Mission runtime | `GET /missions/:id`, signals, session, attach |
+| Draft packages | `GET /missions/:id/drafts` |
+| Approve intake | `POST /missions/:id/approve-discovery` |
+| Abort note | `POST /mission-board-notes/:id/abort` |
 
-| Aspect | Detail |
-|--------|--------|
-| **Who** | The operator at Guild Desk, Web UI, or terminal attach (not PO, intake lead, or squad members) |
-| **Does** | Submit ideas (backlog or ideas), promote backlog → ideas, approve discovery, promote parking → queued, archive done missions, curate skills bank from retro proposals, answer outbox via `inbox.md`, attach to intervene |
-| **Room files** | Writes `inbox.md` (directives); reads `outbox.jsonl` (escalations). Checkpoint field `awaiting_guild_master` means waiting on this role |
-| **Playbooks** | Use the role term **guild master** — not a personal name baked into templates |
-| **`GUILD_MASTER_NAME`** | Env display label only (`GET /health` → `guildMasterName`, Web UI header). Safe to rename without re-scaffolding rooms |
+`POST /ideas` is the only retained legacy path name (submit). `GET /ideas*` and `/discoveries/*` were removed in **0.4.0** Phase 11.
 
 ## Component map
 
-| Topic | Spec / doc |
-|-------|------------|
+| Topic | Doc |
+|-------|-----|
 | REST + WS | [docs/api.md](../docs/api.md) |
-| PO session rules | [session-lifecycle.md](./session-lifecycle.md) |
-| Discovery checkpoint | [discovery-checkpoint-schema.md](./discovery-checkpoint-schema.md) |
-| `mission.md` format | [mission-schema.md](./mission-schema.md) |
-| Plan 3 walkthrough | [docs/e2e-discovery-path.md](../docs/e2e-discovery-path.md) |
-| Terminal attach | [terminal-attach.md](./terminal-attach.md) |
-| Execution QA | [docs/tests/execution-e2e.md](../docs/tests/execution-e2e.md) |
-| Skills bank | [docs/skills-bank.md](../docs/skills-bank.md) |
+| Mission schema | [mission-schema.md](./mission-schema.md) |
+| E2E discovery | [docs/e2e-discovery-path.md](../docs/e2e-discovery-path.md) |
+| 0.4.0 design | [ideas/0.4.0/design.md](../../ideas/0.4.0/design.md) |

@@ -22,13 +22,13 @@ Guild automates multi-agent mission workflows:
 guild/
   CLAUDE.md           ← you are here — product-level how we work
   ideas/              ← design docs only (no runtime code)
-  guild-house/        ← system: Bun API daemon, data/, templates, web UI
+  guild-house/        ← system: server/ API, data/, templates, web/ UI
   guild-desk/         ← guild master CC control plane + guild-master skill
 ```
 
 | Path | Role | Agent guide |
 |------|------|-------------|
-| **`guild-house/`** | Orchestrator API, mission data, PO sessions, React command center | [guild-house/CLAUDE.md](./guild-house/CLAUDE.md) · [web/CLAUDE.md](./guild-house/web/CLAUDE.md) |
+| **`guild-house/`** | Orchestrator API, mission data, PO sessions, React command center | [guild-house/CLAUDE.md](./guild-house/CLAUDE.md) · [server/CLAUDE.md](./guild-house/server/CLAUDE.md) · [web/CLAUDE.md](./guild-house/web/CLAUDE.md) |
 | **`guild-desk/`** | Guild master opens CC here; uses **guild-master** skill to call API | [guild-desk/CLAUDE.md](./guild-desk/CLAUDE.md) |
 | **`ideas/`** | Archive + backlog only — no new idea files | [ideas/README.md](./ideas/README.md) |
 
@@ -80,7 +80,7 @@ guild/
 # Terminal 1 — API (:3847)
 cd guild/guild-house
 cp .env.example .env   # set GUILD_API_KEY, GUILD_MASTER_NAME
-bun install
+bun run install:all
 bun run dev
 
 # Terminal 2 — Web UI (:3848)
@@ -104,8 +104,8 @@ Open **http://127.0.0.1:3848** · API health: **http://127.0.0.1:3847/health**
 
 - Plan 3 discovery path: [guild-house/docs/e2e-discovery-path.md](./guild-house/docs/e2e-discovery-path.md)
 - Execution test: [guild-house/docs/tests/execution-e2e.md](./guild-house/docs/tests/execution-e2e.md)
-- WS attach scripts: `guild-house/scripts/test-ws-attach.ts`, `test-ws-input.ts`
-- Windows batch smoke: `guild-house/scripts/e2e-smoke.cmd`
+- WS attach scripts: `guild-house/server/scripts/test-ws-attach.ts`, `test-ws-input.ts`
+- Windows batch smoke: `guild-house/server/scripts/e2e-smoke.cmd`
 
 ## Canonical docs (read before big changes)
 
@@ -132,7 +132,7 @@ Full list: [guild-house/specs/product.md](./guild-house/specs/product.md). Summa
 3. **WS close = detach only** — kills server attach PTY; does **not** stop the PO background job.
 4. **Terminal tab lazy mount** — xterm mounts when tab opens; do not make always-on like Freeflow.
 5. **`mission_complete`** → `phase: done`, move **working/** → **done/**; **no** auto-archive.
-6. **`POST /missions/:id/archive`** — only when on **done** board with `phase: done`; moves `done/` → `archive/`; mission room folder stays.
+6. **`POST /missions/:id/archive`** — only when on **done** board with `phase: done`; moves `done/` → `archive/`; mission room moves to `mission-rooms/achive/{id}/`.
 7. **Slots** — `MAX_ACTIVE_MISSIONS` (4); only **working** board counts; **done** does not.
 8. **GET never spawns** — session restore only on boot / `POST /restore` / `POST /resume` / `?ensureLive=true`.
 9. **`checkpoint.yaml`** — orchestrator-only writer; PO uses signals API.
@@ -159,7 +159,7 @@ Terminal attach highlights (Phase 5 + polish):
 ### Scope
 
 - **`ideas/`** — design and plans only; no runtime code
-- **`guild-house/src/`** — orchestrator logic; match patterns in `src/orchestrator/`
+- **`guild-house/server/`** — orchestrator logic; match patterns in `server/src/orchestrator/`
 - **`guild-house/web/`** — derived UI; all writes through REST; see [web/CLAUDE.md](./guild-house/web/CLAUDE.md)
 - **`guild-desk/`** — skill + control-plane docs; no mission runtime
 
@@ -168,7 +168,7 @@ Terminal attach highlights (Phase 5 + polish):
 - Minimize scope — smallest correct diff
 - Match existing naming, types, and folder conventions in each repo
 - Use `path.join`; abstract spawn where platform matters
-- Bump `GET /health` version in `guild-house/src/server.ts` when shipping API changes
+- Bump `GET /health` version in `guild-house/server/src/server.ts` when shipping API changes
 - Update `guild-house/specs/` and `guild-house/docs/` when behavior changes — especially [specs/product.md](./guild-house/specs/product.md)
 
 ### Do not
@@ -183,7 +183,7 @@ Terminal attach highlights (Phase 5 + polish):
 
 | Task | Start in |
 |------|----------|
-| API / orchestrator / data model | `guild-house/` + [guild-house/CLAUDE.md](./guild-house/CLAUDE.md) |
+| API / orchestrator / data model | `guild-house/server/` + [guild-house/CLAUDE.md](./guild-house/CLAUDE.md) |
 | Web UI | `guild-house/web/` + [web/CLAUDE.md](./guild-house/web/CLAUDE.md) |
 | Guild master skill / control plane | `guild-desk/` + `.claude/skills/guild-master/SKILL.md` |
 | Design / phase planning | `ideas/archive/` (historical) · `ideas/backlog.md` |

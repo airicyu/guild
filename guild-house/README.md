@@ -1,6 +1,6 @@
 # Guild House
 
-Filesystem-first mission orchestrator: Bun REST API daemon, six-column mission board, Claude Code PO and discovery sessions via `claudew --bg`.
+Filesystem-first mission orchestrator: **server/** (Bun API) + **web/** (React command center), shared `templates/`, `specs/`, `data/`.
 
 | Doc | Purpose |
 |-----|---------|
@@ -11,23 +11,26 @@ Filesystem-first mission orchestrator: Bun REST API daemon, six-column mission b
 | [docs/e2e-discovery-path.md](docs/e2e-discovery-path.md) | Plan 3 happy path |
 | [docs/tests/](docs/tests/) | Manual QA + smoke scripts |
 
-**Control plane:** [guild-desk](../guild-desk/) · **Web UI:** [web/](web/) · **Historical design:** [ideas/archive/](../ideas/archive/)
+**Control plane:** [guild-desk](../guild-desk/) · **Server:** [server/](server/) · **Web UI:** [web/](web/) · **Historical design:** [ideas/archive/](../ideas/archive/)
 
-## Documentation layout
+## Layout
 
-| Folder | Role |
-|--------|------|
-| **`specs/`** | Product contracts, schemas, lifecycle rules (scaffold copies `mission-schema.md` into rooms) |
-| **`docs/`** | Walkthroughs and API reference — no runtime dependency except guild-desk links to `api.md` |
-
-Product docs live **here** (`guild-house/`), not at the guild root. Root [CLAUDE.md](../CLAUDE.md) is the cross-repo index only.
+```
+guild-house/
+  server/        API daemon — see server/CLAUDE.md
+  web/           React UI — see web/CLAUDE.md
+  templates/     mission-intake, mission-execution scaffolds
+  specs/ docs/   product + API docs
+  data/          gitignored runtime state
+  .env           house root (server loads via --env-file=../.env)
+```
 
 ## Quick start
 
 ```bash
 cd guild/guild-house
 cp .env.example .env
-bun install
+bun run install:all
 bun run dev          # API :3847
 bun run dev:ui       # Web :3848 (second terminal)
 ```
@@ -48,21 +51,16 @@ Drop `mission.md` on **queued/** → bell. See [docs/tests/execution-e2e.md](doc
 
 ## Environment
 
+See [.env.example](.env.example). Web UI needs matching `VITE_GUILD_API_KEY` in `web/.env.local` (see [web/README.md](web/README.md)).
+
 | Variable | Purpose |
 |----------|---------|
-| `GUILD_API_KEY` | Bearer auth |
-| `GUILD_MASTER_NAME` | Display label (`/health`, Web UI); playbooks say **guild master** |
-| `MAX_ACTIVE_MISSIONS` / `MAX_DISCOVERY_SESSIONS` | Slot limits |
+| `GUILD_HOME` | Data root (default `data/`) |
+| `GUILD_API_KEY` | REST + WS auth |
+| `GUILD_MASTER_NAME` | Display name in health + UI |
 | `GUILD_TICK_INTERVAL_MINUTES` | Auto tick (`0` = manual bell) |
+| `CLAUDE_COMMAND` | PO / intake spawn (`claude` / `claudew`) |
 
-## Layout
+## Scripts
 
-```
-guild-house/
-  src/              Bun server + orchestrator
-  specs/            Product + schema + lifecycle specs
-  docs/             Guides + API reference
-  web/              React UI
-  data/             Runtime data (gitignored)
-  templates/        Room scaffolds
-```
+Server E2E and WS tests live under `server/scripts/` (e.g. `bun server/scripts/e2e-040.ts` from house root, or `bun scripts/e2e-040.ts` from `server/`).

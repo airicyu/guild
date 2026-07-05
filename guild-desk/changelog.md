@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.4.0 — 2026-07-05
+
+Guild Desk aligned with product **0.4.0** and Guild House API **0.30.0**.
+
+### guild-master skill
+
+- **Vocabulary:** mission board note vs mission (room runtime)
+- **Canonical routes:** `GET /mission-board-notes`, `POST /missions/{id}/approve-discovery`, `POST /mission-board-notes/{id}/abort`
+- **Option B approve:** parent → done; children → parking
+- **Attach:** unified `GET /missions/{id}/session` (intake + execution)
+- Intake phase names (`mission_plan_*`); execution `working` (not `running`)
+- **`POST /ideas` retained** for submit
+
+### README
+
+- Updated workflow table and discovery pipeline diagram
+- curl helper examples use canonical routes
+
+---
+
 ## 0.3.0 — 2026-07-04
 
 Guild Desk aligned with product **0.3.0** and Guild House API **0.22.0**.

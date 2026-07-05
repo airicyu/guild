@@ -18,7 +18,7 @@ export function DiscoveringHallPage() {
     <div>
       <h2 className="guild-display text-2xl font-bold text-[var(--color-text)]">Discovering</h2>
       <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-        Active discovery rooms · <code className="text-xs">GET /ideas</code>
+        Active intake rooms · <code className="text-xs">GET /mission-board-notes?stage=discovering</code>
       </p>
 
       {isLoading && (

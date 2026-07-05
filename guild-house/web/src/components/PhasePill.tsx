@@ -2,6 +2,11 @@ import type { DiscoveryPhase } from "../types/discovery";
 import type { MissionPhase } from "../types/mission";
 
 const discoveryLabels: Record<DiscoveryPhase, string> = {
+  idea_exploring: "Exploring",
+  idea_drafting: "Drafting",
+  mission_plan_presenting: "Presenting",
+  mission_plan_awaiting_approval: "Awaiting approval",
+  mission_plan_complete: "Plan complete",
   exploring: "Exploring",
   drafting: "Drafting",
   presenting: "Presenting",

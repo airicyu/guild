@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { discoveryAttachWebSocketUrl } from "../../lib/api";
 import { AttachTerminalPane } from "./AttachTerminalPane";
 
-/** Discovery intake attach — WS path /ws/discoveries/:id/attach. */
+/** Intake lead attach — WS path /ws/missions/:id/attach. */
 interface DiscoveryTerminalProps {
   ideaId: string;
   restoreRequired: boolean;

@@ -45,7 +45,8 @@ Natural language in guild-desk CC:
 - "promote backlog idea {id} to ideas"
 - "approve artifacts for {mission-id}"
 - "reject artifacts for {mission-id}" / "abort mission {id}"
-- "approve discovery {idea-id}"
+- "approve intake {note-id}" / "approve discovery {note-id}"
+- "abort board note {id}"
 - "promote parking folder {folder} to queued"
 - "show attach for {mission-id}"
 - "who is in outbox?"
@@ -61,8 +62,9 @@ scripts\guild-api.cmd /health
 scripts\guild-api.cmd /board
 scripts\guild-api.cmd /queue
 scripts\guild-api.cmd /bell -X POST
-scripts\guild-api.cmd /ideas
-scripts\guild-api.cmd /discoveries/idea-20260629-a1b2c3/approve -X POST
+scripts\guild-api.cmd /mission-board-notes?stage=discovering
+scripts\guild-api.cmd /missions/idea-20260629-a1b2c3/approve-discovery -X POST
+scripts\guild-api.cmd /mission-board-notes/idea-20260704-a1b2c3/abort -X POST -d "{\"reason\":\"cancelled\"}"
 scripts\guild-api.cmd /board/parking/my-slug-20260629-abc/promote -X POST
 scripts\guild-api.cmd /missions/hello-world-20260627-a3f9c2/session?ensureLive=true
 scripts\guild-api.cmd /missions/hello-world-20260627-a3f9c2/archive -X POST
@@ -76,28 +78,34 @@ scripts\guild-api.cmd /missions/hello-world-20260627-a3f9c2/archive -X POST
 |--------|-----|
 | Submit to backlog (default) | `POST /ideas` `{ "text": "…" }` |
 | Submit directly to ideas | `POST /ideas` `{ "text": "…", "board": "ideas" }` |
-| Promote backlog → ideas | `POST /board/ideas-backlog/{ideaId}/promote` |
+| List board notes | `GET /mission-board-notes?stage=…` |
+| Board note detail | `GET /mission-board-notes/{id}` |
+| Promote backlog → ideas | `POST /board/ideas-backlog/{noteId}/promote` |
+| Approve intake (Option B) | `POST /missions/{id}/approve-discovery` |
+| Abort board note (any pre-terminal) | `POST /mission-board-notes/{id}/abort` |
 | Approve mission artifacts | `POST /missions/{id}/approve-artifacts` |
-| Reject / abort mission | `POST /missions/{id}/reject-artifacts` / `abort` |
-| Approve discovery packages | `POST /discoveries/{ideaId}/approve` |
+| Reject artifacts | `POST /missions/{id}/reject-artifacts` |
 | Promote one parking folder | `POST /board/parking/{folder}/promote` |
 | Pick up ideas + queued missions | `POST /bell` (= `orchestratorTick`) |
 | Auto tick (daemon) | `GUILD_TICK_INTERVAL_MINUTES` in guild-house `.env` |
-| Attach to PO | `GET /missions/{id}/session?ensureLive=true` only when `live: true` |
+| Attach (intake or PO) | `GET /missions/{id}/session?ensureLive=true` when `live: true` |
 | Unread escalations | `GET /outbox` |
-| Close accepted mission | `POST /missions/{id}/archive` (requires **done** board) |
+| Close accepted mission | `POST /missions/{id}/archive` (requires **done** or **aborted** board) |
 | After daemon restart | Boot auto-restores working missions; or `POST /recover` |
 
 **Never** paste `attachCmd` from an old message — session ids go stale.
 
-## Discovery pipeline (Plan 3)
+## Discovery pipeline (0.4.0)
 
 ```
-POST /ideas → ideas-backlog → [promote] → ideas → [bell/tick] → discovering → [approve] → parking
+POST /ideas → ideas-backlog → [promote] → ideas → [bell/tick] → discovering → [approve-discovery] → parking (children)
+                                                                              parent → done
 → [promote] → queued → [bell/tick] → working → [close-out] → done → [archive]
 ```
 
-Close-out (0.3.0): PO `artifacts_ready_for_review` → guild master approve → release → retro → `mission_complete`.
+Intake and execution both use **`mission-rooms/{id}/`**. Board notes carry `mission.md` + `meta.yaml`.
+
+Close-out: PO `artifacts_ready_for_review` → guild master approve → release → retro → `mission_complete`.
 
 Web UI covers the same paths on the board page.
 
@@ -114,4 +122,4 @@ Web UI covers the same paths on the board page.
 
 **Primary:** `POST /ideas` or Web UI **Submit idea**.
 
-Legacy: drop briefs under `../guild-house/data/mission-board/queued/{slug}/mission.md`. See [mission-schema.md](../guild-house/specs/mission-schema.md).
+Legacy: drop briefs under `../guild-house/data/mission-board/queued/{slug}/mission.md` (+ `meta.yaml` with `type: work_execution` recommended). See [mission-schema.md](../guild-house/specs/mission-schema.md).

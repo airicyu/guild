@@ -21,11 +21,7 @@ export function attachWebSocketUrl(missionId: string, cols?: number, rows?: numb
 }
 
 export function discoveryAttachWebSocketUrl(ideaId: string, cols?: number, rows?: number): string {
-  return buildAttachWebSocketUrl(
-    `/ws/discoveries/${encodeURIComponent(ideaId)}/attach`,
-    cols,
-    rows,
-  );
+  return attachWebSocketUrl(ideaId, cols, rows);
 }
 
 export class ApiError extends Error {
@@ -86,6 +82,8 @@ export interface HealthResponse {
   guildHome: string;
   guildMasterName: string;
   tickIntervalMinutes?: number;
+  /** Orchestrator HTTP push to live PO via guild-channel (GUILD_CHANNEL_PUSH=1). */
+  channelPushEnabled?: boolean;
 }
 
 export function fetchHealth() {

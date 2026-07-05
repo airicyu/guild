@@ -3,6 +3,8 @@ web/dist/
 web/.env.local
 web/tsconfig.tsbuildinfo 
 .env
-data/
+data/*
+!data/skills-bank/
+!data/skills-bank/**
 spike-test-cwd/
 *.log

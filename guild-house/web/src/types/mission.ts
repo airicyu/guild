@@ -75,12 +75,12 @@ export interface QueueResponse {
 }
 
 export interface TickResult {
-  discoveriesStarted: string[];
+  intakeStarted: string[];
   missionsStarted: string[];
-  queuedDiscovery: string[];
+  queuedIntake: string[];
   queuedExecution: string[];
-  errors: Array<{ id: string; error: string; pipeline?: "discovery" | "execution" }>;
-  discoverySlots: SlotMeterData;
+  errors: Array<{ id: string; error: string; pipeline?: "intake" | "execution" }>;
+  intakeSlots: SlotMeterData;
   executionSlots: SlotMeterData;
 }
 

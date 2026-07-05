@@ -4,16 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/server.ts",
-    "start": "bun src/server.ts",
+    "install:all": "bun install --cwd=server && bun install --cwd=web",
+    "dev": "bun run --cwd=server dev",
+    "start": "bun run --cwd=server start",
     "dev:ui": "bun run --cwd=web dev",
-    "typecheck": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
+    "typecheck": "bun run --cwd=server typecheck",
+    "typecheck:all": "bun run --cwd=server typecheck && bun run --cwd=web build"
   }
 }

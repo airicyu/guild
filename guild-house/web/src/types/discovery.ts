@@ -1,4 +1,9 @@
 export type DiscoveryPhase =
+  | "idea_exploring"
+  | "idea_drafting"
+  | "mission_plan_presenting"
+  | "mission_plan_awaiting_approval"
+  | "mission_plan_complete"
   | "exploring"
   | "drafting"
   | "presenting"

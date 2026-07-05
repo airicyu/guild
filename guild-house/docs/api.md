@@ -1,11 +1,11 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.19.0` (see `GET /health` → `version`)
+**Version:** `0.30.0` (see `GET /health` → `version`)
 
-> **Plan 3 (v0.11.0+):** Six board stages, `orchestratorTick()` on `POST /bell` and optional periodic tick. Legacy `ready/` / `active/` folder names are still read by the API if present on disk.
+> **0.4.0:** Unified mission board note + mission room model. API code lives under `guild-house/server/src/`. Intake runs in `mission-rooms/{id}/` (not `discovery-rooms/`). Legacy `GET /ideas*` and `/discoveries/*` routes were removed; **`POST /ideas`** remains for submit.
 
-**CORS (v0.8.0):** Browser clients (e.g. web UI on `:3848`) send `Origin`; allowed origins from `GUILD_UI_ORIGIN` (default `http://127.0.0.1:3848,http://localhost:3848`). Preflight `OPTIONS` supported. Direct browser navigation to `/api/*` without Bearer still returns 401 — use the web app or curl with `Authorization`.
+**CORS:** Browser clients (web UI on `:3848`) send `Origin`; allowed origins from `GUILD_UI_ORIGIN`. Preflight `OPTIONS` supported.
 
 **Auth:** All routes except `GET /health` require:
 
@@ -13,16 +13,9 @@
 Authorization: Bearer $GUILD_API_KEY
 ```
 
-Windows cmd setup (match `guild-house/.env`):
+Code fallback if env unset at startup: `dev-key-change-me` (`server/src/config.ts`).
 
-```cmd
-set GUILD_API_KEY=change-me-in-production
-set AUTH=Authorization: Bearer %GUILD_API_KEY%
-```
-
-Code fallback if env unset at startup: `dev-key-change-me` (`src/config.ts`).
-
-Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schema.md](../specs/mission-schema.md) · [discovery-checkpoint-schema.md](../specs/discovery-checkpoint-schema.md) · [tests/execution-e2e.md](./tests/execution-e2e.md)
+Related: [specs/product.md](../specs/product.md) · [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schema.md](../specs/mission-schema.md) · [e2e-discovery-path.md](./e2e-discovery-path.md)
 
 ---
 
@@ -30,52 +23,42 @@ Related: [session-lifecycle.md](../specs/session-lifecycle.md) · [mission-schem
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/health` | no | Service status |
-| GET | `/board` | yes | Mission-board folder names by stage |
-| POST | `/board/ideas-backlog/:id/promote` | yes | Move backlog idea → ideas |
+| GET | `/health` | no | Service status (`version`, `channelPushEnabled`, `tickIntervalMinutes`) |
+| GET | `/board` | yes | Mission-board folder names by stage (incl. `aborted`) |
+| POST | `/board/ideas-backlog/:id/promote` | yes | Move backlog note → ideas |
 | POST | `/board/parking/:folder/promote` | yes | Move parking folder → queued |
-| POST | `/bell` | yes | Orchestrator tick (discovery + execution pickup) |
-| GET | `/queue` | yes | Ready missions vs active slot availability |
-| GET | `/missions` | yes | Working + done + aborted missions + session liveness summary |
-| GET | `/missions/:id` | yes | Single mission detail |
-| GET | `/missions/:id/brief` | yes | Mission brief markdown (room copy or board fallback) |
+| POST | `/bell` | yes | Orchestrator tick (intake + execution pickup) |
+| GET | `/queue` | yes | Slot meters + would-start previews |
+| GET | `/mission-board-notes` | yes | List board notes (`?stage=` optional) |
+| GET | `/mission-board-notes/:id` | yes | Board note detail + checkpoint when on discovering/working |
+| POST | `/mission-board-notes/:id/abort` | yes | Abort note (ideas-backlog … working) |
+| POST | `/ideas` | yes | **Submit** board note (`mission.md` + `meta.yaml`) |
+| GET | `/missions` | yes | Working + done + aborted missions + session liveness |
+| GET | `/missions/:id` | yes | Single mission / intake runtime detail |
+| GET | `/missions/:id/drafts` | yes | Mission draft packages under intake room |
+| POST | `/missions/:id/approve-discovery` | yes | Approve intake — children → parking, parent → done |
+| GET | `/missions/:id/brief` | yes | Frozen `mission-brief.md` |
 | GET | `/missions/:id/summary` | yes | Mission + checkpoint + brief title + squad + outbox unread |
-| GET | `/missions/:id/room/:path` | yes | Read-only file under mission room (allowlisted paths) |
-| GET | `/missions/:id/events` | yes | Event log entries (audit trail) |
-| POST | `/missions/:id/events` | yes | Append event log entry |
-| GET | `/missions/:id/session` | yes | Attach/resume commands + liveness |
-| WS | `/ws/missions/:id/attach` | yes | Browser terminal attach to live PO (PTY) |
-| POST | `/missions/:id/restore` | yes | Restore ladder for PO session |
-| POST | `/missions/:id/resume` | yes | Unpause + restore (same ladder as restore) |
-| POST | `/missions/:id/pause` | yes | Stop PO; `phase: paused` |
-| POST | `/missions/:id/signals` | yes | Lifecycle signals (orchestrator writes checkpoint) |
-| POST | `/missions/:id/approve-artifacts` | yes | Guild master approve deliverables (`awaiting_artifact_review` → `releasing`) |
-| POST | `/missions/:id/reject-artifacts` | yes | Guild master reject deliverables → `blocked` on working |
-| POST | `/missions/:id/abort` | yes | Guild master abort → **aborted** board; frees slot |
-| POST | `/missions/:id/archive` | yes | Move done or aborted → archive |
-| GET | `/outbox` | yes | Unread escalations (active + archive) |
-| GET | `/missions/:id/outbox` | yes | Mission outbox entries |
-| POST | `/missions/:id/outbox/read` | yes | Mark outbox entries read |
-| POST | `/missions/:id/escalate` | yes | Atomic outbox append + `blocked` signal |
-| POST | `/recover` | yes | Manual boot-style recovery |
-| GET | `/skills-bank` | yes | Skills catalog + folder listing (read-only) |
-| GET | `/skills-bank/:name` | yes | Single skill folder contents (read-only) |
-| POST | `/ideas` | yes | Submit rough idea → **ideas-backlog** (default) or **ideas** |
-| GET | `/ideas` | yes | List backlog + ideas + discovering entries |
-| GET | `/ideas/:id` | yes | Idea detail + discovery checkpoint |
-| GET | `/ideas/:id/drafts` | yes | Mission draft packages under discovery room |
-| POST | `/discoveries/:id/approve` | yes | Copy packages to **parking**; close discovery |
-| POST | `/discoveries/:id/signals` | yes | Discovery lifecycle signals |
-| GET | `/discoveries/:id/session` | yes | Discovery lead attach/resume commands |
-| POST | `/discoveries/:id/restore` | yes | Restore ladder for discovery lead |
-| WS | `/ws/discoveries/:id/attach` | yes | Browser terminal attach to discovery lead |
-| GET | `/discoveries/:id/outbox` | yes | Discovery outbox entries |
-| POST | `/discoveries/:id/outbox/read` | yes | Mark discovery outbox read |
-| POST | `/discoveries/:id/escalate` | yes | Discovery escalate + blocked signal |
-| GET | `/discoveries/:id/events` | yes | Discovery event log |
-| POST | `/discoveries/:id/events` | yes | Append discovery event |
-
-Discovery routes: [Discovery (Plan 3)](#discovery-plan-3). Full E2E: [e2e-discovery-path.md](./e2e-discovery-path.md).
+| GET | `/missions/:id/room/*` | yes | Read-only file under mission room |
+| GET | `/missions/:id/events` | yes | Event log entries |
+| POST | `/missions/:id/events` | yes | Append event (intake: note/milestone/status; execution: role-gated) |
+| GET | `/missions/:id/session` | yes | Attach/resume commands + liveness (intake + execution) |
+| WS | `/ws/missions/:id/attach` | yes | Browser terminal attach (`/ws/discoveries/…` aliases same handler) |
+| POST | `/missions/:id/restore` | yes | Restore ladder (intake lead or PO) |
+| POST | `/missions/:id/resume` | yes | Unpause + restore |
+| POST | `/missions/:id/pause` | yes | Stop session; `phase: paused` |
+| POST | `/missions/:id/signals` | yes | Unified lifecycle signals (intake + execution) |
+| POST | `/missions/:id/escalate` | yes | Outbox + `awaiting_input` (intake) or `blocked` (execution) |
+| GET | `/missions/:id/outbox` | yes | Outbox entries (`comm/outbox.jsonl`) |
+| POST | `/missions/:id/outbox/read` | yes | Mark outbox read |
+| POST | `/missions/:id/approve-artifacts` | yes | Guild master approve deliverables |
+| POST | `/missions/:id/reject-artifacts` | yes | Reject deliverables → blocked |
+| POST | `/missions/:id/abort` | yes | Legacy abort (working execution only) |
+| POST | `/missions/:id/archive` | yes | done/aborted → archive |
+| GET | `/outbox` | yes | Unread outbox across missions + intake |
+| GET | `/skills-bank` | yes | Skills bank index |
+| GET | `/skills-bank/:id` | yes | Skill detail |
+| POST | `/recover` | yes | Boot recovery |
 
 ---
 
@@ -129,35 +112,35 @@ Lists folder names for each board stage (Plan 3 eight-column model). Legacy `rea
 
 Calls **`orchestratorTick()`** — same as periodic auto-tick when `GUILD_TICK_INTERVAL_MINUTES` &gt; 0.
 
-**Discovery half** (FIFO, slot-limited by `MAX_DISCOVERY_SESSIONS`):
+**Intake half** (FIFO, slot-limited by `MAX_DISCOVERY_SESSIONS`):
 
-1. Pick ideas from `ideas/` only (not `ideas-backlog/`) → scaffold discovery room → spawn intake lead `--bg` → move to `discovering/`
+1. Pick board notes from `ideas/` only (not `ideas-backlog/`) → scaffold intake in `mission-rooms/{id}/` → spawn intake lead `--bg` → move to `discovering/`
 
 **Execution half** (FIFO, slot-limited by `MAX_ACTIVE_MISSIONS` on **working** only):
 
 1. **Mint id** if queued folder is a slug → `{slug}-{YYYYMMDD}-{6hex}`
 2. Move `queued/{id}` → `working/{id}`
-3. Scaffold mission room, copy brief, spawn PO `--bg`, write `checkpoint.yaml`
+3. Scaffold execution room, copy brief, spawn PO `--bg`, write `checkpoint.yaml`
 
 **Response 200**
 
 ```json
 {
-  "discoveriesStarted": ["idea-20260629-a1b2c3"],
+  "intakeStarted": ["idea-20260629-a1b2c3"],
   "missionsStarted": ["hello-world-20260627-a3f9c2"],
-  "queuedDiscovery": [],
+  "queuedIntake": [],
   "queuedExecution": [],
   "errors": [],
-  "discoverySlots": { "used": 1, "max": 2, "available": 1 },
+  "intakeSlots": { "used": 1, "max": 2, "available": 1 },
   "executionSlots": { "used": 1, "max": 4, "available": 3 }
 }
 ```
 
 | Field | Meaning |
 |-------|---------|
-| `discoveriesStarted` | Idea ids moved to discovering with lead spawned |
+| `intakeStarted` | Board note ids moved to discovering with intake lead spawned |
 | `missionsStarted` | Mission ids moved to working with PO spawned |
-| `queuedDiscovery` / `queuedExecution` | Skipped because slots full |
+| `queuedIntake` / `queuedExecution` | Skipped because slots full |
 | `errors` | Per-item failures `{ id, error, pipeline? }` |
 
 ---
@@ -284,7 +267,7 @@ Move one parking folder → **queued** (guild master promotes approved missions 
 
 ## `GET /skills-bank`
 
-Read-only skills bank summary. Runtime path: `data/skills-bank/` (seeded from `templates/skills-bank/` on boot when `catalog.md` is missing).
+Read-only skills bank summary. Runtime path: `data/skills-bank/` (singleton; committed in repo).
 
 **Response 200**
 
@@ -636,7 +619,7 @@ Mission room tool: `tools/abort.sh [reason]` (PO may write abort-note first on c
 
 Guild master closes mission after acceptance. Requires mission on **done** board with `phase: done`, **or** **aborted** board with `phase: aborted`.
 
-Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room stays at `mission-rooms/{id}/`.
+Moves board entry `done/{id}` or `aborted/{id}` → `archive/{id}`. Mission room moves to `mission-rooms/achive/{id}/` (idempotent if already achived on done/abort).
 
 **Response 200**
 
@@ -1084,7 +1067,7 @@ Each draft is copied to parking under an orchestrator-minted id `{slug}-{YYYYMMD
 }
 ```
 
-Removes `discovering/{ideaId}` from board; retains `discovery-rooms/{ideaId}/`.
+Removes `discovering/{ideaId}` from board; moves `discovery-rooms/{ideaId}/` → `discovery-rooms/achive/{ideaId}/`.
 
 ### Shipped in v0.14.0 (Phase 5)
 

@@ -1,5 +1,40 @@
 # Changelog
 
+## 0.4.0 — 2026-07-05
+
+Unified mission model: intake + execution in `mission-rooms/`; mission board notes with `mission.md` + `meta.yaml`. **API runtime:** `GET /health` → **0.30.0**.
+
+### Two-layer model
+
+- **Mission board note** — Kanban card on `mission-board/{stage}/{id}/`
+- **Mission** — agent workspace at `mission-rooms/{id}/` (stable cwd)
+
+### Discovery fusion
+
+- Intake scaffolds `mission-intake` template under `mission-rooms/` (no new `discovery-rooms/`)
+- Approve Option B: parent `idea_exploring` → `done/`; children `work_execution` → `parking/`
+- Unified checkpoint phases (`idea_exploring` … `mission_plan_complete`, `evaluating` … `working` …)
+
+### API
+
+- Canonical: `GET /mission-board-notes`, `POST /missions/:id/approve-discovery`, `POST /mission-board-notes/:id/abort`
+- **`POST /ideas` retained** for submit
+- Legacy `GET /ideas*`, `/discoveries/*` aliases kept for transition
+
+### Filesystem
+
+- Frozen brief: `mission-brief.md` at room root
+- Room archive: `mission-rooms/archive/` (read compat: `achive/`)
+- No legacy data migration — archive old `data/` and use forward-only flows
+
+## API 0.23.0 — 2026-07-05
+
+### Room achive
+
+- Terminal mission rooms move to `mission-rooms/achive/{id}/` on `mission_complete`, abort, and board archive
+- Closed discovery rooms move to `discovery-rooms/achive/{id}/` on discovery approve
+- Boot reconciles existing terminal rooms into achive folders
+
 ## 0.3.0 — 2026-07-04
 
 Mission close-out, guild channel, backlog ideas, skills bank. **API runtime:** `GET /health` → **0.22.0**.

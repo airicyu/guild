@@ -33,6 +33,7 @@ import {
 } from "../lib/api";
 import { canApproveArtifacts } from "../lib/board";
 import { queryKeys } from "../lib/queryKeys";
+import { useHealth } from "../providers/AppProviders";
 
 /**
  * Mission room — tab-lazy queries, session restore, terminal attach.
@@ -45,6 +46,8 @@ export function MissionPage() {
   const [promoteOpen, setPromoteOpen] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const queryClient = useQueryClient();
+  const healthQuery = useHealth();
+  const channelPushEnabled = healthQuery.data?.channelPushEnabled === true;
 
   const addToast = useCallback((toast: Omit<ToastMessage, "id">) => {
     setToasts((prev) => [...prev, { ...toast, id: nextToastId() }]);
@@ -165,7 +168,9 @@ export function MissionPage() {
   const phase = summary?.checkpoint?.phase;
   const showPhase = phase && isMissionPhase(phase);
   const showApprove =
-    summary?.board === "working" && canApproveArtifacts(phase);
+    summary?.board === "working" && canApproveArtifacts(phase) && channelPushEnabled;
+  const approveNeedsAttach =
+    summary?.board === "working" && canApproveArtifacts(phase) && !channelPushEnabled;
   const showPromote = summary?.board === "parking";
   const intake = isIntakeBoard(summary?.board);
   const visibleTabs = summary ? missionTabsForBoard(summary.board) : [];
@@ -249,6 +254,13 @@ export function MissionPage() {
                   ring the bell on the board
                 </Link>{" "}
                 to start this mission.
+              </p>
+            )}
+
+            {approveNeedsAttach && (
+              <p className="mt-3 text-sm text-[var(--color-text-muted)]">
+                Artifact approve is disabled in the Web UI while channel push is off — use Guild
+                Desk or terminal attach, then direct the PO via inbox.
               </p>
             )}
 

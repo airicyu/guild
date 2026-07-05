@@ -19,8 +19,8 @@ Same checks on `/ideas/:id` → **Terminal** tab (`WS /ws/discoveries/:id/attach
 ## Automated WS smoke
 
 ```bash
-bun scripts/test-ws-attach.ts <missionId>
-bun scripts/test-ws-input.ts <missionId>
+bun server/scripts/test-ws-attach.ts <missionId>
+bun server/scripts/test-ws-input.ts <missionId>
 ```
 
 Requires running API and a mission on **working** with live session.

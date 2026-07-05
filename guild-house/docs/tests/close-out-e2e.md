@@ -25,9 +25,9 @@ Channel **degraded** — approve writes `inbox.md` + checkpoint only; no HTTP PO
 
 ```bash
 cd guild/guild-house
-bun scripts/e2e-close-out-03.ts
+bun server/scripts/e2e-close-out-03.ts
 # or directly:
-bun scripts/e2e-phase1-closeout.ts
+bun server/scripts/e2e-phase1-closeout.ts
 ```
 
 **Covers:**
@@ -66,7 +66,7 @@ Follow [execution-e2e.md](./execution-e2e.md) §1–3: drop brief on **queued**,
 **Prerequisites:** `CLAUDE_DEV_CHANNELS=1`, Claude Code 2.1.80+, WSL/Linux. See [guild-channel.md](../guild-channel.md).
 
 ```bash
-bun scripts/setup-channel-approve-test.ts
+bun server/scripts/setup-channel-approve-test.ts
 ```
 
 Then approve via Web UI or API and verify:
@@ -111,4 +111,4 @@ See [e2e-discovery-path.md](../e2e-discovery-path.md).
 | [execution-e2e.md](./execution-e2e.md) | Queued → archive execution path |
 | [e2e-discovery-path.md](../e2e-discovery-path.md) | Full discovery pipeline |
 | [guild-channel.md](../guild-channel.md) | Channel PoC + dev setup |
-| `scripts/e2e-close-out-03.ts` | Runner: Part A auto + Part B instructions |
+| `server/scripts/e2e-close-out-03.ts` | Runner: Part A auto + Part B instructions |

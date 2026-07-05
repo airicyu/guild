@@ -14,6 +14,7 @@ import {
   restoreMission,
   resumeMission,
 } from "../../lib/api";
+import { useHealth } from "../../providers/AppProviders";
 import type { MissionSummaryResponse } from "../../types/mission";
 
 interface MissionActionsProps {
@@ -25,6 +26,7 @@ interface MissionActionsProps {
 export function MissionActions({ missionId, summary, onOpenTerminal }: MissionActionsProps) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const channelPushEnabled = useHealth().data?.channelPushEnabled === true;
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [abortOpen, setAbortOpen] = useState(false);
@@ -127,7 +129,8 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
   const isPaused = phase === "paused";
   const canPause = summary.board === "working" && phase && !isDone && !isPaused && !isAborted;
   const canResume = summary.board === "working" && (isPaused || summary.restoreRequired);
-  const canReject = summary.board === "working" && phase === "awaiting_artifact_review";
+  const canReject =
+    channelPushEnabled && summary.board === "working" && phase === "awaiting_artifact_review";
   const canAbort = summary.board === "working" && !isDone && !isAborted;
   // Archive from done or aborted board with archiveReady — POST /missions/:id/archive (specs/product.md).
   const showArchive = (summary.board === "done" || summary.board === "aborted") && summary.archiveReady;
@@ -235,7 +238,7 @@ export function MissionActions({ missionId, summary, onOpenTerminal }: MissionAc
       <ConfirmDialog
         open={archiveOpen}
         title="Archive mission?"
-        message={`Move ${missionId} to the archive board. The mission room stays on disk.`}
+        message={`Move ${missionId} to the archive board. The mission room moves to mission-rooms/achive/.`}
         confirmLabel="Archive"
         pending={archiveMutation.isPending}
         onConfirm={() => archiveMutation.mutate()}

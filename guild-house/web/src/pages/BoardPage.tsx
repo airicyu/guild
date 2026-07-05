@@ -25,11 +25,11 @@ import type { TickResult } from "../types/mission";
 function bellToasts(result: TickResult): Omit<ToastMessage, "id">[] {
   const toasts: Omit<ToastMessage, "id">[] = [];
 
-  if (result.discoveriesStarted.length > 0) {
+  if (result.intakeStarted.length > 0) {
     toasts.push({
       tone: "success",
-      title: "Discovery started",
-      detail: result.discoveriesStarted.join(", "),
+      title: "Intake started",
+      detail: result.intakeStarted.join(", "),
     });
   }
   if (result.missionsStarted.length > 0) {
@@ -39,11 +39,11 @@ function bellToasts(result: TickResult): Omit<ToastMessage, "id">[] {
       detail: result.missionsStarted.join(", "),
     });
   }
-  if (result.queuedDiscovery.length > 0) {
+  if (result.queuedIntake.length > 0) {
     toasts.push({
       tone: "info",
-      title: "Discovery slots full",
-      detail: `Queued: ${result.queuedDiscovery.join(", ")}`,
+      title: "Intake slots full",
+      detail: `Queued: ${result.queuedIntake.join(", ")}`,
     });
   }
   if (result.queuedExecution.length > 0) {

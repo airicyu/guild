@@ -74,7 +74,7 @@ Import API helpers from `lib/api`. Domain UI lives under `features/<domain>/`; s
 
 ## API reference
 
-REST + WS: [../docs/api.md](../docs/api.md). Bump `GET /health` version in `../src/server.ts` when shipping API changes.
+REST + WS: [../docs/api.md](../docs/api.md). Bump `GET /health` version in `../server/src/server.ts` when shipping API changes.
 
 ## Commands
 

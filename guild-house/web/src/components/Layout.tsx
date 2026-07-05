@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Activity, KeyRound, LayoutGrid, Lightbulb, ScrollText, type LucideIcon } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { ApiKeyBanner } from "./ApiKeyBanner";
 import { ApiError, fetchBoard, fetchOutbox } from "../lib/api";
 import { queryKeys } from "../lib/queryKeys";
@@ -36,7 +36,18 @@ const nav: Array<{
   { to: "/outbox", label: "Outbox", icon: ScrollText, badgeKey: "outbox" },
 ];
 
+function isNavItemActive(
+  pathname: string,
+  to: string,
+  end: boolean | undefined,
+  isActiveMatch: ((pathname: string) => boolean) | undefined,
+): boolean {
+  if (isActiveMatch) return isActiveMatch(pathname);
+  return end ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+}
+
 export function Layout({ onOpenSettings }: LayoutProps) {
+  const location = useLocation();
   const { data: health, isLoading, isError } = useHealth();
   const boardProbe = useQuery({
     // Lightweight auth + discovering badge count (shares cache with BoardPage).
@@ -67,22 +78,20 @@ export function Layout({ onOpenSettings }: LayoutProps) {
         </div>
 
         <nav className="flex flex-1 flex-col gap-1 p-3">
-          {nav.map(({ to, label, icon: Icon, end, badgeKey, isActiveMatch }) => (
+          {nav.map(({ to, label, icon: Icon, end, badgeKey, isActiveMatch }) => {
+            const active = isNavItemActive(location.pathname, to, end, isActiveMatch);
+            return (
             <NavLink
               key={to}
               to={to}
               end={end}
-              {...(isActiveMatch
-                ? { isActive: ({ pathname }: { pathname: string }) => isActiveMatch(pathname) }
-                : {})}
-              className={({ isActive }) =>
-                [
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-[var(--color-accent-glow)] text-[var(--color-accent)]"
-                    : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]",
-                ].join(" ")
-              }
+              aria-current={active ? "page" : undefined}
+              className={[
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                active
+                  ? "bg-[var(--color-accent-glow)] text-[var(--color-accent)]"
+                  : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text)]",
+              ].join(" ")}
             >
               <Icon size={18} />
               <span className="flex-1">{label}</span>
@@ -103,7 +112,8 @@ export function Layout({ onOpenSettings }: LayoutProps) {
                 </span>
               )}
             </NavLink>
-          ))}
+            );
+          })}
         </nav>
 
         <div className="border-t border-[var(--color-border)] p-4 text-xs text-[var(--color-text-muted)]">
