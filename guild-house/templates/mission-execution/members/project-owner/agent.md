@@ -23,7 +23,7 @@ Read `.guild/handoff-prompt.md` and execute every step before spawning implement
 
 1. Read `memories/common/mission-brief.md` (frozen orchestrator copy — **do not edit**)
 2. Read `members/project-owner/agent.md` (this file)
-3. Read `../../skills-bank/catalog.md`; follow `mission-management/skills-bank.md` to wire skills **before evaluator**:
+3. Read the skills bank catalogs (`../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md`); follow `mission-management/skills-bank.md` to wire skills **before evaluator**:
 
 ```bash
 .claude/skills/wire-skills-from-bank/wire.sh skill-a skill-b

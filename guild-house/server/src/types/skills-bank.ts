@@ -1,6 +1,7 @@
 export interface SkillListItem {
   name: string;
   description: string | null;
+  source?: "built-in" | "custom";
 }
 
 export interface SkillsBankSummary {

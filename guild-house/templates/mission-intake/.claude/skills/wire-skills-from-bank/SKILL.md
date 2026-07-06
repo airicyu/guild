@@ -18,7 +18,7 @@ Deterministic bootstrap — **do not** ad-hoc `cp` bank folders. Always use the 
 
 ## Steps
 
-1. Read `../../skills-bank/catalog.md` — browse available skills
+1. Read `../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md` — browse available skills
 2. Follow `mission-management/skills-bank.md` for wiring procedure
 3. Run the wire script with explicit skill names (CLI args — no manifest file):
 
@@ -33,12 +33,15 @@ Deterministic bootstrap — **do not** ad-hoc `cp` bank folders. Always use the 
 | From | To |
 |------|-----|
 | Room cwd | `data/mission-rooms/{id}/` or `data/discovery-rooms/{id}/` |
-| Bank | `../../skills-bank/{skill-name}/` |
+| Built-in bank | `../../skills-bank/built-in/skills/{name}/` |
+| Custom bank | `../../skills-bank/custom/skills/{name}/` |
 | Destination | `.claude/skills/{skill-name}/` |
+
+Built-in skills take priority over custom skills with the same name.
 
 ## Errors
 
-Script exits non-zero if a skill is missing from the bank or lacks `SKILL.md`. Fix the bank (guild master) or pick different skills.
+Script exits non-zero if a skill is missing from both bank layers or lacks `SKILL.md`. Fix the bank (guild master) or pick different skills.
 
 ## Notes
 

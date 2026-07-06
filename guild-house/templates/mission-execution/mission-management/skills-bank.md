@@ -1,9 +1,10 @@
 # Using the skills bank
 
-**Catalog:** `../../skills-bank/catalog.md` — what exists (short summaries).  
-**Bank path:** `../../skills-bank/{skill-name}/` — full `SKILL.md` per entry.
+**Catalog:** `../../skills-bank/built-in/catalog.md` — built-in skills (short summaries).  
+**Custom catalog:** `../../skills-bank/custom/catalog.md` — user-defined skills.  
+**Bank path:** `../../skills-bank/{built-in,custom}/skills/{name}/` — full `SKILL.md` per entry.
 
-Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). This room copies selected skills at charter — not symlink.
+Dual-layer skills bank lives in `guild-house/data/skills-bank/` with `built-in/` (product, committed) and `custom/` (user-defined, gitignored except skeleton). This room copies selected skills at charter — not symlink. Built-in skills take priority over custom skills with the same name.
 
 ---
 
@@ -18,8 +19,8 @@ Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). 
 
 ## How to wire
 
-1. Read `../../skills-bank/catalog.md` — choose skills for this mission.
-2. Optionally read `../../skills-bank/{name}/SKILL.md` for any skill you are unsure about.
+1. Read `../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md` — choose skills for this mission.
+2. Optionally read `../../skills-bank/{built-in,custom}/skills/{name}/SKILL.md` for any skill you are unsure about.
 3. Copy into this room (deterministic — do not hand-copy folders):
 
 ```bash
@@ -28,7 +29,7 @@ Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). 
 
 | Source | Destination |
 |--------|-------------|
-| `../../skills-bank/{name}/` | `.claude/skills/{name}/` |
+| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.claude/skills/{name}/` |
 
 4. **Execution only:** during charter (Round 2), write `members/{role}/skills.md` — which wired skills each agent should use.
 
@@ -42,13 +43,17 @@ Edit `data/skills-bank/` directly (no write API):
 
 ```text
 data/skills-bank/
-  catalog.md           ← one-line summary per skill (for PO browsing)
-  {skill-name}/
-    SKILL.md           ← required
-    …
+  built-in/             ← product skills (committed, guild master maintains)
+    catalog.md
+    skills/{name}/
+      SKILL.md
+  custom/               ← user-defined skills (gitignored content)
+    catalog.md
+    skills/{name}/
+      SKILL.md
 ```
 
-Promote from mission `retrospective/skills-reports/*.md` when appropriate. Retiring a skill removes the folder and catalog row; already-wired rooms keep their copies.
+Promote from mission `retrospective/skills-reports/*.md` when appropriate. Add built-in skills under `built-in/`; users add custom skills under `custom/`. Retiring a skill removes the folder and catalog row; already-wired rooms keep their copies.
 
 ---
 

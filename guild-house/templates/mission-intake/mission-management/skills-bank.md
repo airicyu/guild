@@ -1,9 +1,10 @@
 # Using the skills bank
 
-**Catalog:** `../../skills-bank/catalog.md` — what exists (short summaries).  
-**Bank path:** `../../skills-bank/{skill-name}/` — full `SKILL.md` per entry.
+**Catalog:** `../../skills-bank/built-in/catalog.md` — built-in skills (short summaries).  
+**Custom catalog:** `../../skills-bank/custom/catalog.md` — user-defined skills.  
+**Bank path:** `../../skills-bank/{built-in,custom}/skills/{name}/` — full `SKILL.md` per entry.
 
-Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). This room copies selected skills at charter — not symlink.
+Dual-layer skills bank lives in `guild-house/data/skills-bank/` with `built-in/` (product, committed) and `custom/` (user-defined, gitignored except skeleton). This room copies selected skills at charter — not symlink. Built-in skills take priority over custom skills with the same name.
 
 ---
 
@@ -15,8 +16,8 @@ Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). 
 
 ## How to wire
 
-1. Read `../../skills-bank/catalog.md` — choose skills for this discovery mission.
-2. Optionally read `../../skills-bank/{name}/SKILL.md` for detail.
+1. Read `../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md` — choose skills for this discovery mission.
+2. Optionally read `../../skills-bank/{built-in,custom}/skills/{name}/SKILL.md` for detail.
 3. Copy into this room:
 
 ```bash
@@ -25,7 +26,7 @@ Singleton source of truth lives in `guild-house/data/skills-bank/` (committed). 
 
 | Source | Destination |
 |--------|-------------|
-| `../../skills-bank/{name}/` | `.claude/skills/{name}/` |
+| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.claude/skills/{name}/` |
 
 ---
 
