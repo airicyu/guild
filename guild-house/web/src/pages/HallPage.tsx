@@ -19,7 +19,7 @@ export function HallPage() {
     <div>
       <h2 className="guild-display text-2xl font-bold text-[var(--color-text)]">Working missions</h2>
       <p className="mt-1 text-sm text-[var(--color-text-muted)]">
-        Live mission cards · <code className="text-xs">GET /missions</code>
+        Missions in active execution
       </p>
 
       {isLoading && (

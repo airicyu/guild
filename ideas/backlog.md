@@ -28,12 +28,6 @@ API 多半已存在；主要是 `guild-house/web/` 加畫面。
 - **要做什麼：** 在 `/hall` 的 `MissionCard` 上：若 summary 或 probe 顯示該 HTML 存在，顯示「Open report」或內嵌 **iframe** 縮圖預覽；點擊進 mission room 或全螢幕 iframe。沒有檔案時不顯示（現有卡片行為不變）。
 - **備註：** 只**顯示**既有檔案；不負責讓 PO **生成**報表（生成仍靠 agent / 腳本）。
 
-### Board 頂部 Slot 卡片寬度統一
-
-- **問題：** Board 頁 Discovery slots 與 Execution slots 兩張 `SlotMeter` 寬度不一致，視覺不整齊。
-- **要做什麼：** 調整 `SlotMeter` / board header flex：兩卡同 min-width 或共用 grid，文案換行時仍對齊。
-- **備註：** 純 CSS；`BoardPage.tsx` + `SlotMeter.tsx`。
-
 ### 左側導航 Missions 數量 badge
 
 - **問題：** 左欄 **Discovering** 有數字 badge（`board.discovering.length`），**Missions** 沒有；working 任務數量不直覺。
@@ -96,12 +90,6 @@ API 多半已存在；主要是 `guild-house/web/` 加畫面。
 - **要做什麼：** 定規則並實作其一：(a) promote / pickup 時以 board 版覆寫 brief；(b) 偵測 diff 寫入 outbox 提醒；(c) 禁止改 parking 檔、只能改 room。需寫進 `specs/product.md` 再改 `promote` / pickup 路徑。
 - **備註：** 邊界情況；影響 discovery → parking → queued 流程。
 
-### Mission brief 在 UI 難讀
-
-- **問題：** `GET /missions/:id/brief` 回傳的 markdown 常含 YAML frontmatter、多餘空行、標題層級混亂；Brief tab 直接 `MarkdownView` 不好看。
-- **要做什麼：** 前端或 API 正規化：剝 frontmatter、折疊 metadata、統一標題樣式；或 brief 模板約束 PO 輸出格式。先從 **最常見** 的 hello-world / discovery 產物修。
-- **備註：** 可只做 Web 層 `brief` preprocessor，不必動磁碟檔。
-
 ---
 
 ## Long-term product
@@ -117,11 +105,6 @@ API 多半已存在；主要是 `guild-house/web/` 加畫面。
 
 - **要做什麼：** PO 在 plan 階段把 work 拆成 subtask，每項對應 `artifacts/subtasks/{slug}/` 與 checkpoint 追蹤；Web hall 可顯示子任務進度條。
 - **備註：** 需 checkpoint schema + PO playbook 變更。
-
-### Mission 結束 retrospective
-
-- **要做什麼：** `mission_complete` 後可選流程：PO 寫 `artifacts/retrospective.md`，guild master 在 UI 核准後，系統把可重用段落提煉到 guild 級 `ideas/` 或 skill 庫。
-- **備註：** 與「可重用 skills」銜接。
 
 ### Hall 成員狀態視覺化
 
