@@ -9,6 +9,7 @@ Detail per skill: `../../skills-bank/{name}/SKILL.md` or `GET /skills-bank/{name
 | Skill | Summary |
 |-------|---------|
 | `ad-hoc-create` | 執行或 discovery 期間，從 room 內快速在 board 新增 idea 或 mission；當 scope 需拆成獨立追蹤的任務時 wire |
-| `modify-guild` | Mission 需改 Guild 產品 code（guild-house API/web/orchestrator、guild-desk skill 等）時 wire；不含僅改 ideas/ 設計 |
+| `modify-git-project` | 在指定 git repo 上做 enhancement mission（worktree + manifest；guild master 人工 merge） |
+| `modify-guild` | 改 Guild 產品 code；depends on `modify-git-project` |
 
 _Guild master: add a row when you add a folder under `data/skills-bank/`._
