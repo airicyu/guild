@@ -70,6 +70,22 @@ export function skillsBankPath(config: Config): string {
   return join(config.guildHome, "skills-bank");
 }
 
+export function builtInSkillsPath(config: Config): string {
+  return join(config.guildHome, "skills-bank", "built-in", "skills");
+}
+
+export function customSkillsPath(config: Config): string {
+  return join(config.guildHome, "skills-bank", "custom", "skills");
+}
+
+export function builtInCatalogPath(config: Config): string {
+  return join(config.guildHome, "skills-bank", "built-in", "catalog.md");
+}
+
+export function customCatalogPath(config: Config): string {
+  return join(config.guildHome, "skills-bank", "custom", "catalog.md");
+}
+
 export function missionRoomPath(config: Config, missionId: string): string {
   return join(config.guildHome, "mission-rooms", missionId);
 }

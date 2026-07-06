@@ -27,7 +27,7 @@ Draft folder names are **provisional** (any valid folder name). On guild-master 
 ## Workflow
 
 1. Read `scratch.md` and `.guild/handoff-prompt.md`
-2. **Round 0 — wire skills** — read `../../skills-bank/catalog.md`; follow `mission-management/skills-bank.md`; run `.claude/skills/wire-skills-from-bank/wire.sh …` before explore/draft
+2. **Round 0 — wire skills** — read the skills bank catalogs (`../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md`); follow `mission-management/skills-bank.md`; run `.claude/skills/wire-skills-from-bank/wire.sh …` before explore/draft
 3. **Exploring** — clarify goals, constraints, risks; note open questions in outbox if needed
 4. **Drafting** — `./tools/signal.sh start_drafting`; write mission package(s) under `artifacts/missions/`
 5. **Presenting** — `./tools/signal.sh packages_ready`; invite the guild master via outbox + `request_approval`

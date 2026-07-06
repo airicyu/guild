@@ -1,7 +1,7 @@
 # Guild House API
 
 **Base URL:** `http://127.0.0.1:3847` (default)  
-**Version:** `0.32.0` (see `GET /health` → `version`)
+**Version:** `0.35.0` (see `GET /health` → `version`)
 
 > **0.4.0:** Unified mission board note + mission room model. API code lives under `guild-house/server/src/`. Intake runs in `mission-rooms/{id}/` (not `discovery-rooms/`). Legacy `GET /ideas*` and `/discoveries/*` routes were removed; **`POST /ideas`** remains for submit.
 
@@ -72,7 +72,7 @@ Public. No Bearer token.
 {
   "ok": true,
   "service": "guild-house",
-  "version": "0.32.0",
+  "version": "0.35.0",
   "guildHome": "C:\\...\\guild-house\\data",
   "guildMasterName": "Eric",
   "tickIntervalMinutes": 0,
@@ -271,7 +271,7 @@ Move one parking folder → **queued** (guild master promotes approved missions 
 
 ## `GET /skills-bank`
 
-Read-only skills bank summary. Runtime path: `data/skills-bank/` (singleton; committed in repo).
+Read-only skills bank summary. Runtime path: `data/skills-bank/` with dual-layer structure (built-in + custom). Built-in skills take priority over custom skills with the same name. Each skill item includes a `source` field (`"built-in"` or `"custom"`).
 
 **Response 200**
 
@@ -279,9 +279,11 @@ Read-only skills bank summary. Runtime path: `data/skills-bank/` (singleton; com
 {
   "catalog": "# Guild skills bank catalog\n…",
   "skills": [
-    { "name": "ad-hoc-create", "description": "從任何 discovery 或 mission room 內建立 ad-hoc idea（backlog/ideas）或 mission（parking/queued）— 純檔案系統，無 API 相依" }
+    { "name": "ad-hoc-create", "description": "…", "source": "built-in" },
+    { "name": "modify-git-project", "description": "…", "source": "built-in" },
+    { "name": "modify-guild", "description": "…", "source": "built-in" }
   ],
-  "count": 1
+  "count": 3
 }
 ```
 

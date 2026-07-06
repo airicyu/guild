@@ -7,7 +7,7 @@ Living product truth for **release 0.4.0**. When code and prose disagree, trust 
 | Kind | Location | Current |
 |------|----------|---------|
 | Product | `version.md` + `changelog.md` | **0.4.0** |
-| API runtime | `GET /health` → `version` | **0.30.0** |
+| API runtime | `GET /health` → `version` | **0.35.0** |
 
 ## Domain language (0.4.0)
 
@@ -51,7 +51,7 @@ ideas-backlog → ideas → discovering → [approve] → parking → queued →
 9. **GET never spawns** — restore on boot / `POST /restore` / `?ensureLive=true`.
 10. **`checkpoint.yaml`** — orchestrator-only; unified phases (intake + execution).
 11. **`meta.type`** — `idea_exploring` \| `work_execution`; immutable after mint.
-12. **Skills bank** — `data/skills-bank/`; `GET /skills-bank`.
+12. **Skills bank** — `data/skills-bank/` with dual-layer structure: `built-in/` (product, committed) and `custom/` (user-defined, gitignored except skeleton); `GET /skills-bank` merges both, built-in wins on name conflict.
 13. **Session poke** — orchestrator ephemeral `claude attach` inject on guild-master directives; **no second PO**; best-effort; poke PTY teardown does not stop `--bg` job. Option A: poke only if session already live (no `ensureLive` on notify path). See [docs/session-poke.md](../docs/session-poke.md).
 
 ## API (canonical)

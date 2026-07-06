@@ -5,6 +5,11 @@ web/tsconfig.tsbuildinfo
 .env
 data/*
 !data/skills-bank/
-!data/skills-bank/**
+!data/skills-bank/built-in/**
+# custom/ skeleton tracked, but actual skill folders gitignored
+!data/skills-bank/custom/
+!data/skills-bank/custom/catalog.md
+!data/skills-bank/custom/skills/
+!data/skills-bank/custom/skills/.gitkeep
 spike-test-cwd/
 *.log
