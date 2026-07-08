@@ -19,7 +19,8 @@
       "Bash(python *)",
       "Bash(py *)",
       "Bash(node *)",
-      "Bash(bun *)"
+      "Bash(bun *)",
+      "mcp__guild-channel__*"
     ],
     "deny": [
       "Edit(checkpoint.yaml)",

@@ -27,8 +27,7 @@
       "Bash(node *)",
       "Bash(bun *)",
       "Bash(./tools/*)",
-      "Bash(tools/*)",
-      "Bash(cmd /c tools\\\\*)"
+      "mcp__guild-channel__*"
     ],
     "deny": [
       "Edit(checkpoint.yaml)",
