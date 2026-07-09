@@ -37,9 +37,11 @@ body {
   width: 100%;
 }
 
-/* xterm 6: legacy viewport is an empty black layer — it covers the scrollbar track otherwise */
+/* xterm 6: viewport default black background covers the scrollable element's scrollbar track.
+   Make it transparent so the custom scrollbar is visible. Do NOT use display:none —
+   the .xterm-scrollable-element (which handles actual scrolling) is a child of the viewport. */
 .mission-terminal-host .xterm-viewport {
-  display: none;
+  background: transparent !important;
 }
 
 .mission-terminal-host .xterm-scrollable-element > .scrollbar > .slider {

@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>報告標題 — 請替換</title>
+  <style>
+    /* ============================================================
+       Base reset & typography
+       ============================================================ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", Helvetica, Arial, sans-serif;
+      line-height: 1.7;
+      color: #1a1a1a;
+      background: #fafafa;
+      padding: 2rem 1rem;
+    }
+
+    /* ============================================================
+       Layout — responsive container
+       ============================================================ */
+    .report-container {
+      max-width: 960px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      padding: 2.5rem 2rem;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 1rem 0.5rem; }
+      .report-container { padding: 1.5rem 1rem; border-radius: 0; }
+    }
+
+    /* ============================================================
+       Headings
+       ============================================================ */
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #111;
+      border-bottom: 3px solid #2563eb;
+      padding-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: #1e40af;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.3rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+
+    h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      color: #4b5563;
+    }
+
+    /* ============================================================
+       Body text
+       ============================================================ */
+    p {
+      margin-bottom: 0.85rem;
+    }
+
+    ul, ol {
+      margin-bottom: 0.85rem;
+      padding-left: 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.3rem;
+    }
+
+    strong {
+      font-weight: 600;
+      color: #111;
+    }
+
+    /* ============================================================
+       Tables — zebra stripes, responsive overflow
+       ============================================================ */
+    .table-wrapper {
+      max-width: 100%;
+      overflow-x: auto;
+      margin-bottom: 1.25rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5db;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    td:is(.numeric), th:is(.numeric) {
+      text-align: right;
+    }
+
+    tr:nth-child(even) td {
+      background: #f9fafb;
+    }
+
+    /* ============================================================
+       Callout / highlight boxes
+       ============================================================ */
+    .callout {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 0.75rem 1rem;
+      margin-bottom: 1rem;
+      border-radius: 0 4px 4px 0;
+    }
+
+    .callout-warning {
+      background: #fef3c7;
+      border-left-color: #f59e0b;
+    }
+
+    .callout-danger {
+      background: #fee2e2;
+      border-left-color: #ef4444;
+    }
+
+    .callout-success {
+      background: #d1fae5;
+      border-left-color: #10b981;
+    }
+
+    /* ============================================================
+       Code / pre
+       ============================================================ */
+    code {
+      font-family: "SF Mono", "Fira Code", "JetBrains Mono", Consolas, monospace;
+      font-size: 0.85em;
+      background: #f3f4f6;
+      padding: 0.15em 0.3em;
+      border-radius: 3px;
+    }
+
+    pre {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* ============================================================
+       Images
+       ============================================================ */
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1rem auto;
+      border-radius: 4px;
+    }
+
+    figure {
+      margin: 1.25rem 0;
+      text-align: center;
+    }
+
+    figcaption {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 0.4rem;
+    }
+
+    /* ============================================================
+       Blockquote (for key quotes / findings)
+       ============================================================ */
+    blockquote {
+      border-left: 3px solid #9ca3af;
+      padding-left: 1rem;
+      margin: 1rem 0;
+      color: #4b5563;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       Print styles
+       ============================================================ */
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        font-size: 12pt;
+      }
+      .report-container {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+      h1 { border-bottom-color: #000; }
+      h2 { color: #000; }
+      .table-wrapper { overflow: visible; }
+      pre { background: #f3f4f6; color: #1a1a1a; }
+    }
+
+    /* ============================================================
+       Utility — divider
+       ============================================================ */
+    hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+
+    <!-- ============================================================
+         REPORT TITLE — 替換為您報告的正式標題
+         ============================================================ -->
+    <h1>報告標題</h1>
+
+    <!--
+      可選：添加 metadata 區塊
+      <p><strong>日期：</strong>YYYY-MM-DD &nbsp;|&nbsp; <strong>作者：</strong>mission-xxx</p>
+    -->
+    <hr>
+
+    <!-- ============================================================
+         SECTION 1: EXECUTIVE SUMMARY
+         目標受眾：guild master、決策者
+         原則：結論先行，一句話 TL;DR
+         ============================================================ -->
+    <h2>1. 執行摘要</h2>
+
+    <!-- TL;DR — 請以一句話總結 -->
+    <div class="callout">
+      <strong>TL;DR：</strong><!-- 在此填寫一句話結論 -->
+    </div>
+
+    <h3>背景與動機</h3>
+    <!-- 在此說明為何進行此研究，200 字以內 -->
+
+    <h3>核心發現</h3>
+    <ul>
+      <li><!-- 發現一 --></li>
+      <li><!-- 發現二 --></li>
+      <li><!-- 發現三 --></li>
+    </ul>
+
+    <h3>建議行動</h3>
+    <p><!-- 一個明確的建議或行動項 --></p>
+
+    <!-- ============================================================
+         SECTION 2: FINDINGS
+         目標受眾：domain expert、同 team 成員
+         原則：每項發現獨立可讀
+         ============================================================ -->
+    <h2>2. 發現</h2>
+
+    <h3>2.1 <!-- 發現一標題 --></h3>
+    <p><!-- 一句話摘要 --></p>
+    <!-- 證據/依據內容 -->
+
+    <h3>2.2 <!-- 發現二標題 --></h3>
+    <p><!-- 一句話摘要 --></p>
+    <!-- 證據/依據內容 -->
+
+    <h3>2.3 <!-- 發現三標題 --></h3>
+    <p><!-- 一句話摘要 --></p>
+    <!-- 證據/依據內容 -->
+
+    <!-- 次要發現（可選）
+    <h3>次要觀察</h3>
+    <ul>
+      <li>...</li>
+    </ul>
+    -->
+
+    <!-- 反直覺結果（可選）
+    <div class="callout callout-warning">
+      <strong>意外發現：</strong> ...
+    </div>
+    -->
+
+    <!-- ============================================================
+         SECTION 3: DATA
+         目標受眾：需要驗證或重現結論的人
+         原則：可驗證、可引用
+         ============================================================ -->
+    <h2>3. 數據</h2>
+
+    <h3>3.1 數據概覽</h3>
+    <!-- 說明數據來源、採集時間範圍、rows/columns -->
+
+    <h3>3.2 彙整表格</h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">項目</th>
+            <th scope="col" class="numeric">數值 A</th>
+            <th scope="col" class="numeric">數值 B</th>
+            <th scope="col">備註</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><!-- 項目一 --></td>
+            <td class="numeric"><!-- 數值 --></td>
+            <td class="numeric"><!-- 數值 --></td>
+            <td><!-- 備註 --></td>
+          </tr>
+          <tr>
+            <td><!-- 項目二 --></td>
+            <td class="numeric"><!-- 數值 --></td>
+            <td class="numeric"><!-- 數值 --></td>
+            <td><!-- 備註 --></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 圖表（可選）
+    <figure>
+      <img src="data:image/png;base64,..." alt="圖表描述">
+      <figcaption>圖表標題／說明</figcaption>
+    </figure>
+    -->
+
+    <h3>3.3 資料來源</h3>
+    <ul>
+      <li><!-- 來源一 --></li>
+      <li><!-- 來源二 --></li>
+    </ul>
+    <p><em>免責聲明：數據截至 YYYY-MM-DD，可能有所變動。</em></p>
+
+    <!-- ============================================================
+         SECTION 4: RECOMMENDATIONS
+         目標受眾：guild master、下一個接手的人
+         原則：每個建議搭配明確的下一步
+         ============================================================ -->
+    <h2>4. 建議</h2>
+
+    <h3>4.1 <!-- 行動項一標題 --></h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">項目</th>
+            <th scope="col">內容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>優先級</strong></td>
+            <td>P0 / P1 / P2</td>
+          </tr>
+          <tr>
+            <td><strong>行動</strong></td>
+            <td><!-- 具體行動描述 --></td>
+          </tr>
+          <tr>
+            <td><strong>預期影響</strong></td>
+            <td><!-- 正面影響 --></td>
+          </tr>
+          <tr>
+            <td><strong>風險</strong></td>
+            <td><!-- 潛在風險 --></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4.2 <!-- 行動項二標題 --></h3>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">項目</th>
+            <th scope="col">內容</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>優先級</strong></td>
+            <td>P0 / P1 / P2</td>
+          </tr>
+          <tr>
+            <td><strong>行動</strong></td>
+            <td><!-- 具體行動描述 --></td>
+          </tr>
+          <tr>
+            <td><strong>預期影響</strong></td>
+            <td><!-- 正面影響 --></td>
+          </tr>
+          <tr>
+            <td><strong>風險</strong></td>
+            <td><!-- 潛在風險 --></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>未解決的問題</h3>
+    <ul>
+      <li><!-- 問題一 --></li>
+      <li><!-- 問題二 --></li>
+    </ul>
+
+    <!-- 後續任務（可選）
+    <div class="callout callout-success">
+      <strong>建議後續 mission：</strong> ...
+    </div>
+    -->
+
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <hr>
+    <p style="font-size:0.8rem; color:#9ca3af; text-align:center;">
+      此報告由 Guild mission <code><!-- mission-id --></code> 自動產生 ·
+      <a href="#" style="color:#6b7280;">返回頂端</a>
+    </p>
+
+  </div>
+  <!--
+    ============================================================
+    INLINE JAVASCRIPT（可選）
+    不依賴任何外部函式庫
+    範例：簡單的表格搜尋或圖表 SVG 繪製
+    ============================================================
+  <script>
+    // 在此加入 inline JS（如互動功能）
+  </script>
+  -->
+</body>
+</html>

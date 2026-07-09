@@ -179,6 +179,8 @@ export function AttachTerminalPane({
       webglAddon.onContextLoss(() => {
         webglAddon?.dispose();
         webglAddon = null;
+        // Force a full redraw so the DOM renderer (fallback) picks up cleanly
+        term.refresh(0, term.rows - 1);
       });
       term.loadAddon(webglAddon);
     } catch {
@@ -337,8 +339,26 @@ export function AttachTerminalPane({
       resizeObserver.observe(pane);
     }
 
+    // Scroll-triggered refresh — fixes WebGL rendering artifacts when scrolling
+    // through the scrollback buffer. The WebGL texture atlas can get out of sync
+    // with the scroll position, causing garbled/incomplete rendering.
+    let scrollRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const scrollableEl = term.element?.querySelector(".xterm-scrollable-element") as HTMLElement | null;
+    const handleScroll = () => {
+      if (scrollRefreshTimer) return; // debounce — refresh at most once per animation frame
+      scrollRefreshTimer = setTimeout(() => {
+        scrollRefreshTimer = null;
+        if (webglAddon) {
+          term.refresh(0, term.rows - 1);
+        }
+      }, 50);
+    };
+    scrollableEl?.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
       canSend = false;
+      if (scrollRefreshTimer) clearTimeout(scrollRefreshTimer);
+      scrollableEl?.removeEventListener("scroll", handleScroll);
       restoreSelection();
       restoreAltClass();
       resizeObserver.disconnect();
