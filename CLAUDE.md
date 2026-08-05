@@ -184,5 +184,5 @@ Terminal attach highlights (Phase 5 + polish):
 |------|----------|
 | API / orchestrator / data model | `guild-house/server/` + [guild-house/CLAUDE.md](./guild-house/CLAUDE.md) |
 | Web UI | `guild-house/web/` + [web/CLAUDE.md](./guild-house/web/CLAUDE.md) |
-| Guild master skill / control plane | `guild-desk/` + `.agents/skills/guild-master/SKILL.md` |
+| Guild master skill / control plane | `guild-desk/` + `.claude/skills/guild-master/SKILL.md` |
 | Design / phase planning | `ideas/archive/` (historical) · `ideas/backlog.md` |

@@ -21,7 +21,7 @@ discovery-rooms/{ideaId}/
       agent.md
   .guild/
     handoff-prompt.md
-  .agents/
+  .claude/
     settings.json
 ```
 

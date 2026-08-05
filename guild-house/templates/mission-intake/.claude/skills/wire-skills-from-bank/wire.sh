@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Deterministic copy: search ../../skills-bank/{built-in,custom}/skills/{name}/ → .agents/skills/{name}/
+# Deterministic copy: search ../../skills-bank/{built-in,custom}/skills/{name}/ → .claude/skills/{name}/
 # Built-in skills take priority over custom skills with the same name.
 set -euo pipefail
 
 BUILTIN="../../skills-bank/built-in/skills"
 CUSTOM="../../skills-bank/custom/skills"
-DEST=".agents/skills"
+DEST=".claude/skills"
 
 # Check at least one skills directory exists (prefer built-in catalog for validation)
 if [[ ! -d "$BUILTIN" ]] && [[ ! -d "$CUSTOM" ]]; then
@@ -15,7 +15,7 @@ fi
 
 usage() {
   echo "Usage: wire.sh <skill-name> [skill-name …]" >&2
-  echo "Copies skills from guild-house/data/skills-bank/{built-in,custom}/skills/ into this room's .agents/skills/." >&2
+  echo "Copies skills from guild-house/data/skills-bank/{built-in,custom}/skills/ into this room's .claude/skills/." >&2
   exit 1
 }
 

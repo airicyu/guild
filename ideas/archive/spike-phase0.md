@@ -57,7 +57,7 @@ Mission spawn (Phase 2+):
 cd "{missionRoomCwd}" && claudew --bg -n "mission-{id}-po" --permission-mode acceptEdits "{initialPrompt}"
 ```
 
-Guild-house reads `CLAUDE_PERMISSION_MODE` (default `acceptEdits`). Mission room `.agents/settings.json` adds path-scoped `permissions.allow` / `deny` without touching user settings.
+Guild-house reads `CLAUDE_PERMISSION_MODE` (default `acceptEdits`). Mission room `.claude/settings.json` adds path-scoped `permissions.allow` / `deny` without touching user settings.
 
 ## Notes
 

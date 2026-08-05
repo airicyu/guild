@@ -24,12 +24,12 @@ Dual-layer skills bank lives in `guild-house/data/skills-bank/` with `built-in/`
 3. Copy into this room (deterministic — do not hand-copy folders):
 
 ```bash
-.agents/skills/wire-skills-from-bank/wire.sh skill-a skill-b
+.claude/skills/wire-skills-from-bank/wire.sh skill-a skill-b
 ```
 
 | Source | Destination |
 |--------|-------------|
-| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.agents/skills/{name}/` |
+| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.claude/skills/{name}/` |
 
 4. **Execution only:** during charter (Round 2), write `members/{role}/skills.md` — which wired skills each agent should use.
 

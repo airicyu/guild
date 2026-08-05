@@ -637,7 +637,7 @@ Eric terminal attach                →  PO mission session（cwd = guild-house/
 | 項目 | 說明 |
 |------|------|
 | Bun daemon + **REST API** | 見下節 API sketch；附 **API doc** |
-| **`guild-master` skill** | 在 **`guild-desk/.agents/skills/guild-master/`**；讀 guild-house API doc，代呼叫、組 attach 指令 |
+| **`guild-master` skill** | 在 **`guild-desk/.claude/skills/guild-master/`**；讀 guild-house API doc，代呼叫、組 attach 指令 |
 | Folder layout + `mission.md` | intake |
 | Bell pickup（API） | ready → active + 建 mission room + `claude --bg` |
 | checkpoint + **session id 可查** | API 回傳 attach / resume 用的 id、name |
@@ -695,7 +695,7 @@ WS   /ws/missions/:id/attach           # ?token= & optional ?cols=&rows=
 
 所有需改 `checkpoint.yaml` 的路徑 **只經 Orchestrator**（含 PO signals、bell pickup、pause/resume、boot respawn）。
 
-### `guild-master` skill 職責（`guild-desk/.agents/skills/guild-master/`）
+### `guild-master` skill 職責（`guild-desk/.claude/skills/guild-master/`）
 
 - **Guild Master** = guild master 的 control-plane 介面；透過 HTTP API 號令 **Guild House**
 - 代操作：Bell、列 mission、查 session、列 outbox、**archive**

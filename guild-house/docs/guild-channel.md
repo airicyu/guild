@@ -46,7 +46,7 @@ CLAUDE_DEV_CHANNELS=1
 
 When set, orchestrator adds `--dangerously-load-development-channels server:guild-channel` **after** the spawn prompt on `claude --bg` (prompt must precede channel flags). **Dev only** — skips channel allowlist during research preview.
 
-Mission rooms scaffold `templates/mission-room/.agents/settings.local.json` with `enabledMcpjsonServers: ["guild-channel"]` so **`--bg` PO does not block on MCP approval** (interactive UI cannot answer the prompt). If you see the approval dialog on an older room, copy that file from the template or approve once interactively (`claude attach` → option 2).
+Mission rooms scaffold `templates/mission-room/.claude/settings.local.json` with `enabledMcpjsonServers: ["guild-channel"]` so **`--bg` PO does not block on MCP approval** (interactive UI cannot answer the prompt). If you see the approval dialog on an older room, copy that file from the template or approve once interactively (`claude attach` → option 2).
 
 Startup banner shows: `Channels (experimental) messages from server:guild-channel inject directly in this session`.
 

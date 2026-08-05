@@ -20,7 +20,7 @@ Guild-master may receive a stale `attachCmd` that fails.
 | Layer | Owner | Durability | Examples |
 |-------|-------|------------|----------|
 | **Mission room** | Guild House | Persistent | `squad.md`, `memory.md`, `outbox.jsonl`, `inbox.md`, `checkpoint.yaml` |
-| **PO bg job** | Claude Code | Ephemeral | short id (`b4c04387`), `~/.agents/jobs/{id}/state.json` |
+| **PO bg job** | Claude Code | Ephemeral | short id (`b4c04387`), `~/.claude/jobs/{id}/state.json` |
 
 **Mission alive ≠ PO session alive.**
 
@@ -28,9 +28,9 @@ Durability for “continue later” lives in the **mission room**, not in CC’s
 
 ### Background worktree isolation (Claude Code 2.1.139+)
 
-Default `--bg` in a **git repo**: first `Edit`/`Write` triggers `EnterWorktree` into `.agents/worktrees/…`. That applies even when session `cwd` is gitignored `data/mission-rooms/` or `data/discovery-rooms/` — the harness keys off repo membership, not tracked paths.
+Default `--bg` in a **git repo**: first `Edit`/`Write` triggers `EnterWorktree` into `.claude/worktrees/…`. That applies even when session `cwd` is gitignored `data/mission-rooms/` or `data/discovery-rooms/` — the harness keys off repo membership, not tracked paths.
 
-Room templates set `"worktree": { "bgIsolation": "none" }` in `.agents/settings.json` (CC **2.1.143+**) so PO and intake lead write artifacts in-place without worktree → `cp` workaround. **Existing rooms:** merge that block into the room’s `.agents/settings.json` and restore the bg session.
+Room templates set `"worktree": { "bgIsolation": "none" }` in `.claude/settings.json` (CC **2.1.143+**) so PO and intake lead write artifacts in-place without worktree → `cp` workaround. **Existing rooms:** merge that block into the room’s `.claude/settings.json` and restore the bg session.
 
 ---
 
@@ -51,7 +51,7 @@ Room templates set `"worktree": { "bgIsolation": "none" }` in `.agents/settings.
 Check **both**:
 
 1. **`claude agents --json`** — is there a background agent with this `id`? (`process_live`)
-2. **`~/.agents/jobs/{shortId}/state.json`** — `state`: `running` | `done`; folder missing → `missing`
+2. **`~/.claude/jobs/{shortId}/state.json`** — `state`: `running` | `done`; folder missing → `missing`
 
 Short `id` is the bg **job handle** (`attach`, `stop`, `respawn`).  
 Full `sessionId` UUID in `state.json` / agents JSON is the **conversation** identity (not used for `--resume` on bg jobs).

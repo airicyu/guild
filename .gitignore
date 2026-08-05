@@ -13,4 +13,4 @@ Thumbs.db
 .env.*.local
 
 # Local Claude Code overrides (templates use committed settings.json)
-**/.agents/settings.local.json
+**/.claude/settings.local.json

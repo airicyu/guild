@@ -116,7 +116,7 @@ PO and intake-lead run in **background Claude Code jobs**. They can die while ch
 | Field | Meaning |
 |-------|---------|
 | `live` | Bg agent in `claude agents --json` |
-| `jobState` | `running` / `done` / `missing` from `~/.agents/jobs/{id}/state.json` |
+| `jobState` | `running` / `done` / `missing` from `~/.claude/jobs/{id}/state.json` |
 | `restoreRequired` | Mission needs live session but process is dead |
 | `attachCmd` | **`null` when not live** |
 

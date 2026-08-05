@@ -20,7 +20,7 @@ depends-on:
 
 **Depends on:** `modify-git-project`
 
-本 skill 不重複通用 git mission 流程。執行前須已 wire `.agents/skills/modify-git-project/` 並依其 playbook 操作；若尚未 wire，Round 0 先 wire 依賴，再 wire 本 skill。
+本 skill 不重複通用 git mission 流程。執行前須已 wire `.claude/skills/modify-git-project/` 並依其 playbook 操作；若尚未 wire，Round 0 先 wire 依賴，再 wire 本 skill。
 
 以下僅定義 Guild 產品的 **bindings** 與 **額外約束**。
 
@@ -31,7 +31,7 @@ depends-on:
 Wire 當 mission brief 的 deliverables 包含以下任一：
 
 - 改 `guild-house/server/`、`guild-house/web/`、`guild-house/templates/`
-- 改 `guild-desk/.agents/skills/guild-master/` 或其他 desk runtime
+- 改 `guild-desk/.claude/skills/guild-master/` 或其他 desk runtime
 - 「改 Guild API / Web UI / orchestrator / guild-master skill」
 
 **不要** wire 當：

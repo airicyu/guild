@@ -83,13 +83,13 @@ Round 0 驗證 `target_repo`：目錄存在、是 git repo、可 `git fetch`（�
 | Worktree checkout（worktree 模式） | `{target_repo}/.worktrees/guild/{missionId}/` |
 | Manifest | `artifacts/project-patch/manifest.md` |
 
-Worktree **不要**放在 `artifacts/` 或 mission room `.agents/` 底下。in-place 模式無 worktree checkout 路徑。
+Worktree **不要**放在 `artifacts/` 或 mission room `.claude/` 底下。in-place 模式無 worktree checkout 路徑。
 
 ---
 
 ## PO Round 0 — 權限
 
-Mission room 預設 `.agents/settings.json` **不含** `git`。Wire 本 skill 後，建立或合併 `.agents/settings.local.json`：
+Mission room 預設 `.claude/settings.json` **不含** `git`。Wire 本 skill 後，建立或合併 `.claude/settings.local.json`：
 
 **worktree 模式：**
 ```json

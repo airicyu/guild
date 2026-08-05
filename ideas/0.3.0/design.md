@@ -337,7 +337,7 @@ Suggested sections:
 | Section | Purpose |
 |---------|---------|
 | **Mode** | `stay` \| `deploy` \| `custom` |
-| **Target** | e.g. `guild-desk/.agents/skills/guild-master/` when deploy |
+| **Target** | e.g. `guild-desk/.claude/skills/guild-master/` when deploy |
 | **Source paths** | Which artifact subtrees to release |
 | **Notes** | Custom steps; guild-master decisions from chat |
 | **Status** | `draft` → `confirmed` → `released` |
@@ -562,7 +562,7 @@ No **discovery-rooms/** scaffold until promote → **ideas/** → tick. Promote 
 
 ## 10. Feature 4 — Skills bank
 
-**Intent:** Central catalog of Claude-style skills; **deterministically** copied into mission/discovery `.agents/skills/` at team formation.
+**Intent:** Central catalog of Claude-style skills; **deterministically** copied into mission/discovery `.claude/skills/` at team formation.
 
 ### 10.1 Skills bank layout — **leaning flat**
 
@@ -578,7 +578,7 @@ guild-house/data/skills-bank/
 
 ```
 mission-rooms/{id}/          # discovery-rooms/{id}/ parity
-  .agents/skills/
+  .claude/skills/
     wire-skills-from-bank/   # bundled meta-skill (see §10.3) — always present
     {other-skills}/          # copied from bank at charter time
   members/{role}/
@@ -593,8 +593,8 @@ Copy must **not** be ad-hoc LLM `cp`. Use a **bundled meta-skill** shipped in ev
 | Item | Choice |
 |------|--------|
 | **Skill name** | **`wire-skills-from-bank`** (recommended; see naming note below) |
-| **Location** | Pre-exists in template `.agents/skills/wire-skills-from-bank/` at scaffold — not copied from bank (bootstrap skill) |
-| **Behavior** | SKILL.md + bash script: given skill names, copy `skills-bank/{name}/` → room `.agents/skills/{name}/` |
+| **Location** | Pre-exists in template `.claude/skills/wire-skills-from-bank/` at scaffold — not copied from bank (bootstrap skill) |
+| **Behavior** | SKILL.md + bash script: given skill names, copy `skills-bank/{name}/` → room `.claude/skills/{name}/` |
 | **Caller** | PO (or intake lead for discovery) invokes this skill during charter / team formation workflow |
 
 **Naming:** `equip-skills-to-project` is clear but long. Prefer **`wire-skills-from-bank`** — matches “wired on agents” language in brainstorm; states source and action. Shorter alias in docs: “wire skill”.
@@ -614,7 +614,7 @@ PO workflow:
 ../skills-bank/{skill-name}/
 ```
 
-(both room types are siblings under `data/`). Copies to `.agents/skills/{skill-name}/`. No env var in 0.3.0.
+(both room types are siblings under `data/`). Copies to `.claude/skills/{skill-name}/`. No env var in 0.3.0.
 
 ### 10.4 When to wire — **locked**
 
@@ -650,7 +650,7 @@ Large refactor — not prerequisite for 0.3.0. Until then: **promote-only** for 
 
 *Explicitly deferred.*
 
-Separate short-lived team to decide squad composition + skill wiring + copy skills to `.agents/skills/`, then dismiss before main discovery/mission work. Depends on Feature 4.
+Separate short-lived team to decide squad composition + skill wiring + copy skills to `.claude/skills/`, then dismiss before main discovery/mission work. Depends on Feature 4.
 
 ---
 
