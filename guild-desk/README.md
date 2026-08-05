@@ -111,7 +111,7 @@ Web UI covers the same paths on the board page.
 
 ## Docs
 
-- Skill: [.claude/skills/guild-master/SKILL.md](.claude/skills/guild-master/SKILL.md)
+- Skill: [.agents/skills/guild-master/SKILL.md](.agents/skills/guild-master/SKILL.md)
 - API: [../guild-house/docs/api.md](../guild-house/docs/api.md)
 - Close-out QA: [../guild-house/docs/tests/close-out-e2e.md](../guild-house/docs/tests/close-out-e2e.md)
 - E2E walkthrough: [../guild-house/docs/e2e-discovery-path.md](../guild-house/docs/e2e-discovery-path.md)

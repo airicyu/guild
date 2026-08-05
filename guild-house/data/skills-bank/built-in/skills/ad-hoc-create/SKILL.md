@@ -25,13 +25,13 @@ description: 從任何 discovery 或 mission room 內建立 ad-hoc idea（backlo
 
 ```bash
 # 最簡用法（預設：backlog board，slug 自動為 "idea"）
-bash .claude/skills/ad-hoc-create/create-idea.sh "你的 idea 內容"
+bash .agents/skills/ad-hoc-create/create-idea.sh "你的 idea 內容"
 
 # 指定 slug
-bash .claude/skills/ad-hoc-create/create-idea.sh "你的 idea 內容" my-feature
+bash .agents/skills/ad-hoc-create/create-idea.sh "你的 idea 內容" my-feature
 
 # 指定 board（backlog | ideas）
-bash .claude/skills/ad-hoc-create/create-idea.sh "你的 idea 內容" my-feature ideas
+bash .agents/skills/ad-hoc-create/create-idea.sh "你的 idea 內容" my-feature ideas
 ```
 
 ### 參數
@@ -59,7 +59,7 @@ bash .claude/skills/ad-hoc-create/create-idea.sh "你的 idea 內容" my-feature
 ### 範例
 
 ```bash
-bash .claude/skills/ad-hoc-create/create-idea.sh "研究 OKX DEX API 整合可行性" dex-research
+bash .agents/skills/ad-hoc-create/create-idea.sh "研究 OKX DEX API 整合可行性" dex-research
 # → Created: ../../mission-board/ideas-backlog/dex-research-20260704-a1b2c3/
 ```
 
@@ -71,10 +71,10 @@ bash .claude/skills/ad-hoc-create/create-idea.sh "研究 OKX DEX API 整合可�
 
 ```bash
 # 最簡用法（預設：parking board）
-bash .claude/skills/ad-hoc-create/create-mission.sh "我的任務標題" "任務目標描述"
+bash .agents/skills/ad-hoc-create/create-mission.sh "我的任務標題" "任務目標描述"
 
 # 指定 board（parking | queued）
-bash .claude/skills/ad-hoc-create/create-mission.sh "我的任務標題" "任務目標描述" queued
+bash .agents/skills/ad-hoc-create/create-mission.sh "我的任務標題" "任務目標描述" queued
 ```
 
 ### 參數
@@ -109,7 +109,7 @@ bash .claude/skills/ad-hoc-create/create-mission.sh "我的任務標題" "任務
 ### 範例
 
 ```bash
-bash .claude/skills/ad-hoc-create/create-mission.sh "Add CI pipeline" "Set up GitHub Actions for automated testing"
+bash .agents/skills/ad-hoc-create/create-mission.sh "Add CI pipeline" "Set up GitHub Actions for automated testing"
 # → Created: ../../mission-board/parking/add-ci-pipeline-20260704-d4e5f6/
 ```
 

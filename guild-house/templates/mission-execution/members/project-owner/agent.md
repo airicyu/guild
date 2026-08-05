@@ -26,7 +26,7 @@ Read `.guild/handoff-prompt.md` and execute every step before spawning implement
 3. Read the skills bank catalogs (`../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md`); follow `mission-management/skills-bank.md` to wire skills **before evaluator**:
 
 ```bash
-.claude/skills/wire-skills-from-bank/wire.sh skill-a skill-b
+.agents/skills/wire-skills-from-bank/wire.sh skill-a skill-b
 ```
 
 Clarify requirements via `memories/common/memory.md` or `tools/escalate.sh` — never rewrite `mission-brief.md`.

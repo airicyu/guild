@@ -408,7 +408,7 @@ Full detail: [guild-house/docs/wsl-handoff-phase5-terminal.md](../guild-house/do
 - [x] With interval set, ideas auto-move to discovering when slots free (no manual bell)
 - [x] guild-desk: “submit idea …” / “approve discovery {id}” via skill
 
-**Code:** `src/orchestrator/tick-scheduler.ts` · `src/server.ts` · `src/config.ts` · `guild-desk/.claude/skills/guild-master/SKILL.md` · `web/src/pages/BoardPage.tsx`
+**Code:** `src/orchestrator/tick-scheduler.ts` · `src/server.ts` · `src/config.ts` · `guild-desk/.agents/skills/guild-master/SKILL.md` · `web/src/pages/BoardPage.tsx`
 
 ---
 

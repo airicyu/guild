@@ -29,8 +29,8 @@ This file captures **what we learned validating the PoC** — gotchas, Claude Co
 ```
 mission-rooms/{id}/
   .mcp.json                    → Claude spawns guild-channel (stdio MCP)
-  .claude/settings.json        → PO permissions (template)
-  .claude/settings.local.json  → pre-enable guild-channel MCP (template; required for --bg)
+  .agents/settings.json        → PO permissions (template)
+  .agents/settings.local.json  → pre-enable guild-channel MCP (template; required for --bg)
   .guild/channel-endpoint.json → HTTP port for orchestrator POST (written by MCP on bind)
 ```
 
@@ -113,7 +113,7 @@ Do not `claude attach` the same session while PoC polls `claude logs`. Run PoC t
 
 ## Settings files — correct shape
 
-### `templates/mission-room/.claude/settings.json` (committed)
+### `templates/mission-room/.agents/settings.json` (committed)
 
 - `permissions.allow` / `deny` only
 - **No** `enableAllProjectMcpServers`
@@ -126,7 +126,7 @@ Do not `claude attach` the same session while PoC polls `claude logs`. Run PoC t
 }
 ```
 
-Shipped in `templates/mission-room/.claude/settings.local.json` so **`claude --bg` PO spawn does not stall** on MCP approval (background jobs cannot answer the interactive prompt). For rooms created before this template change, copy the file from the template or approve once in an interactive session (option 2).
+Shipped in `templates/mission-room/.agents/settings.local.json` so **`claude --bg` PO spawn does not stall** on MCP approval (background jobs cannot answer the interactive prompt). For rooms created before this template change, copy the file from the template or approve once in an interactive session (option 2).
 
 **Do not** add `enableAllProjectMcpServers` to `settings.json` — see §2 above.
 

@@ -1,5 +1,5 @@
 /**
- * Read Claude background job state from ~/.claude/jobs/{shortId}/state.json.
+ * Read Claude background job state from ~/.agents/jobs/{shortId}/state.json.
  *
  * Missing job dir → missing; unreadable → unknown. Complements agents-list probe.
  */
@@ -13,9 +13,9 @@ export interface JobStateProbe {
   sessionId?: string;
 }
 
-/** Read job state from ~/.claude/jobs/{shortId}/state.json. */
+/** Read job state from ~/.agents/jobs/{shortId}/state.json. */
 export async function readJobState(shortId: string): Promise<JobStateProbe> {
-  const jobDir = join(homedir(), ".claude", "jobs", shortId);
+  const jobDir = join(homedir(), ".agents", "jobs", shortId);
 
   try {
     await stat(jobDir);

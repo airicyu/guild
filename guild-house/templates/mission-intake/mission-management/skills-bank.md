@@ -21,12 +21,12 @@ Dual-layer skills bank lives in `guild-house/data/skills-bank/` with `built-in/`
 3. Copy into this room:
 
 ```bash
-.claude/skills/wire-skills-from-bank/wire.sh skill-a skill-b
+.agents/skills/wire-skills-from-bank/wire.sh skill-a skill-b
 ```
 
 | Source | Destination |
 |--------|-------------|
-| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.claude/skills/{name}/` |
+| `../../skills-bank/built-in/skills/{name}/` or `../../skills-bank/custom/skills/{name}/` | `.agents/skills/{name}/` |
 
 ---
 

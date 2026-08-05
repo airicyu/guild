@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Read(//home/airic/.agents/**)",
+      "Bash(grep *)"
+    ],
+    "deny": []
+  },
+  "skillOverrides": {
+    "finance-market-data": "off"
+  }
+}

@@ -314,7 +314,7 @@ mission-rooms/{noteId}/
 ├── artifacts/
 ├── retrospective/
 ├── tools/
-└── .claude/
+└── .agents/
 ```
 
 **Intake mission** — same skeleton except: no `squad.md`, `artifact-release.md`, `retrospective/`, or `channel-endpoint.json`; `artifacts/missions/` for draft packages; `members/intake-lead/` only.
@@ -327,7 +327,7 @@ mission-rooms/{noteId}/
 | **`mission-management/`** | Orchestrator-scaffolded lead guidance; handoff, schema, release plan |
 | **`comm/`** | inbox, outbox, channel-endpoint |
 | **`memories/`** | Agent-written runtime truth (not frozen brief) |
-| **`.claude/`** | Claude Code harness only |
+| **`.agents/`** | Claude Code harness only |
 
 **Why no `.guild/`:** Too ambiguous. `mission-management/` + `comm/` name purpose explicitly.
 

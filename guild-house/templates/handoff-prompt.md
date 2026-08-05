@@ -12,7 +12,7 @@ Execute this checklist **in order**. Do not skip to implementation before Round 
 - [ ] Read board brief (source): `{{briefPath}}`
 - [ ] Read your playbook: `members/project-owner/agent.md`
 - [ ] Read schema: `.guild/mission-schema.md` (if autonomy or acceptance format unclear)
-- [ ] Read the skills bank catalogs (`../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md`); follow `mission-management/skills-bank.md` to wire via `.claude/skills/wire-skills-from-bank/wire.sh …` **before evaluator**
+- [ ] Read the skills bank catalogs (`../../skills-bank/built-in/catalog.md` and `../../skills-bank/custom/catalog.md`); follow `mission-management/skills-bank.md` to wire via `.agents/skills/wire-skills-from-bank/wire.sh …` **before evaluator**
 - [ ] If acceptance criteria are ambiguous → record in `memories/common/memory.md` or **escalate** via `tools/escalate.sh` — never rewrite `mission-brief.md`
 
 ## Round 1 — Evaluate (spawn evaluator)

@@ -138,9 +138,9 @@ Legend: `[x]` done · `[ ]` not done · `[~]` partial
 
 ### 2.4 guild-desk skill
 
-- [x] `guild-desk/.claude/skills/guild-master/workflows.md`
-- [x] `guild-desk/.claude/skills/guild-master/api-reference.md`
-- [x] `guild-desk/.claude/skills/guild-master/SKILL.md`
+- [x] `guild-desk/.agents/skills/guild-master/workflows.md`
+- [x] `guild-desk/.agents/skills/guild-master/api-reference.md`
+- [x] `guild-desk/.agents/skills/guild-master/SKILL.md`
 - [x] `guild-desk/version.md` → **0.5.0**
 
 ### 2.5 Version & changelog
@@ -223,7 +223,7 @@ Phase 1 blocks Phase 2 (UI needs health flag + notify shape). Phase 3 can overla
 | Notify | `server/src/orchestrator/mission/guild-master-notify.ts` |
 | Handlers | `approve-artifacts.ts`, `reject-artifacts.ts`, `abort-mission.ts` |
 | Web | `web/src/lib/api/client.ts`, `missions.ts`, `MissionPage.tsx`, `MissionActions.tsx` |
-| Desk | `guild-desk/.claude/skills/guild-master/*.md` |
+| Desk | `guild-desk/.agents/skills/guild-master/*.md` |
 | Docs | `specs/product.md`, `docs/api.md`, `docs/tests/close-out-e2e.md` |
 | Tests | `server/scripts/poc-session-poke.ts`, `e2e-050-session-poke.ts` or `e2e-040.ts --poke` |
 

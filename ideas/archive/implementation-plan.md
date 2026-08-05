@@ -205,7 +205,7 @@ guild-house/
 - [x] Initial prompt template for bell (handoff checklist) — `templates/handoff-prompt.md` + spawn prompt
 - [x] `mission.md` schema doc (frontmatter: title, intent, autonomy?) — `docs/mission-schema.md`
 - [x] Demo mission brief — `ready/demo-003/` (hello-world artifact + full acceptance)
-- [x] Spawn `--permission-mode acceptEdits` + mission room `.claude/settings.json`
+- [x] Spawn `--permission-mode acceptEdits` + mission room `.agents/settings.json`
 
 **Acceptance**
 
@@ -220,14 +220,14 @@ guild-house/
 **Tasks**
 
 - [x] `airwave/guild-desk/` — `CLAUDE.md`, `.env.example`, `README.md`
-- [x] `.claude/skills/guild-master/SKILL.md` — curl workflows, attach output rules
+- [x] `.agents/skills/guild-master/SKILL.md` — curl workflows, attach output rules
 - [x] `scripts/guild-api.cmd` — cmd helper for guild master
 
 **Acceptance**
 
 - [x] In guild-desk CC: "ring the bell" / "show attach for {id}" via skill (guild master runs attach separately)
 
-**Code:** `guild-desk/.claude/skills/guild-master/SKILL.md` · references `guild-house/docs/api.md`
+**Code:** `guild-desk/.agents/skills/guild-master/SKILL.md` · references `guild-house/docs/api.md`
 
 ---
 
@@ -237,7 +237,7 @@ guild-house/
 
 **Tasks**
 
-- [x] Sync on GET: read `claude agents --json` + `~/.claude/jobs/{id}/state.json` → update checkpoint session fields; **never spawn on GET**
+- [x] Sync on GET: read `claude agents --json` + `~/.agents/jobs/{id}/state.json` → update checkpoint session fields; **never spawn on GET**
 - [x] Explicit restore: boot, `POST /missions/:id/restore`, `POST /missions/:id/resume`, `GET .../session?ensureLive=true`
 - [x] Restore ladder: `respawn` short id → if fail, new `--bg` with resume prompt
 - [x] `POST /recover` — manual boot-style recovery

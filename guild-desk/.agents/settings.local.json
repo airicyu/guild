@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(set GUILD_HOUSE_URL=http://127.0.0.1:3847)",
+      "Bash(set GUILD_API_KEY=dev-key-change-me)",
+      "Bash(curl -s http://127.0.0.1:3847/health)",
+      "Bash(curl -s -H \"Authorization: Bearer dev-key-change-me\" http://127.0.0.1:3847/board)",
+      "Bash(curl -s -H \"Authorization: Bearer dev-key-change-me\" http://127.0.0.1:3847/missions)",
+      "Bash(curl *)",
+      "Bash(set GUILD_API_KEY=change-me-in-production)",
+      "Bash(set AUTH=Authorization: Bearer %GUILD_API_KEY%)",
+      "Bash(python3 -m json.tool)"
+    ]
+  }
+}

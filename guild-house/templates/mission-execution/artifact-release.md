@@ -20,7 +20,7 @@ PO maintains this file from scope eval through release. See design §6 in `ideas
 
 ## Target
 
-Destination when `mode: deploy` (e.g. `guild-desk/.claude/skills/guild-master/`). Leave empty for `stay`.
+Destination when `mode: deploy` (e.g. `guild-desk/.agents/skills/guild-master/`). Leave empty for `stay`.
 
 ## Source paths
 
